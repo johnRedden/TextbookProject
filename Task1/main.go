@@ -1,12 +1,13 @@
 package main
 
 import (
-	"fmt"
+	//"fmt"
 	"html/template"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
-	//"google.golang.org/appengine/datastore"
+	"google.golang.org/appengine"
+	"google.golang.org/appengine/datastore"
 )
 
 var pages *template.Template
@@ -33,9 +34,17 @@ func home(res http.ResponseWriter, req *http.Request, params httprouter.Params) 
 
 func showMsg(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	// Retrive form data from datastore
+	var messageFromDatastore MessageStructure
+
+	ctx := appengine.NewContext(req)
+	messageKey := datastore.NewKey(ctx, "Messages", "MessageID", 0, nil)
+	datastoreErr := datastore.Get(ctx, messageKey, &messageFromDatastore)
+	if datastoreErr != nil {
+		messageFromDatastore.Data = "NO MESSAGE FOUND - " + datastoreErr.Error()
+	}
 
 	// post message onto form webpage.
-	err := pages.ExecuteTemplate(res, "showMessage.html", "Test Message")
+	err := pages.ExecuteTemplate(res, "showMessage.html", messageFromDatastore.Data)
 	if err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 	}
@@ -52,21 +61,29 @@ func makeMsg(res http.ResponseWriter, req *http.Request, params httprouter.Param
 
 func uploadMsg(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 
-	// ctx := appengine.NewContext(req)
-	// key := datastore.NewKey(ctx, "Users", req.FormValue("Message"), 0, nil)
+	var messageToUpload MessageStructure
+	messageToUpload.Data = req.FormValue("Message")
 
-	fmt.Println("Data Taken from submit", req.FormValue("Message"))
 	// upload form data to datastore
+	ctx := appengine.NewContext(req)
+	messageKey := datastore.NewKey(ctx, "Messages", "MessageID", 0, nil)
+	_, datastoreErr := datastore.Put(ctx, messageKey, &messageToUpload)
+
+	if datastoreErr != nil {
+		http.Error(res, datastoreErr.Error(), http.StatusInternalServerError)
+	}
 
 	// redirect to home
-	err := pages.ExecuteTemplate(res, "showMessage.html", req.FormValue("Message"))
-	if err != nil {
-		http.Error(res, err.Error(), http.StatusInternalServerError)
-	}
-	//http.Redirect(res, req, "/", http.StatusTemporaryRedirect)
-
+	http.Redirect(res, req, "/", http.StatusFound)
 }
 
 func favIcon(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	http.Redirect(res, req, "public/images/favicon.ico", http.StatusTemporaryRedirect)
+}
+
+// *******************************
+// Structures
+
+type MessageStructure struct {
+	Data string
 }
