@@ -9,8 +9,8 @@ import (
 	"google.golang.org/appengine/datastore"
 )
 
-var pages *template.Template // This is the storage location for all of our html files
-var projectObj ProjectGlobals  // a global object
+var pages *template.Template  // This is the storage location for all of our html files
+var projectObj ProjectGlobals // a global object
 
 func init() { // init is our equivalent to main in normal files, this will be called first.
 	r := httprouter.New()                                                                      // We will use the http router to efficently handle incoming and outgoing requests.
@@ -34,9 +34,9 @@ func init() { // init is our equivalent to main in normal files, this will be ca
 
 func home(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	// Home is our reqest handler for any request from OUR-URL/
-	
+
 	err := pages.ExecuteTemplate(res, "index.html", projectObj) // For this, we will attempt to execute index.html with 1 additional information.
-	if err != nil {                                      // if for any reason this action throws an error message
+	if err != nil {                                             // if for any reason this action throws an error message
 		http.Error(res, err.Error(), http.StatusInternalServerError) // post to the user that an error has occured.
 	}
 }
@@ -51,11 +51,11 @@ func showMsg(res http.ResponseWriter, req *http.Request, params httprouter.Param
 	messageKey := datastore.NewKey(ctx, "Messages", "MessageID", 0, nil)  // make a key for the specific information we're looking for. Looking inside namespace Messages, key of MessageID
 	datastoreErr := datastore.Get(ctx, messageKey, &messageFromDatastore) // Attempt to get the information from datastore using context and key, unpackage into var messageFromDatastore
 	if datastoreErr != nil {                                              // if this throws an error, override message.data to put this error on the webpage. It's a nicer way than just returning an error in the case that no message has been created yet.
-		messageFromDatastore.Data = "NO MESSAGE FOUND - " + datastoreErr.Error()
+		messageFromDatastore.Data = template.HTML("<p>NO MESSAGE FOUND - " + datastoreErr.Error() + "</p>")
 	}
 
 	err := pages.ExecuteTemplate(res, "showMessage.html", messageFromDatastore) // Now that we have some information, execute our showMessage webpage and send the info into the template.
-	if err != nil {                                                                  // Handle all errors. Good Practice.
+	if err != nil {                                                             // Handle all errors. Good Practice.
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 	}
 
@@ -63,13 +63,13 @@ func showMsg(res http.ResponseWriter, req *http.Request, params httprouter.Param
 
 func makeMsg(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 
-	var messageFromDatastore MessageStructure 
+	var messageFromDatastore MessageStructure
 
-	ctx := appengine.NewContext(req)                                      
-	messageKey := datastore.NewKey(ctx, "Messages", "MessageID", 0, nil)  
-	datastoreErr := datastore.Get(ctx, messageKey, &messageFromDatastore) 
-	if datastoreErr != nil {                                              
-		messageFromDatastore.Data = "NO MESSAGE FOUND - " + datastoreErr.Error()
+	ctx := appengine.NewContext(req)
+	messageKey := datastore.NewKey(ctx, "Messages", "MessageID", 0, nil)
+	datastoreErr := datastore.Get(ctx, messageKey, &messageFromDatastore)
+	if datastoreErr != nil {
+		messageFromDatastore.Data = template.HTML("<p>NO MESSAGE FOUND - " + datastoreErr.Error() + "</p>")
 	}
 	// get message from datastore and send it pages and place in ckEditor
 	err := pages.ExecuteTemplate(res, "makeMessage.html", messageFromDatastore) // Simple post and handle errors
@@ -81,8 +81,8 @@ func makeMsg(res http.ResponseWriter, req *http.Request, params httprouter.Param
 func uploadMsg(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	// Request for POST from forms onto OUR-URL/makeMessage
 	// Now we're catching the information coming back. We will get the relavant infomation and store it onto the datastore.
-	var messageToUpload MessageStructure            // Same as before, we must have a struct to submit data.
-	messageToUpload.Data = req.FormValue("Message") // get the form value of Message into the MessageStructure
+	var messageToUpload MessageStructure                           // Same as before, we must have a struct to submit data.
+	messageToUpload.Data = template.HTML(req.FormValue("Message")) // get the form value of Message into the MessageStructure
 	messageToUpload.Author = req.FormValue("Author")
 
 	// Upload form data to datastore
@@ -106,13 +106,12 @@ func favIcon(res http.ResponseWriter, req *http.Request, params httprouter.Param
 // Structures
 
 type MessageStructure struct { // A very simple structure to submit a string variable to datastore. This could become more complicated as need demands.
-	Data string
+	Data   template.HTML
 	Author string
 }
 
-type ProjectGlobals struct { 
-	Name string
+type ProjectGlobals struct {
+	Name    string
 	Version float32
 	Company string
 }
-
