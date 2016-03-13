@@ -54,7 +54,7 @@ func showMsg(res http.ResponseWriter, req *http.Request, params httprouter.Param
 		messageFromDatastore.Data = "NO MESSAGE FOUND - " + datastoreErr.Error()
 	}
 
-	err := pages.ExecuteTemplate(res, "showMessage.html", messageFromDatastore.Data) // Now that we have some information, execute our showMessage webpage and send the info into the template.
+	err := pages.ExecuteTemplate(res, "showMessage.html", messageFromDatastore) // Now that we have some information, execute our showMessage webpage and send the info into the template.
 	if err != nil {                                                                  // Handle all errors. Good Practice.
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 	}
@@ -75,6 +75,7 @@ func uploadMsg(res http.ResponseWriter, req *http.Request, params httprouter.Par
 	// Now we're catching the information coming back. We will get the relavant infomation and store it onto the datastore.
 	var messageToUpload MessageStructure            // Same as before, we must have a struct to submit data.
 	messageToUpload.Data = req.FormValue("Message") // get the form value of Message into the MessageStructure
+	messageToUpload.Author = req.FormValue("Author")
 
 	// Upload form data to datastore
 	ctx := appengine.NewContext(req)                                     // Make the context to know what datastore we're talking to.
@@ -85,7 +86,7 @@ func uploadMsg(res http.ResponseWriter, req *http.Request, params httprouter.Par
 		http.Error(res, datastoreErr.Error(), http.StatusInternalServerError)
 	}
 
-	http.Redirect(res, req, "/", http.StatusFound) // redirect to home, the user can decide what to do from there.
+	http.Redirect(res, req, "/showMessage", http.StatusFound) // redirect to show results, the user can decide what to do from there.
 }
 
 func favIcon(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
@@ -98,6 +99,7 @@ func favIcon(res http.ResponseWriter, req *http.Request, params httprouter.Param
 
 type MessageStructure struct { // A very simple structure to submit a string variable to datastore. This could become more complicated as need demands.
 	Data string
+	Author string
 }
 
 type ProjectGlobals struct { 

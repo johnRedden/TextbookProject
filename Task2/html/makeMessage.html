@@ -10,10 +10,8 @@
     <style>
     	body {
     		text-align: center;
-    	}
-        p {
             font-size: larger;
-        }
+    	}
         #myForm {
         	width:400px;
         	margin-left: auto;
@@ -22,6 +20,12 @@
         textarea{
         	width:100%;
         	height:100px;
+            padding:5px;
+        }
+        input,button{
+            width:100%;
+            height:25px;
+            padding:5px;
         }
     </style>
 </head>
@@ -31,7 +35,9 @@
 	<div id="myForm">
 	<form method="POST" action="/makeMessage">
         <textarea name="Message" cols="10" wrap="hard" autofocus placeholder="Enter new message."></textarea>
-        <button>Submit</button>
+        <input name="Author" placeholder="Enter Author"></input>
+        <br/><br/>
+        <button>GO :)</button>
     </form>
     </div>
 	<p><a href="/">Back</a> || <a href="/makeMessage">Change Stored Message</a></p>
