@@ -1,4 +1,46 @@
 <!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Textbook Project</title>
+
+    <style>
+    	body {
+    		text-align: center;
+    	}
+        p {
+            font-size: larger;
+        }
+        #myForm {
+        	width:400px;
+        	margin-left: auto;
+        	margin-right: auto;
+        }
+        textarea{
+        	width:100%;
+        	height:100px;
+        }
+    </style>
+</head>
+<body>
+	<h1><img src="/public/images/eduNetSystems-logo.png">EduNetSystems skunkWorks</h1>
+	<p>Change Message</p>
+	<div id="myForm">
+	<form method="POST" action="/makeMessage">
+        <textarea name="Message" cols="10" wrap="hard" autofocus placeholder="Enter new message."></textarea>
+        <button>Submit</button>
+    </form>
+    </div>
+	<p><a href="/">Back</a> || <a href="/makeMessage">Change Stored Message</a></p>
+</body>
+</html>
+
+
+<!--
+<!DOCTYPE html>
 <html>
 <head>
     <title></title>
@@ -12,3 +54,4 @@
     <a href="showMessage">View Current Message</a>
 </body>
 </html>
+-->
