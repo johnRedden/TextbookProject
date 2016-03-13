@@ -62,9 +62,17 @@ func showMsg(res http.ResponseWriter, req *http.Request, params httprouter.Param
 }
 
 func makeMsg(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// Request handler for OUR-URL/makeMessage
-	// This will post the message editing form to the user, we will handle the info coming back elsewhere.
-	err := pages.ExecuteTemplate(res, "makeMessage.html", nil) // Simple post and handle errors
+
+	var messageFromDatastore MessageStructure 
+
+	ctx := appengine.NewContext(req)                                      
+	messageKey := datastore.NewKey(ctx, "Messages", "MessageID", 0, nil)  
+	datastoreErr := datastore.Get(ctx, messageKey, &messageFromDatastore) 
+	if datastoreErr != nil {                                              
+		messageFromDatastore.Data = "NO MESSAGE FOUND - " + datastoreErr.Error()
+	}
+	// get message from datastore and send it pages and place in ckEditor
+	err := pages.ExecuteTemplate(res, "makeMessage.html", messageFromDatastore) // Simple post and handle errors
 	if err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 	}
