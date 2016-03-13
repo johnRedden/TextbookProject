@@ -7,7 +7,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Textbook Project</title>
 
-
     <style>
     	body {
     		text-align: center;
@@ -15,13 +14,14 @@
         p {
             font-size: larger;
         }
-
-
+        #testPass {
+        	color:red;
+        }
     </style>
 </head>
 <body>
 	<h1><img src="/public/images/eduNetSystems-logo.png">EduNetSystems skunkWorks</h1>
-	<p>	Textbook Project, Task 2</p>
+	<p>	{{.Company}} {{.Name}} <span id="testPass"> ver: {{.Version}}</span></p>
 	<p><a href="/showMessage">Show Stored Message</a> || <a href="/makeMessage">Change Stored Message</a></p>
 </body>
 </html>

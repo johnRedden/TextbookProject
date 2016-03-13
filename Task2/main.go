@@ -10,6 +10,7 @@ import (
 )
 
 var pages *template.Template // This is the storage location for all of our html files
+var projectObj ProjectGlobals  // a global object
 
 func init() { // init is our equivalent to main in normal files, this will be called first.
 	r := httprouter.New()                                                                      // We will use the http router to efficently handle incoming and outgoing requests.
@@ -22,6 +23,10 @@ func init() { // init is our equivalent to main in normal files, this will be ca
 	http.Handle("/public/", http.StripPrefix("/public", http.FileServer(http.Dir("public/")))) // Mark all files within the local folder ./public/ to be accessable by OUR-URL/public/filename.ext
 
 	pages = template.Must(pages.ParseGlob("html/*.html")) // Look within ./html/ for any files of extention html and store them within variable pages
+	projectObj.Name = "Textbook Project"
+	projectObj.Version = 0.00001
+	projectObj.Company = "EduNetSystems"
+
 }
 
 // **************************************
@@ -29,7 +34,8 @@ func init() { // init is our equivalent to main in normal files, this will be ca
 
 func home(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	// Home is our reqest handler for any request from OUR-URL/
-	err := pages.ExecuteTemplate(res, "index.html", nil) // For this, we will attempt to execute index.html with nil additional information.
+	
+	err := pages.ExecuteTemplate(res, "index.html", projectObj) // For this, we will attempt to execute index.html with 1 additional information.
 	if err != nil {                                      // if for any reason this action throws an error message
 		http.Error(res, err.Error(), http.StatusInternalServerError) // post to the user that an error has occured.
 	}
@@ -93,3 +99,10 @@ func favIcon(res http.ResponseWriter, req *http.Request, params httprouter.Param
 type MessageStructure struct { // A very simple structure to submit a string variable to datastore. This could become more complicated as need demands.
 	Data string
 }
+
+type ProjectGlobals struct { 
+	Name string
+	Version float32
+	Company string
+}
+
