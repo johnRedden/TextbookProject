@@ -15,14 +15,14 @@
     	}
 
         #testPass,#output {
-        	color:red;
+        	color:#777;
         }
 
     </style>
 </head>
 <body>
 	<h1><img src="/public/images/eduNetSystems-logo.png">EduNetSystems skunkWorks</h1>
-	<p> {{.Company}} {{.Name}} <span id="testPass"> ver: {{.Version}}</span></p>
+
 
     <form method="POST" action="/">
         <input name="BookName" placeholder="Enter book name." autofocus></input>
@@ -33,8 +33,12 @@
     <div id="output">
         <p>List Books Here Dynamically</p>
         <ul>
-            <li>List Empty [ edit ] [ delete ]</li>
+            {{range .}}
+                <li>Book: {{.}} [ edit ] [ delete ]</li>
+            {{end}}
+           
         </ul>
+
     </div>
 </body>
 </html>
