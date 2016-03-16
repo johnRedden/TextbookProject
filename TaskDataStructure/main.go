@@ -13,12 +13,14 @@ var pages *template.Template // This is the storage location for all of our html
 var catalog Catalog
 
 func init() {
+
 	r := httprouter.New()
 	http.Handle("/", r)
 	// do we need both a get and a post?
 	// answ: No, get is only for situations where we want to send information to the user, post on the otherhand is when we want information from the user to poll back to us--such as form values.
 	r.GET("/", home)
 	r.POST("/", homeAgain)
+	r.POST("/test", test)
 
 	r.GET("/favicon.ico", favIcon)
 	http.Handle("/public/", http.StripPrefix("/public", http.FileServer(http.Dir("public/"))))
@@ -45,7 +47,41 @@ func home(res http.ResponseWriter, req *http.Request, params httprouter.Params) 
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 	}
 }
+func test(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	//var deleteBook string
+	var x string
+	var newBook Book
+	newBook.Title = req.FormValue("BookName")
+	x = req.FormValue("delete")
+	if x=="yes"{
+		//delete book (this is totall insecure!)
+			var dog Catalog // dog just to show that the get works here
+			ctx := appengine.NewContext(req)
 
+			catKey := datastore.NewKey(ctx, "Catalog", "CatalogID", 0, nil)
+			datastoreErr := datastore.Get(ctx, catKey, &dog)
+			if datastoreErr != nil {
+				dog.Name = "NO MESSAGE FOUND - " + datastoreErr.Error()
+			}
+
+			bookKey := datastore.NewKey(ctx, "Books", newBook.Title, 0, catKey)
+
+			datastore.Delete(ctx, bookKey) // from there. put the data in the datastore using the key.
+/*			if err2 != nil {
+				http.Error(res, err2.Error(), http.StatusInternalServerError)
+			}
+*/
+
+
+
+		x="smack"
+	}
+
+	err := pages.ExecuteTemplate(res, "test.html", x)
+	if err != nil {
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+	}
+}
 func homeAgain(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 
 	var dog Catalog // dog just to show that the get works here
@@ -58,8 +94,10 @@ func homeAgain(res http.ResponseWriter, req *http.Request, params httprouter.Par
 		dog.Name = "NO MESSAGE FOUND - " + datastoreErr.Error()
 	}
 
+	//var deleteBook string
 	var newBook Book
 	newBook.Title = req.FormValue("BookName")
+	//deleteBook = req.FormValue("delete")
 
 	bookKey := datastore.NewKey(ctx, "Books", newBook.Title, 0, catKey)
 
@@ -79,6 +117,7 @@ func homeAgain(res http.ResponseWriter, req *http.Request, params httprouter.Par
 		} else if qErr != nil { // if there was a real error
 			http.Error(res, qErr.Error(), http.StatusInternalServerError) // raise that error
 		}
+		x.Author = "me"
 		booklist = append(booklist, x) // add the successful book found onto our output list
 	}
 
