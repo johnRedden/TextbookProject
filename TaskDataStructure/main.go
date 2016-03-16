@@ -37,7 +37,7 @@ func init() {
 func home(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 
 	// Upload data to datastore
-	firstMessage := make([]string, 0) 
+	firstMessage := make([]string, 0)
 	firstMessage = append(firstMessage, "enter a book")
 
 	err := pages.ExecuteTemplate(res, "index.html", firstMessage)
@@ -68,7 +68,7 @@ func homeAgain(res http.ResponseWriter, req *http.Request, params httprouter.Par
 		http.Error(res, err2.Error(), http.StatusInternalServerError)
 	}
 
-	q := datastore.NewQuery("Books").Ancestor(catKey) 
+	q := datastore.NewQuery("Books").Ancestor(catKey)
 
 	booklist := make([]Book, 0) // make a list of books. we're filling this out.
 	for t := q.Run(ctx); ; {    // for values within the query as it's running
@@ -82,7 +82,6 @@ func homeAgain(res http.ResponseWriter, req *http.Request, params httprouter.Par
 		booklist = append(booklist, x) // add the successful book found onto our output list
 	}
 
-
 	err := pages.ExecuteTemplate(res, "index.html", booklist)
 	if err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -95,32 +94,49 @@ func favIcon(res http.ResponseWriter, req *http.Request, params httprouter.Param
 }
 
 // *******************************
-// Frist try at a datastore design  Parent->child->down the list to objective level.
+// First try at a datastore design  Parent->child->down the list to objective level.
+
+// Catalog is the root structure, Everything below this will inherit from a Catalog.
 type Catalog struct {
 	Name    string
-	Version float32
+	Version float32 `datastore:,noindex`
 	Company string
-	// childerenBooks []Book // Consider this as a way of holding book information.
+	// Company-Website string
 }
-type Book struct {
+type Book struct { // Book has an ancestor in catalog, searchable based on catalog that it was a part of.
+	Title   string
+	Version float32  `datastore:,noindex` // we will not query on versions. Do not need to store in a searchable way.
+	Author  string   // or array of strings
+	Tags    []string // searchable tags to describe the book
+	// ESBN-10 string
+	// ESBN-13 string
+	// Copyright date
+}
+type Chapter struct { // Chapter has an ancestor in Book. Chapter only has meaning from book.
+	Title   string
+	Version float32 `datastore:,noindex`
+	// Text string `datastore:,noindex`
+}
+type Section struct { // what meaning does section have here? Is it a sub-part of a chapter?
 	Title   string
 	Version float32
-	Author  string // or array of strings
-	// chapters []Chapter // then this behavior will trail down
-}
-type Chapter struct {
-	Title   string
-	Version float32
-}
-type Section struct {
-	Title   string
-	Version float32
+	// Text string `datastore:,noindex`
 }
 type Objective struct {
-	objective    string
-	Version      float32
-	Author       string //or array of strings
-	Content      string
+	Objective string
+	Version   float32 `datastore:,noindex`
+	// Author       string  //or array of strings // doesnt make sense to have this here. the book knows it's author.
+	Content      string `datastore:,noindex`
 	KeyTakeaways string // or array of strings
-	rating       int    // out of 5 stars
+	Rating       int    // out of 5 stars // Does this have a particular meaning here, or just a maybe future extention. Who would assign these values?
 }
+
+// Couple of notes:
+// 		When making structs to send to datastore, if you want
+// 		to have a value sent it _must_ be capital. Capital in
+// 		the sense of struct is publically available.
+//
+//		I've added notes to several parts of the structs.
+//
+// 		Commented out struct values are possible extentions or
+// 		values that I figured we should discuss before adding in.
