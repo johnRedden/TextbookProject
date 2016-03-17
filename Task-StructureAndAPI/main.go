@@ -53,28 +53,26 @@ func test(res http.ResponseWriter, req *http.Request, params httprouter.Params) 
 	var newBook Book
 	newBook.Title = req.FormValue("BookName")
 	x = req.FormValue("delete")
-	if x=="yes"{
+	if x == "yes" {
 		//delete book (this is totall insecure!)
-			var dog Catalog // dog just to show that the get works here
-			ctx := appengine.NewContext(req)
+		var dog Catalog // dog just to show that the get works here
+		ctx := appengine.NewContext(req)
 
-			catKey := datastore.NewKey(ctx, "Catalog", "CatalogID", 0, nil)
-			datastoreErr := datastore.Get(ctx, catKey, &dog)
-			if datastoreErr != nil {
-				dog.Name = "NO MESSAGE FOUND - " + datastoreErr.Error()
-			}
+		catKey := datastore.NewKey(ctx, "Catalog", "CatalogID", 0, nil)
+		datastoreErr := datastore.Get(ctx, catKey, &dog)
+		if datastoreErr != nil {
+			dog.Name = "NO MESSAGE FOUND - " + datastoreErr.Error()
+		}
 
-			bookKey := datastore.NewKey(ctx, "Books", newBook.Title, 0, catKey)
+		bookKey := datastore.NewKey(ctx, "Books", newBook.Title, 0, catKey)
 
-			datastore.Delete(ctx, bookKey) // from there. put the data in the datastore using the key.
-/*			if err2 != nil {
-				http.Error(res, err2.Error(), http.StatusInternalServerError)
-			}
-*/
+		datastore.Delete(ctx, bookKey) // from there. put the data in the datastore using the key.
+		/*			if err2 != nil {
+						http.Error(res, err2.Error(), http.StatusInternalServerError)
+					}
+		*/
 
-
-
-		x="smack"
+		x = "smack"
 	}
 
 	err := pages.ExecuteTemplate(res, "test.html", x)
@@ -131,51 +129,3 @@ func favIcon(res http.ResponseWriter, req *http.Request, params httprouter.Param
 	// Simple redirect to the relavant public file for our icon. This is only for browsers ease of access.
 	http.Redirect(res, req, "public/images/favicon.ico", http.StatusTemporaryRedirect)
 }
-
-// *******************************
-// First try at a datastore design  Parent->child->down the list to objective level.
-
-// Catalog is the root structure, Everything below this will inherit from a Catalog.
-type Catalog struct {
-	Name    string
-	Version float32 `datastore:,noindex`
-	Company string
-	// Company-Website string
-}
-type Book struct { // Book has an ancestor in catalog, searchable based on catalog that it was a part of.
-	Title   string
-	Version float32  `datastore:,noindex` // we will not query on versions. Do not need to store in a searchable way.
-	Author  string   // or array of strings
-	Tags    []string // searchable tags to describe the book
-	// ESBN-10 string
-	// ESBN-13 string
-	// Copyright date
-}
-type Chapter struct { // Chapter has an ancestor in Book. Chapter only has meaning from book.
-	Title   string
-	Version float32 `datastore:,noindex`
-	// Text string `datastore:,noindex`
-}
-type Section struct { // what meaning does section have here? Is it a sub-part of a chapter?
-	Title   string
-	Version float32
-	// Text string `datastore:,noindex`
-}
-type Objective struct {
-	Objective string
-	Version   float32 `datastore:,noindex`
-	// Author       string  //or array of strings // doesnt make sense to have this here. the book knows it's author.
-	Content      string `datastore:,noindex`
-	KeyTakeaways string // or array of strings
-	Rating       int    // out of 5 stars // Does this have a particular meaning here, or just a maybe future extention. Who would assign these values?
-}
-
-// Couple of notes:
-// 		When making structs to send to datastore, if you want
-// 		to have a value sent it _must_ be capital. Capital in
-// 		the sense of struct is publically available.
-//
-//		I've added notes to several parts of the structs.
-//
-// 		Commented out struct values are possible extentions or
-// 		values that I figured we should discuss before adding in.
