@@ -46,6 +46,13 @@
 
     <script>
         $(document).ready(function () {
+
+            //fake json string
+            var resStr = '{ "author":"john", "title":"Algebra","content":"<p>This is <strong>formatted </strong>text.</p>"}';
+            //parsed into a javascript object
+            var obj = JSON.parse(resStr);
+            // then you can use the dot operator to the the data.
+            console.log(obj.content)
             
             //ckeditor setup ***********************************
             var ed = CKEDITOR.replace( 'editor1', {
@@ -57,7 +64,9 @@
                 //resize to fit div  width, height // put stored data in ckEditor
                 this.resize("100%",600);
                 // put stored data into ckeditor
+                this.insertHtml(obj.content);
                 //this.insertHtml( {{.Data}} );
+                // maybe an ajax call here to do this??
                 this.focus();
                 
             });
@@ -85,11 +94,9 @@
 
             $("#previewBtn").click(function(){
                 console.log("clicked previewBtn");
-                // open page with content
+                // open page with content here maybe a popout.
 
             });
-
-
 
    
         });
