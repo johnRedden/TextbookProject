@@ -37,7 +37,9 @@
 	<h1><img src="/public/images/eduNetSystems-logo.png">EduNetSystems Content Editor</h1>
 	<div id="myContainer">
         <p>
-        <button id="saveBtn">SAVE =></button>
+            <button id="saveBtn">SAVE =></button> 
+            <span id="statusDialog">Not Saved</span><br/>
+            <button id="previewBtn">PreView =></button> 
         </p>
         <textarea name="Message" id="editor1" cols="10" wrap="hard" autofocus placeholder="Enter new message."></textarea>
     </div>
@@ -72,9 +74,22 @@
                     console.log("Data: " + data + "\nStatus: " + status);
                     // need to figure out Ajax solution here
                     //location.reload();
+                    if(status==="success"){
+                        $("#statusDialog").html("saved!")
+                    }
                 });
 
+                //TODO: if textarea changes change status to not saved.  eZ
+
             });
+
+            $("#previewBtn").click(function(){
+                console.log("clicked previewBtn");
+                // open page with content
+
+            });
+
+
 
    
         });
