@@ -16,41 +16,67 @@
     <script type="text/javascript" async src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML"></script>
     <style>
     	body {
-    		text-align: center;
             font-size: larger;
+            background-color: oldlace;
     	}
         textarea{
         	width:100%;
         	height:100px;
             padding:5px;
         }
+        .green {
+            color: green;
+        }
+        .red {
+            color: red;
+        }
+        .well{
+            //background-color: #c0c0c0;
+        }
     </style>
 </head>
 <body>
-    <div class="container-fluid">
-      
-      <div class="row well">
-        <div class="col-sm-8">
-          <h2><img src="/public/images/eduNetSystems-logo.png">EduNetSystems Editor</h2>
+    <div class="well">
+        <h2><img src="/public/images/eduNetSystems-logo.png">EduNetSystems Editor</h2>
+
+        <div class="input-group">
+            <label class="input-group-addon">Objective:</label>
+            <input type="text" class="form-control" id="objectiveInput" placeholder="Objective">
         </div>
-        <div class="col-sm-4">
-            <div class="btn-group">
-                <button type="button" class="btn btn-primary" id="saveBtn">Save</button>
-                <button type="button" class="btn btn-danger" id="previewBtn">Preview</button>
-            </div>
+        <div class="input-group">
+            <label class="input-group-addon">Author:</label>
+            <input type="text" class="form-control" id="authorInput" placeholder="Author">
         </div>
-      </div>
+        <div class="input-group">
+            <label class="input-group-addon">Version:</label>
+              <input type="text" class="form-control" id="versionInput" placeholder="Version">
+              <span class="input-group-addon">
+                <span id="glyph" class="glyphicon glyphicon-saved green"> </span>
+              </span>
+              <span class="input-group-btn">
+                <button type="button" class="btn btn-default" id="previewBtn">Preview</button>
+              </span>
+        </div>      
+
     </div>
 	
 	<div class="container" id="myContainer">
 
-        <form>
+        <form class="well">
             <textarea name="Message" id="editor1" cols="10" wrap="hard" autofocus placeholder="Enter new message."></textarea>
         </form>
     </div>
 
     <script>
         $(document).ready(function () {
+            //fake initial data
+            var objStr = "Adding and subtracting fractions.";
+            var verStr = "1.5";
+            var authStr = "John Redden";
+            //populate input boxes
+            $("#objectiveInput").val(objStr);
+            $("#authorInput").val(authStr);
+            $("#versionInput").val(verStr);
             
             //ckeditor setup ***********************************
             var ed = CKEDITOR.replace( 'editor1', {
@@ -67,29 +93,16 @@
                 this.focus();
                 // Handle when the HTML changes.
                 this.on('change', function () {
-                    $('#previewBtn').removeClass('btn-success').addClass('btn-danger');
+                    $('#glyph').removeClass('green glyphicon-saved').addClass('red glyphicon-save');
 
                 });
-                this.on('save', function () {
-                    alert("save btn clicked");
-                    //saveData();
+                // overrides default save behavor (super easy)
+                this.getCommand('save').exec = function(editor) { 
+                    saveData();
+                };
 
-                });
-                
             });
             //*************************************************
-            
-   
-            $("#saveBtn").click(function(){
-
-                console.log("click btn");
-                saveData();
- 
-
-
-                //TODO: if textarea changes change status to not saved.  eZ
-
-            });
 
             $("#previewBtn").click(function(){
                 console.log("clicked previewBtn");
@@ -98,18 +111,20 @@
 
             });
 
+            //regular javascript function to be resused.
             function saveData(){
-
-                var x = CKEDITOR.instances['editor1'].getData();
-                console.log(x);
+                var a = $('#objectiveInput').val();
+                var b = $('#authorInput').val();
+                var c = $('#versionInput').val();
+                var d = CKEDITOR.instances['editor1'].getData();
+                
                 // can post multiple paramaters via post using JSON below
-                $.post("postData", {BookName: "Something", content: x}, function(data, status){
+                $.post("postData", {objective: a, author: b, version:c, content: d}, function(data, status){
                     console.log("Data: " + data + "\nStatus: " + status);
                     // need to figure out Ajax solution here
                     //location.reload();
                     if(status==="success"){
-                        $("#statusDialog").html("saved!")
-                        $('#previewBtn').removeClass('btn-danger').addClass('btn-success');
+                        $('#glyph').removeClass('red glyphicon-save').addClass('green glyphicon-saved');
                     }
                 });
 

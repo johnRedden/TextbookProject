@@ -41,11 +41,12 @@ func home(res http.ResponseWriter, req *http.Request, params httprouter.Params) 
 }
 
 func savePostedObjectiveData(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	var contentStr string
-	contentStr = req.FormValue("content")
 
 	var objectiveToUpload Objective  
-	objectiveToUpload.Content = contentStr
+	objectiveToUpload.Objective = req.FormValue("objective")
+	objectiveToUpload.Content = req.FormValue("content")
+	objectiveToUpload.Author = req.FormValue("author")
+	objectiveToUpload.Version = req.FormValue("version")
 
 	ctx := appengine.NewContext(req)
 	messageKey := datastore.NewKey(ctx, "Objective", "ObjectiveID", 0, nil) 
@@ -55,7 +56,7 @@ func savePostedObjectiveData(res http.ResponseWriter, req *http.Request, params 
 		http.Error(res, datastoreErr.Error(), http.StatusInternalServerError)
 	}
 
-	fmt.Fprint(res, contentStr)
+	fmt.Fprint(res, objectiveToUpload.Content)
 
 	
 }
@@ -70,7 +71,7 @@ func showObjective(res http.ResponseWriter, req *http.Request, params httprouter
 		http.Error(res, datastoreErr.Error(), http.StatusInternalServerError)
 	}
 	
-	err := pages.ExecuteTemplate(res, "preview.html", obj.Content)
+	err := pages.ExecuteTemplate(res, "preview.html", obj)
 	if err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 	}
@@ -85,7 +86,7 @@ func favIcon(res http.ResponseWriter, req *http.Request, params httprouter.Param
 // *******************************
 type Objective struct {
 	Objective string
-	Version   float32 `datastore:,noindex`
+	Version   string `datastore:,noindex`
 	Author       string  //separate objectives may have different authors.
 	Content      string `datastore:,noindex`
 	KeyTakeaways string // or array of strings
