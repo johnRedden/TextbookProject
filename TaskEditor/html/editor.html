@@ -30,9 +30,6 @@
         .red {
             color: red;
         }
-        .well{
-            //background-color: #c0c0c0;
-        }
     </style>
 </head>
 <body>
@@ -63,7 +60,12 @@
 	<div class="container" id="myContainer">
 
         <form class="well">
+            <strong>Content:</strong>
             <textarea name="Message" id="editor1" cols="10" wrap="hard" autofocus placeholder="Enter new message."></textarea>
+        </form>
+        <form class="well">
+            <strong>Key Takeaways:</strong>
+            <textarea name="Message2" id="editor2"  wrap="hard" placeholder="KeyTakeaways"></textarea>
         </form>
     </div>
 
@@ -78,8 +80,12 @@
             $("#authorInput").val(authStr);
             $("#versionInput").val(verStr);
             
-            //ckeditor setup ***********************************
+            //ckeditor setup - two instances ***********************************
             var ed = CKEDITOR.replace( 'editor1', {
+                extraPlugins: 'mathjax',
+                mathJaxLib: 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML'
+              } );
+            var ed2 = CKEDITOR.replace( 'editor2', {
                 extraPlugins: 'mathjax',
                 mathJaxLib: 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML'
               } );
@@ -102,6 +108,16 @@
                 };
 
             });
+            ed2.on("instanceReady", function(event){
+                this.on('change', function () {
+                    $('#glyph').removeClass('green glyphicon-saved').addClass('red glyphicon-save');
+                });
+                // overrides default save behavor (super easy)
+                this.getCommand('save').exec = function(editor) { 
+                    saveData();
+                };
+
+            });
             //*************************************************
 
             $("#previewBtn").click(function(){
@@ -117,9 +133,10 @@
                 var b = $('#authorInput').val();
                 var c = $('#versionInput').val();
                 var d = CKEDITOR.instances['editor1'].getData();
+                var e = CKEDITOR.instances['editor2'].getData();
                 
                 // can post multiple paramaters via post using JSON below
-                $.post("postData", {objective: a, author: b, version:c, content: d}, function(data, status){
+                $.post("postData", {objective: a, author: b, version:c, content: d, keytakeaways: e}, function(data, status){
                     console.log("Data: " + data + "\nStatus: " + status);
                     // need to figure out Ajax solution here
                     //location.reload();

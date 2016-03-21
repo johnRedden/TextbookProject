@@ -47,6 +47,7 @@ func savePostedObjectiveData(res http.ResponseWriter, req *http.Request, params 
 	objectiveToUpload.Content = req.FormValue("content")
 	objectiveToUpload.Author = req.FormValue("author")
 	objectiveToUpload.Version = req.FormValue("version")
+	objectiveToUpload.KeyTakeaways = req.FormValue("keytakeaways")
 
 	ctx := appengine.NewContext(req)
 	messageKey := datastore.NewKey(ctx, "Objective", "ObjectiveID", 0, nil) 
