@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"html/template"
 	"net/http"
 
@@ -22,6 +23,10 @@ func init() {
 	r.POST("/", homeAgain)
 	r.POST("/test", test)
 
+	r.GET("/editor", edit)
+	r.POST("/getSome", sendIt)
+	r.POST("/setSome", saveIt)
+
 	r.GET("/favicon.ico", favIcon)
 	http.Handle("/public/", http.StripPrefix("/public", http.FileServer(http.Dir("public/"))))
 
@@ -35,7 +40,35 @@ func init() {
 
 // **************************************
 // URL Handlers
+func edit(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 
+	//sending the edtor page nothing
+	err := pages.ExecuteTemplate(res, "editor.html", nil)
+	if err != nil {
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+	}
+}
+func sendIt(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+
+	//sending the edtor page nothing
+	err := pages.ExecuteTemplate(res, "editor.html", nil)
+	if err != nil {
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+	}
+}
+func saveIt(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	//var stuff string
+	//stuff = "nonsense"
+	//stuff = req.FormValue("content")
+
+	fmt.Printf("dddddddddddd")
+
+	//sending the edtor page nothing
+	//err := pages.ExecuteTemplate(res, "editor.html", stuff)
+	//if err != nil {
+	//	http.Error(res, err.Error(), http.StatusInternalServerError)
+	//}
+}
 func home(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 
 	// Upload data to datastore
