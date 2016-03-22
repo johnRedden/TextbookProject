@@ -7,9 +7,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Textbook Project</title>
 
-    <!-- Bootstrap -->
-    <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
-
     <style>
     	h1,form {
     		text-align: center;
@@ -30,57 +27,5 @@
 </head>
 <body>
 	<h1><span><img src="/public/images/eduNetSystems-logo.png"></span>EduNetSystems</h1>
-
-    <!-- Add some boostrap class -->
-    <form method="POST" action="/" role="form">
-    <div id="mainForm" class="form-group">
-        <input name="BookName" class="form-control" placeholder="Enter book name." autofocus></input>
-        <br/>
-        <button class="btn btn-primary">Add Book To Catalog</button>
-    </div>
-    </form>
-
-
-    <!-- Add some boostrap class -->
-    <div id="output">
-        <p>List Books Here Dynamically</p>
-            <div class="list-group"> 
-            {{range $elem := $}}
-                <li class="list-group-item clearfix">
-                    <span class="glyphicon glyphicon-book"></span>
-                    <span class="list-group-item-text">{{$elem.Title}}</span> 
-                    <div class="btn-group pull-right">
-                        <button class="btn btn-success" type="button"><span class="glyphicon glyphicon-edit"></span></button>
-                        <button class="btn btn-danger" type="button" name="{{$elem.Title}}"><span class="glyphicon glyphicon-remove"></span></button>
-                    </div>
-                </li>
-            {{end}}
-            </div>
-    </div>
-
-
-
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js" type="text/javascript"></script>
-    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
-
-    <script>
-        $( document ).ready(function() {
-            //console.log( "ready!" );
-            $("button").click(function(){
-                // this is the button clicked and this.name comes from template ... the book title
-                //console.log(this.name);
-                var x = "yes";
-                // can post multiple paramaters via post using JSON below
-                $.post("test", {BookName: this.name, delete: x}, function(data, status){
-                    //console.log("Data: " + data + "\nStatus: " + status);
-                    // need to figure out Ajax solution here
-                    location.reload();
-                });
-
-            });
-        });
-
-    </script>
-
 </body>
 </html>

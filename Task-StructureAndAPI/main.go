@@ -5,48 +5,83 @@ import (
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
+	"golang.org/x/net/context"
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
 )
 
 var pages *template.Template // This is the storage location for all of our html files
-var catalog Catalog
 
 func init() {
 
 	r := httprouter.New()
 	http.Handle("/", r)
-	// do we need both a get and a post?
-	// answ: No, get is only for situations where we want to send information to the user, post on the otherhand is when we want information from the user to poll back to us--such as form values.
 	r.GET("/", home)
-	r.POST("/", homeAgain)
 	r.POST("/test", test)
+	r.GET("/init", initalizeData)
 
 	r.GET("/favicon.ico", favIcon)
 	http.Handle("/public/", http.StripPrefix("/public", http.FileServer(http.Dir("public/"))))
 
 	pages = template.Must(pages.ParseGlob("html/*.html"))
 
-	catalog.Name = "mainCatalog"
-	catalog.Company = "eduNetSystems"
-	catalog.Version = 1
+}
 
+func favIcon(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	// Simple redirect to the relavant public file for our icon. This is only for browsers ease of access.
+	http.Redirect(res, req, "public/images/favicon.ico", http.StatusTemporaryRedirect)
+}
+
+func serveTemplateWithParams(res http.ResponseWriter, req *http.Request, templateName string, params interface{}) {
+	// simple func to cut down on repeating code.
+	err := pages.ExecuteTemplate(res, templateName, &params)
+	HandleError(res, err)
+}
+
+func HandleError(res http.ResponseWriter, e error) {
+	// generic error handling for any error we encounter plus a message we've defined.
+	if e != nil {
+		http.Error(res, e.Error(), http.StatusInternalServerError)
+	}
+}
+
+func home(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	serveTemplateWithParams(res, req, "index.html", nil)
+}
+
+// *************************************
+func makeCatalogKey(ctx context.Context, keyname string) *datastore.Key {
+	return datastore.NewKey(ctx, "Catalogs", keyname, 0, nil)
+}
+func makeBookKey(ctx context.Context, parent *datastore.Key) *datastore.Key {
+	return datastore.NewKey(ctx, "Books", "", 0, parent)
+}
+func makeSectionKey(ctx context.Context, parent *datastore.Key) *datastore.Key {
+	return datastore.NewKey(ctx, "Sections", "", 0, parent)
+}
+
+func initalizeData(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	ctx := appengine.NewContext(req)
+
+	defaultCatalog := Catalog{"Basic Catalog", 0, "eduNet"}
+	defaultCatalogKey := makeCatalogKey(ctx, "default_catalog")
+
+	_, err := datastore.Put(ctx, defaultCatalogKey, &defaultCatalog)
+	HandleError(res, err)
+
+	for _, title := range []string{"Hello ", "World", "A list", "Of titles", "The Hobbit", "Lord of the Trees", "A brand new cat"} {
+		bookInput := Book{}
+		bookInput.Title = title
+		_, err2 := datastore.Put(ctx, makeBookKey(ctx, defaultCatalogKey), &bookInput)
+		HandleError(res, err2)
+	}
+
+	serveTemplateWithParams(res, req, "printme.html", "Datastore has been initalized!")
 }
 
 // **************************************
 // URL Handlers
 
-func home(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-
-	// Upload data to datastore
-	firstMessage := make([]string, 0)
-	firstMessage = append(firstMessage, "enter a book")
-
-	err := pages.ExecuteTemplate(res, "index.html", firstMessage)
-	if err != nil {
-		http.Error(res, err.Error(), http.StatusInternalServerError)
-	}
-}
 func test(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	//var deleteBook string
 	var x string
@@ -123,9 +158,4 @@ func homeAgain(res http.ResponseWriter, req *http.Request, params httprouter.Par
 	if err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 	}
-}
-
-func favIcon(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// Simple redirect to the relavant public file for our icon. This is only for browsers ease of access.
-	http.Redirect(res, req, "public/images/favicon.ico", http.StatusTemporaryRedirect)
 }
