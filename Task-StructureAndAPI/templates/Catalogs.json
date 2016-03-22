@@ -1,0 +1,13 @@
+{
+    "type":"Catalog",
+    "count":{{len .}},
+    "results":[
+    {{range .}}{
+        "Name":"{{.Name}}",
+        "Company":"{{.Company}}",
+        "Version":{{.Version}},
+        "ID":"{{.ID}}",
+    },
+    {{end}}
+    ]
+}

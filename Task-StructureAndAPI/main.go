@@ -3,6 +3,7 @@ package main
 import (
 	"html/template"
 	"net/http"
+	"strconv"
 
 	"github.com/julienschmidt/httprouter"
 	"golang.org/x/net/context"
@@ -11,20 +12,23 @@ import (
 )
 
 var pages *template.Template // This is the storage location for all of our html files
+var apiPages *template.Template
 
 func init() {
 
 	r := httprouter.New()
 	http.Handle("/", r)
 	r.GET("/", home)
-	r.POST("/test", test)
 	r.GET("/init", initalizeData)
+	r.GET("/vb", viewBookKeys)
+	r.GET("/vbs", viewBook)
+	r.GET("/api/books.json", API_GetBookData)
+	r.GET("/api/catalogs.json", API_GetCatalogData)
 
 	r.GET("/favicon.ico", favIcon)
 	http.Handle("/public/", http.StripPrefix("/public", http.FileServer(http.Dir("public/"))))
 
-	pages = template.Must(pages.ParseGlob("html/*.html"))
-
+	pages = template.Must(pages.ParseGlob("templates/*.*"))
 }
 
 func favIcon(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
@@ -32,7 +36,7 @@ func favIcon(res http.ResponseWriter, req *http.Request, params httprouter.Param
 	http.Redirect(res, req, "public/images/favicon.ico", http.StatusTemporaryRedirect)
 }
 
-func serveTemplateWithParams(res http.ResponseWriter, req *http.Request, templateName string, params interface{}) {
+func ServeTemplateWithParams(res http.ResponseWriter, req *http.Request, templateName string, params interface{}) {
 	// simple func to cut down on repeating code.
 	err := pages.ExecuteTemplate(res, templateName, &params)
 	HandleError(res, err)
@@ -46,15 +50,15 @@ func HandleError(res http.ResponseWriter, e error) {
 }
 
 func home(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	serveTemplateWithParams(res, req, "index.html", nil)
+	ServeTemplateWithParams(res, req, "index.html", nil)
 }
 
 // *************************************
 func makeCatalogKey(ctx context.Context, keyname string) *datastore.Key {
 	return datastore.NewKey(ctx, "Catalogs", keyname, 0, nil)
 }
-func makeBookKey(ctx context.Context, parent *datastore.Key) *datastore.Key {
-	return datastore.NewKey(ctx, "Books", "", 0, parent)
+func makeBookKey(ctx context.Context, id int64) *datastore.Key {
+	return datastore.NewKey(ctx, "Books", "", id, nil)
 }
 func makeSectionKey(ctx context.Context, parent *datastore.Key) *datastore.Key {
 	return datastore.NewKey(ctx, "Sections", "", 0, parent)
@@ -63,20 +67,80 @@ func makeSectionKey(ctx context.Context, parent *datastore.Key) *datastore.Key {
 func initalizeData(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	ctx := appengine.NewContext(req)
 
-	defaultCatalog := Catalog{"Basic Catalog", 0, "eduNet"}
-	defaultCatalogKey := makeCatalogKey(ctx, "default_catalog")
+	catalogTitles := []string{"default_catalog", "Math", "Science", "***"}
 
-	_, err := datastore.Put(ctx, defaultCatalogKey, &defaultCatalog)
-	HandleError(res, err)
+	for _, k := range catalogTitles {
+		ck := makeCatalogKey(ctx, k)
+		cc := Catalog{"Basic Catalog", 0, "eduNet"}
+		_, err := datastore.Put(ctx, ck, &cc)
+		HandleError(res, err)
+	}
 
-	for _, title := range []string{"Hello ", "World", "A list", "Of titles", "The Hobbit", "Lord of the Trees", "A brand new cat"} {
+	for i, title := range []string{"Hello ", "World", "A list", "Of titles", "The Hobbit", "Lord of the Trees", "A brand new cat", "Gone with the start", "Not on your life", "Bores", "Party Time with Party Pete: A Ride Of Your Life: Not for your pets!", "Marko Polo, Silly Game or Deadly Secret?", "Starbucks, The REAL addiction"} {
 		bookInput := Book{}
 		bookInput.Title = title
-		_, err2 := datastore.Put(ctx, makeBookKey(ctx, defaultCatalogKey), &bookInput)
+		bookInput.CatalogTitle = catalogTitles[(i % 4)]
+		_, err2 := datastore.Put(ctx, makeBookKey(ctx, 0), &bookInput)
 		HandleError(res, err2)
 	}
 
-	serveTemplateWithParams(res, req, "printme.html", "Datastore has been initalized!")
+	ServeTemplateWithParams(res, req, "printme.html", "Datastore has been initalized!")
+}
+
+type BookKeys struct {
+	Key int64
+	Book
+}
+
+func viewBookKeys(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+
+	ctx := appengine.NewContext(req)
+	q := datastore.NewQuery("Books")
+
+	booklist := make([]BookKeys, 0)
+	for t := q.Run(ctx); ; {
+		var x Book
+		k, qErr := t.Next(&x)
+		if qErr == datastore.Done {
+			break
+		} else if qErr != nil {
+			http.Error(res, qErr.Error(), http.StatusInternalServerError)
+		}
+		booklist = append(booklist, BookKeys{k.IntID(), x})
+	}
+
+	ServeTemplateWithParams(res, req, "printme.html", booklist)
+}
+
+func viewBook(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	i, err := strconv.Atoi(req.FormValue("Key"))
+	HandleError(res, err)
+
+	ctx := appengine.NewContext(req)
+
+	bookKey := makeBookKey(ctx, int64(i))
+	var x Book
+	e := datastore.Get(ctx, bookKey, &x)
+	HandleError(res, e)
+
+	ServeTemplateWithParams(res, req, "printme.html", x)
+
+	// ctx := appengine.NewContext(req)
+	// q := datastore.NewQuery("Books")
+
+	// booklist := make([]BookKeys, 0)
+	// for t := q.Run(ctx); ; {
+	// 	var x Book
+	// 	k, qErr := t.Next(&x)
+	// 	if qErr == datastore.Done {
+	// 		break
+	// 	} else if qErr != nil {
+	// 		http.Error(res, qErr.Error(), http.StatusInternalServerError)
+	// 	}
+	// 	booklist = append(booklist, BookKeys{k.IntID(), x})
+	// }
+
+	// ServeTemplateWithParams(res, req, "printme.html", booklist)
 }
 
 // **************************************

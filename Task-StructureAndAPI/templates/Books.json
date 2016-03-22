@@ -1,0 +1,14 @@
+{
+    "type":"Book",
+    "count":{{len .}},
+    "results":[
+    {{range .}}{
+        "Title":"{{.Title}}",
+        "Catalog":"{{.CatalogTitle}}",
+        "Author":"{{.Author}}",
+        "Version":{{.Version}},
+        "ID":{{.ID}}
+    },
+    {{end}}
+    ]
+}

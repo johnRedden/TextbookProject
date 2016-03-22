@@ -17,10 +17,11 @@ type Catalog struct {
 	// Company-Website string
 }
 type Book struct { // Book has an ancestor in catalog, searchable based on catalog that it was a part of.
-	Title   string
-	Version float32  `datastore:,noindex` // we will not query on versions. Do not need to store in a searchable way.
-	Author  string   // or array of strings
-	Tags    []string // searchable tags to describe the book
+	Title        string
+	Version      float32  `datastore:,noindex` // we will not query on versions. Do not need to store in a searchable way.
+	Author       string   // or array of strings
+	Tags         []string // searchable tags to describe the book
+	CatalogTitle string
 	// ESBN-10 string
 	// ESBN-13 string
 	// Copyright date
