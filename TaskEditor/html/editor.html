@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Textbook Project</title>
 
-        <!-- Bootstrap -->
+    <!-- Bootstrap -->
     <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
 
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js" type="text/javascript"></script>
@@ -24,50 +24,84 @@
         	height:100px;
             padding:5px;
         }
-        .green {
-            color: green;
+        .navbar { 
+             box-shadow: 0px 5px 3px -3px #888;
+             background-color: oldlace;
         }
-        .red {
-            color: red;
+        .good {
+            color: lightblue;
+        }
+        .bad {
+            color: lightpink;
+        }
+        .goodBack{
+              background-color: lightblue;
+        }
+        .badBack{
+              background-color: lightpink;
+        }
+        #myContainer{
+            margin-top: 200px;
         }
     </style>
 </head>
 <body>
-    <div class="well">
-        <h2><img src="/public/images/eduNetSystems-logo.png">EduNetSystems Editor</h2>
 
-        <div class="input-group">
-            <label class="input-group-addon">Objective:</label>
-            <input type="text" class="form-control" id="objectiveInput" placeholder="Objective">
+    <nav class="navbar navbar-default navbar-fixed-top">
+        <div class="container"> 
+            <div class="navbar-header">              
+              <h2><img class="pull-left" src="/public/images/eduNetSystems-logo.png"/> &nbsp EduNetSystems Editor </h2>
+                <div class="input-group">
+                    <label class="input-group-addon">Objective:</label>
+                    <input type="text" class="form-control" id="objectiveInput" placeholder="Objective">
+                </div>
+                <div class="input-group">
+                    <label class="input-group-addon">Author:</label>
+                    <input type="text" class="form-control" id="authorInput" placeholder="Author">
+                </div>
+                <div class="input-group">
+                    <label class="input-group-addon">Version:</label>
+                      <input type="text" class="form-control" id="versionInput" placeholder="Version">
+                      <span class="input-group-addon">
+                        <span id="glyph" class="glyphicon glyphicon-saved good"> </span>
+                      </span>
+                      <span class="input-group-btn">
+                        <button type="button" class="btn btn-default" id="previewBtn">Preview</button>
+                      </span>
+                </div>    
+                <p><em>online editor alpha version</em></p>
+            </div>
         </div>
-        <div class="input-group">
-            <label class="input-group-addon">Author:</label>
-            <input type="text" class="form-control" id="authorInput" placeholder="Author">
-        </div>
-        <div class="input-group">
-            <label class="input-group-addon">Version:</label>
-              <input type="text" class="form-control" id="versionInput" placeholder="Version">
-              <span class="input-group-addon">
-                <span id="glyph" class="glyphicon glyphicon-saved green"> </span>
-              </span>
-              <span class="input-group-btn">
-                <button type="button" class="btn btn-default" id="previewBtn">Preview</button>
-              </span>
-        </div>      
+    </nav>
 
-    </div>
 	
 	<div class="container" id="myContainer">
 
-        <form class="well">
+        <form class="well goodBack">
             <strong>Content:</strong>
             <textarea name="Message" id="editor1" cols="10" wrap="hard" autofocus placeholder="Enter new message."></textarea>
         </form>
-        <form class="well">
+        <form class="well goodBack">
             <strong>Key Takeaways:</strong>
             <textarea name="Message2" id="editor2"  wrap="hard" placeholder="KeyTakeaways"></textarea>
         </form>
     </div>
+
+    <footer class="text-center">
+        <div class="well">
+            <div class="container">
+                <div class="row">
+                    <div class="col-xs-12">
+
+                        <div><span class="glyphicon glyphicon-sunglasses"></span>2015 eduNetSystems.com</div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </footer>
+
 
     <script>
         $(document).ready(function () {
@@ -79,6 +113,8 @@
             $("#objectiveInput").val(objStr);
             $("#authorInput").val(authStr);
             $("#versionInput").val(verStr);
+
+
             
             //ckeditor setup - two instances ***********************************
             var ed = CKEDITOR.replace( 'editor1', {
@@ -99,7 +135,11 @@
                 this.focus();
                 // Handle when the HTML changes.
                 this.on('change', function () {
-                    $('#glyph').removeClass('green glyphicon-saved').addClass('red glyphicon-save');
+                    //styling for visual change
+                    $('#glyph').removeClass('good glyphicon-saved').addClass('bad glyphicon-save');
+                    $('.well').each(function( index ) {
+                         $( this ).removeClass('goodBack').addClass('badBack');
+                    });
 
                 });
                 // overrides default save behavor (super easy)
@@ -110,7 +150,10 @@
             });
             ed2.on("instanceReady", function(event){
                 this.on('change', function () {
-                    $('#glyph').removeClass('green glyphicon-saved').addClass('red glyphicon-save');
+                    $('#glyph').removeClass('good glyphicon-saved').addClass('bad glyphicon-save');
+                    $('.well').each(function( index ) {
+                         $( this ).removeClass('goodBack').addClass('badBack');
+                    });
                 });
                 // overrides default save behavor (super easy)
                 this.getCommand('save').exec = function(editor) { 
@@ -141,7 +184,10 @@
                     // need to figure out Ajax solution here
                     //location.reload();
                     if(status==="success"){
-                        $('#glyph').removeClass('red glyphicon-save').addClass('green glyphicon-saved');
+                        $('#glyph').removeClass('bad glyphicon-save').addClass('good glyphicon-saved');
+                        $('.well').each(function( index ) {
+                            $( this ).removeClass('badBack').addClass('goodBack');
+                        });
                     }
                 });
 
