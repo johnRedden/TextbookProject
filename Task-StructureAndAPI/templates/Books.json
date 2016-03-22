@@ -1,14 +1,1 @@
-{
-    "type":"Book",
-    "count":{{len .}},
-    "results":[
-    {{range .}}{
-        "Title":"{{.Title}}",
-        "Catalog":"{{.CatalogTitle}}",
-        "Author":"{{.Author}}",
-        "Version":{{.Version}},
-        "ID":{{.ID}}
-    },
-    {{end}}
-    ]
-}
+{"type":"Book","count":{{len .}},"results":[{{range .}}{"Title":"{{.Title}}","Catalog":"{{.CatalogTitle}}","Author":"{{.Author}}","Version":{{.Version}},"ID":{{.ID}}},{{end}}{"Title":"New Book","Catalog":"","Author":"","Version":0,"ID":0}]}

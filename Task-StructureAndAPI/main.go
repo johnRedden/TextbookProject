@@ -20,10 +20,9 @@ func init() {
 	http.Handle("/", r)
 	r.GET("/", home)
 	r.GET("/init", initalizeData)
-	r.GET("/vb", viewBookKeys)
-	r.GET("/vbs", viewBook)
 	r.GET("/api/books.json", API_GetBookData)
 	r.GET("/api/catalogs.json", API_GetCatalogData)
+	r.GET("/select", selectBookFromForm)
 
 	r.GET("/favicon.ico", favIcon)
 	http.Handle("/public/", http.StripPrefix("/public", http.FileServer(http.Dir("public/"))))
@@ -54,14 +53,15 @@ func home(res http.ResponseWriter, req *http.Request, params httprouter.Params) 
 }
 
 // *************************************
+// Keys
 func makeCatalogKey(ctx context.Context, keyname string) *datastore.Key {
 	return datastore.NewKey(ctx, "Catalogs", keyname, 0, nil)
 }
 func makeBookKey(ctx context.Context, id int64) *datastore.Key {
 	return datastore.NewKey(ctx, "Books", "", id, nil)
 }
-func makeSectionKey(ctx context.Context, parent *datastore.Key) *datastore.Key {
-	return datastore.NewKey(ctx, "Sections", "", 0, parent)
+func makeSectionKey(ctx context.Context, id int64, parent *datastore.Key) *datastore.Key {
+	return datastore.NewKey(ctx, "Sections", "", id, parent)
 }
 
 func initalizeData(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
@@ -87,60 +87,14 @@ func initalizeData(res http.ResponseWriter, req *http.Request, params httprouter
 	ServeTemplateWithParams(res, req, "printme.html", "Datastore has been initalized!")
 }
 
-type BookKeys struct {
-	Key int64
-	Book
+func selectBookFromForm(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	ServeTemplateWithParams(res, req, "bookSelection.html", nil)
 }
-
-func viewBookKeys(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-
-	ctx := appengine.NewContext(req)
-	q := datastore.NewQuery("Books")
-
-	booklist := make([]BookKeys, 0)
-	for t := q.Run(ctx); ; {
-		var x Book
-		k, qErr := t.Next(&x)
-		if qErr == datastore.Done {
-			break
-		} else if qErr != nil {
-			http.Error(res, qErr.Error(), http.StatusInternalServerError)
-		}
-		booklist = append(booklist, BookKeys{k.IntID(), x})
-	}
-
-	ServeTemplateWithParams(res, req, "printme.html", booklist)
-}
-
-func viewBook(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	i, err := strconv.Atoi(req.FormValue("Key"))
-	HandleError(res, err)
-
-	ctx := appengine.NewContext(req)
-
-	bookKey := makeBookKey(ctx, int64(i))
-	var x Book
-	e := datastore.Get(ctx, bookKey, &x)
-	HandleError(res, e)
-
-	ServeTemplateWithParams(res, req, "printme.html", x)
-
-	// ctx := appengine.NewContext(req)
-	// q := datastore.NewQuery("Books")
-
-	// booklist := make([]BookKeys, 0)
-	// for t := q.Run(ctx); ; {
-	// 	var x Book
-	// 	k, qErr := t.Next(&x)
-	// 	if qErr == datastore.Done {
-	// 		break
-	// 	} else if qErr != nil {
-	// 		http.Error(res, qErr.Error(), http.StatusInternalServerError)
-	// 	}
-	// 	booklist = append(booklist, BookKeys{k.IntID(), x})
-	// }
-
-	// ServeTemplateWithParams(res, req, "printme.html", booklist)
+func bookSelectedFromForm(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	i, numErr := strconv.Atoi(req.FormValue("BookID"))
+	HandleError(res, numErr)
+	// bookKey := makeBookKey(ctx, int64(i))
+	ServeTemplateWithParams(res, req, "printme.html", i)
 }
 
 // **************************************
