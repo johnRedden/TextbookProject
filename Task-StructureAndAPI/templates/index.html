@@ -1,31 +1,135 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
+  <head>
+    <!-- Required meta tags always come first -->
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Textbook Project</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
 
-    <style>
-    	h1,form {
-    		text-align: center;
-    	}
-        #output {
-        	color:#777;
-            width: 300px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        #mainForm{
-            width: 400px;
-            margin-left: auto;
-            margin-right: auto;
-        }
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/css/bootstrap.min.css" integrity="sha384-y3tfxAZXuh4HwSYylfB+J125MxIs6mR5FOHamPBG064zB+AFeWH94NdvaCBm8qnd" crossorigin="anonymous">
 
+    <style type="text/css">
+        .dropdown {
+            position: relative;
+            display: inline-block;
+            vertical-align: middle;
+        }
     </style>
-</head>
-<body>
-	<h1><span><img src="/public/images/eduNetSystems-logo.png"></span>EduNetSystems</h1>
-</body>
+  </head>
+  <body>
+    <div class="container">
+        <h2><span><img src="/public/images/eduNetSystems-logo.png"></span>EduNetSystems</h2>
+        <p><em>Objective Selector alpha</em></p>
+    <div class="card text-xs-center">
+
+      <div class="card-block">
+        <h4 class="card-title">EduNetSystems Catalogs</h4>
+        <p class="card-text">In the very distant future there will be many catalogs.</p>
+        <!-- dropdown button starts here -->
+        <div class="dropdown" id="catMenuDropdown">
+            <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Choose a Catalog
+            </button>
+            <div class="dropdown-menu" id="catMenu">
+                <a class="dropdown-item" href="/">Loading...</a>
+            </div>
+        </div>
+      </div>
+      <div class="card-footer text-muted" id='catFooter'>
+        loading...
+      </div>
+    </div>
+
+    <!-- Choose a Book-->
+    <div class="card text-xs-center invisible" id='bookCard'>
+
+      <div class="card-block" >
+        <h4 class="card-title">EduNetSystems Books</h4>
+        <p class="card-text">In the very distant future there will be many books.</p>
+        
+        <!-- dropdown button starts here -->
+        <div class="dropdown" id="bookMenuDropdown">
+          <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Books
+          </button>
+          <div class="dropdown-menu" id="bookMenu">
+            <a class="dropdown-item" href="/">Loading...</a>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="card-footer text-muted" id="bookFooter">
+        loading...
+      </div>
+    </div>
+
+
+       <div class="card card-block text-xs-center invisible" id='endOfRoad'>
+          <h4 class="card-title">Awesome Chapters</h4>
+          <p class="card-text">coming soon</p>
+          <a href="#" class="btn btn-primary">Go somewhere</a>
+        </div>
+
+
+    </div>
+
+    <!-- jQuery first, then Bootstrap 4 JS. -->
+    <script src="https://www.atlasestateagents.co.uk/javascript/tether.min.js"></script><!-- Tether for Bootstrap --> 
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/js/bootstrap.min.js" integrity="sha384-vZ2WRJMwsjRMW/8U7i6PWi6AlO1L79snBrmgiDpgIWJ82z8eA5lenwvxbMV1PAh7" crossorigin="anonymous"></script>
+
+    <script type="text/JavaScript">
+        // API Documentation
+        // GET /api/catalogs.json
+        // GET /api/books.json?Catalog={Catalog.ID}
+
+        $(document).ready(function(){
+            // initiate page by getting list of catalogs
+            $.get("/api/catalogs.json",function(data,status){
+                j = $.parseJSON(data);
+                console.log(j.results.length);
+                $('#catFooter').html(j.results.length + " catalogs");
+                $("#catMenu").html('');
+                $.each( j.results, function( key, val ){
+                    $("#catMenu").append( '<a class="dropdown-item" href="#books" name='+val.ID+'>'+val.ID+'</a>');
+                });
+                $("#catMenu").append( '<div class="dropdown-divider"></div>' )
+                             .append( '<a class="dropdown-item" href="#books" name="newCatalog">New Catalog</a>' );
+            }); 
+            // handle catalog click events
+            $('#catMenuDropdown').on('click','a',function(){
+                var book = $(this).attr('name');
+                $('#dropdownMenu1').html(book);
+                // get list of books
+                $('#bookCard').removeClass('invisible');
+                
+                $.get("/api/books.json?Catalog="+book,function(data, status){
+                    j = $.parseJSON(data);
+                    console.log(j);
+                    $("#bookFooter").html(j.results.length + " books");
+                    $("#bookMenu").html('');
+                    $.each( j.results, function( key, val ){
+                        $("#bookMenu").append( '<a class="dropdown-item" href="#chapters" name='+val.ID+'>'+val.Title+'</a>');
+                    });
+                    $("#bookMenu").append( '<div class="dropdown-divider"></div>' )
+                                  .append( '<a class="dropdown-item" href="#books" name="newBook">New Book</a>' );
+
+                });
+            });
+
+            $('#bookMenuDropdown').on('click','a',function(){
+                var id = $(this).attr('name');
+                var title = $(this).html();
+                $('#dropdownMenu2').html(title);
+
+                // get list of chapters
+                $('#endOfRoad').removeClass('invisible');
+            });
+
+        });
+    </script>
+  </body>
 </html>
+
