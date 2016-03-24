@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	//"fmt"
 	"github.com/julienschmidt/httprouter"
 	"golang.org/x/net/context"
 	"google.golang.org/appengine"
@@ -22,6 +23,7 @@ func init() {
 	r.GET("/init", initalizeData)
 	r.GET("/api/books.json", API_GetBookData)
 	r.GET("/api/catalogs.json", API_GetCatalogData)
+	r.GET("/api/chapters.json", API_GetChapterData)
 	r.GET("/select", selectBookFromForm)
 
 	r.GET("/favicon.ico", favIcon)
@@ -57,17 +59,18 @@ func home(res http.ResponseWriter, req *http.Request, params httprouter.Params) 
 func makeCatalogKey(ctx context.Context, keyname string) *datastore.Key {
 	return datastore.NewKey(ctx, "Catalogs", keyname, 0, nil)
 }
-func makeBookKey(ctx context.Context, id int64) *datastore.Key {
+func MakeBookKey(ctx context.Context, id int64) *datastore.Key {
 	return datastore.NewKey(ctx, "Books", "", id, nil)
 }
-func makeSectionKey(ctx context.Context, id int64, parent *datastore.Key) *datastore.Key {
-	return datastore.NewKey(ctx, "Sections", "", id, parent)
+func MakeChapterKey(ctx context.Context, id int64) *datastore.Key {
+	return datastore.NewKey(ctx, "Chapters", "", id, nil)
 }
 
 func initalizeData(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	ctx := appengine.NewContext(req)
 
 	catalogTitles := []string{"default_catalog", "Math", "Science", "***"}
+	chapterTitles := []string{"Nothing", "Making of", "Readme", "Sometimes always", "Nevermore", "A New Begining", "The Founding of the three states", "Taking over the Tri-State Area!", "Finally", "The End!", "Only when your down", "Over and Out", "Chapter titles are harder than book titles", "Part 1: Part 2", "Part 2: Part 1 again", "Integration", "Newtons Method"}
 
 	for _, k := range catalogTitles {
 		ck := makeCatalogKey(ctx, k)
@@ -80,8 +83,17 @@ func initalizeData(res http.ResponseWriter, req *http.Request, params httprouter
 		bookInput := Book{}
 		bookInput.Title = title
 		bookInput.CatalogTitle = catalogTitles[(i % 4)]
-		_, err2 := datastore.Put(ctx, makeBookKey(ctx, 0), &bookInput)
+		bk := MakeBookKey(ctx, 0)
+		k, err2 := datastore.Put(ctx, bk, &bookInput)
 		HandleError(res, err2)
+		for ii := 0; ii < 3; ii += 1 {
+			chapterInput := Chapter{}
+			chapterInput.Title = chapterTitles[(int(k.IntID())+ii)%15] // trying some hashing functions to psuedo random the chapter titles.
+			chapterInput.BookID = k.IntID()
+			ck := MakeChapterKey(ctx, 0)
+			_, err3 := datastore.Put(ctx, ck, &chapterInput)
+			HandleError(res, err3)
+		}
 	}
 
 	ServeTemplateWithParams(res, req, "printme.html", "Datastore has been initalized!")
@@ -93,7 +105,7 @@ func selectBookFromForm(res http.ResponseWriter, req *http.Request, params httpr
 func bookSelectedFromForm(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	i, numErr := strconv.Atoi(req.FormValue("BookID"))
 	HandleError(res, numErr)
-	// bookKey := makeBookKey(ctx, int64(i))
+	// bookKey := MakeBookKey(ctx, int64(i))
 	ServeTemplateWithParams(res, req, "printme.html", i)
 }
 

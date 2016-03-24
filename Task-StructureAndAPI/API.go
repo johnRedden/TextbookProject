@@ -12,16 +12,20 @@ import (
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
 	"net/http"
+	"strconv"
 )
-
-type bookWithID struct {
-	ID int64
-	Book
-}
 
 type catalogWithID struct {
 	ID string
 	Catalog
+}
+type bookWithID struct {
+	ID int64
+	Book
+}
+type chapterWithID struct {
+	ID int64
+	Chapter
 }
 
 // Post data calls. There should be relavant form data in these calls
@@ -71,6 +75,32 @@ func API_GetBookData(res http.ResponseWriter, req *http.Request, params httprout
 	}
 
 	ServeTemplateWithParams(res, req, "Books.json", booklist)
+}
+
+func API_GetChapterData(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	ctx := appengine.NewContext(req)
+	q := datastore.NewQuery("Chapters")
+
+	queryBookID := req.FormValue("BookID")
+	if queryBookID != "" { // Ensure that a BookID was indeed sent.
+		i, numErr := strconv.Atoi(queryBookID) // does that BookID contain a number?
+		HandleError(res, numErr)
+		q = q.Filter("BookID =", int64(i))
+	}
+
+	chapterList := make([]chapterWithID, 0)
+	for t := q.Run(ctx); ; {
+		var x Chapter
+		k, qErr := t.Next(&x)
+		if qErr == datastore.Done {
+			break
+		} else if qErr != nil {
+			http.Error(res, qErr.Error(), http.StatusInternalServerError)
+		}
+		chapterList = append(chapterList, chapterWithID{k.IntID(), x})
+	}
+
+	ServeTemplateWithParams(res, req, "Chapters.json", chapterList)
 }
 
 func API_GetSectionData() {}
