@@ -1,55 +1,36 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html>
 <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Textbook Project</title>
-
-    <!-- Bootstrap -->
-    <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
-
-    <style>
-    	h1,form {
-    		text-align: center;
-    	}
-        #output {
-        	color:#777;
-            width: 300px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        #mainForm{
-            width: 400px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-    </style>
+    <title></title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
 </head>
 <body>
-	<h1><span><img src="/public/images/eduNetSystems-logo.png"></span>EduNetSystems</h1>
+    <input id="JQ-BookID" type="hidden" value="{{.BookID}}" readonly>
+    <input id="JQ-ChapterID" type="hidden" value="{{.ChapterID}}" readonly>
+    <input id="JQ-SectionID" type="hidden" value="{{.SectionID}}" readonly>
+    <input id="JQ-ObjectiveID" type="hidden" value="{{.ObjectiveID}}" readonly>
+    <br>
 
-    <form method="POST" action="/">
-        <p>View Catalog</p>
-        {{if .Catalogs}}
-            <select name="SelectCatalog" required>
-                {{range .Catalogs}}
-                    <option name="{{.Key}}">{{.Value}}</option>
-                {{end}}
-            </select>
-        {{else}}
-            <select name="SelectCatalog" disabled>
-                <option name="" selected>NO CATALOGS AVAILABLE</option>
-            </select>
-        {{end}}
+    <p>Book: <input id="JQ-BookTitle" value="{{.BookTitle}}" readonly></p><br>
+    <p>Chapter: <input id="JQ-ChapterTitle" value="{{.ChapterTitle}}" readonly></p><br>
+    <p>Section: <input id="JQ-SectionTitle" value="{{.SectionTitle}}" readonly></p><br>
+    <p>Objective: <input id="JQ-ObjectiveTitle" value="{{.ObjectiveTitle}}"></p><br>
 
+    <p>Version:<input id="JQ-Version" value="{{.ObjectiveVersion}}" readonly></p><br>
 
+    <p>Content:</p><textarea id="JQ-Content">{{html .Content}}</textarea><br>
+    <p>KeyTakeaways:</p><textarea id="JQ-KeyTakeaways">{{html .KeyTakeaways}}</textarea><br><br>
 
+    <button id="JQ-SubmitButton">Submit</button><br>
 
-        <button>Submit</button>
-    </form>
+    <p>Results: <input id="JQ-Results" readonly></p><br>
+
+    <script type="text/javascript">
+        $(document).ready(function(){
+
+        });
+    </script>
+
 
 </body>
 </html>

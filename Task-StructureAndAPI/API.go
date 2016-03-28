@@ -1,7 +1,7 @@
 package main
 
 /*
-filename.go by Allen J. Mills
+API.go by Allen J. Mills
     mm.d.yy
 
     Description
@@ -87,7 +87,7 @@ func API_MakeCatalog(res http.ResponseWriter, req *http.Request, params httprout
 func API_MakeBook(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	// Here is where we get a bit more complicated.
 	// One stop shop for everything related to making a book
-	// If you feed in a BookID it will update that specific id
+	// If you feed in an ID it will update that specific id
 	// If no id is given, will make a new one.
 	// Taking in mandatory options CatalogName and BookName
 	// Optional options Author,Version
@@ -97,7 +97,7 @@ func API_MakeBook(res http.ResponseWriter, req *http.Request, params httprouter.
 	// 		418 - Failure, Authentication error, likely caused by a user not signed in or not allowed.
 	// 		400 - Failure, Expected data missing
 
-	bookID, numErr := strconv.Atoi(req.FormValue("BookID"))
+	bookID, numErr := strconv.Atoi(req.FormValue("ID"))
 	if numErr != nil {
 		bookID = 0
 	}
@@ -140,9 +140,145 @@ func API_MakeBook(res http.ResponseWriter, req *http.Request, params httprouter.
 	fmt.Fprint(res, `{"result":"success","reason":"","code":0}`)
 }
 
-func API_MakeChapter(res http.ResponseWriter, req *http.Request, params httprouter.Params)   {}
-func API_MakeSection(res http.ResponseWriter, req *http.Request, params httprouter.Params)   {}
-func API_MakeObjective(res http.ResponseWriter, req *http.Request, params httprouter.Params) {}
+func API_MakeChapter(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	// Post call  for chapter creation, same structure as above.
+	// Mandatory Options: BookID, ChapterName
+	// Optional: ID, Version
+	// Codes:
+	// 		0 - Success, All completed
+	// 		418 - Failure, Authentication error, likely caused by a user not signed in or not allowed.
+	// 		400 - Failure, Expected data missing
+
+	chapterID, numErr := strconv.Atoi(req.FormValue("ID"))
+	if numErr != nil {
+		chapterID = 0
+	}
+
+	bookID, numErr2 := strconv.Atoi(req.FormValue("BookID"))
+	if numErr2 != nil {
+		fmt.Fprint(res, `{"result":"failure","reason":"Empty BookID","code":400}`)
+		return
+	}
+
+	chapterName := req.FormValue("ChapterName")
+	if chapterName == "" {
+		fmt.Fprint(res, `{"result":"failure","reason":"Empty chapter Name","code":400}`)
+		return
+	}
+	// handle incoming data Version
+	ver64, errFloat := strconv.ParseFloat(req.FormValue("Version"), 32)
+	var ver32 float32
+	if errFloat != nil {
+		ver32 = float32(ver64)
+	}
+
+	chapterForDatastore := Chapter{}
+	chapterForDatastore.Title = chapterName
+	chapterForDatastore.Version = ver32
+	chapterForDatastore.BookID = int64(bookID)
+
+	ctx := appengine.NewContext(req)
+
+	ck := MakeChapterKey(ctx, int64(chapterID))
+	_, errDatastore := datastore.Put(ctx, ck, &chapterForDatastore)
+	HandleError(res, errDatastore)
+
+	fmt.Fprint(res, `{"result":"success","reason":"","code":0}`)
+}
+
+func API_MakeSection(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	// Post call  for Section creation, same structure as above.
+	// Mandatory Options: ChapterID, SectionName
+	// Optional: ID, Version
+	// Codes:
+	// 		0 - Success, All completed
+	// 		418 - Failure, Authentication error, likely caused by a user not signed in or not allowed.
+	// 		400 - Failure, Expected data missing
+
+	sectionID, numErr := strconv.Atoi(req.FormValue("ID"))
+	if numErr != nil {
+		sectionID = 0
+	}
+
+	chapterID, numErr2 := strconv.Atoi(req.FormValue("ChapterID"))
+	if numErr2 != nil {
+		fmt.Fprint(res, `{"result":"failure","reason":"Empty ChapterID","code":400}`)
+		return
+	}
+
+	sectionName := req.FormValue("SectionName")
+	if sectionName == "" {
+		fmt.Fprint(res, `{"result":"failure","reason":"Empty section Name","code":400}`)
+		return
+	}
+	// handle incoming data Version
+	ver64, errFloat := strconv.ParseFloat(req.FormValue("Version"), 32)
+	var ver32 float32
+	if errFloat != nil {
+		ver32 = float32(ver64)
+	}
+
+	sectionForDatastore := Section{}
+	sectionForDatastore.Title = sectionName
+	sectionForDatastore.Version = ver32
+	sectionForDatastore.ChapterID = int64(chapterID)
+
+	ctx := appengine.NewContext(req)
+
+	ck := MakeSectionKey(ctx, int64(sectionID))
+	_, errDatastore := datastore.Put(ctx, ck, &sectionForDatastore)
+	HandleError(res, errDatastore)
+
+	fmt.Fprint(res, `{"result":"success","reason":"","code":0}`)
+}
+
+func API_MakeObjective(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	// Post call  for Objective creation, same structure as above.
+	// Mandatory Options: ChapterID, SectionName
+	// Optional: ID, Version
+	// Codes:
+	// 		0 - Success, All completed
+	// 		418 - Failure, Authentication error, likely caused by a user not signed in or not allowed.
+	// 		400 - Failure, Expected data missing
+
+	ObjectiveID, numErr := strconv.Atoi(req.FormValue("ID"))
+	if numErr != nil {
+		ObjectiveID = 0
+	}
+
+	sectionID, numErr2 := strconv.Atoi(req.FormValue("SectionID"))
+	if numErr2 != nil {
+		fmt.Fprint(res, `{"result":"failure","reason":"Empty SectionID","code":400}`)
+		return
+	}
+
+	objectiveName := req.FormValue("ObjectiveName")
+	if objectiveName == "" {
+		fmt.Fprint(res, `{"result":"failure","reason":"Empty Objective Name","code":400}`)
+		return
+	}
+	// handle incoming data Version
+	ver64, errFloat := strconv.ParseFloat(req.FormValue("Version"), 32)
+	var ver32 float32
+	if errFloat != nil {
+		ver32 = float32(ver64)
+	}
+
+	objectiveForDatastore := Objective{}
+	objectiveForDatastore.Title = objectiveName
+	objectiveForDatastore.SectionID = int64(sectionID)
+	objectiveForDatastore.Version = ver32
+	objectiveForDatastore.Content = req.FormValue("Content")
+	objectiveForDatastore.KeyTakeaways = req.FormValue("KeyTakeaways")
+
+	ctx := appengine.NewContext(req)
+
+	ck := MakeObjectiveKey(ctx, int64(ObjectiveID))
+	_, errDatastore := datastore.Put(ctx, ck, &objectiveForDatastore)
+	HandleError(res, errDatastore)
+
+	fmt.Fprint(res, `{"result":"success","reason":"","code":0}`)
+}
 
 // -------------------------------------------------------------------
 // Query Data calls

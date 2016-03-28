@@ -8,7 +8,7 @@ Model.go by Allen J. Mills
 */
 
 import (
-	"html/template"
+// "html/template"
 )
 
 // Catalog is the root structure, Everything below this will inherit from a Catalog.
@@ -70,6 +70,6 @@ type VIEW_Editor struct {
 	ObjectiveTitle string
 
 	ObjectiveVersion float32
-	Content          template.HTML
-	KeyTakeaways     template.HTML
+	Content          string
+	KeyTakeaways     string
 }

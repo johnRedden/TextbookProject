@@ -1,15 +1,13 @@
 package main
 
 import (
-	"html/template"
-	"net/http"
-	// "strconv"
-
-	//"fmt"
 	"github.com/julienschmidt/httprouter"
 	"golang.org/x/net/context"
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
+	"html/template"
+	"net/http"
+	"strconv"
 )
 
 var pages *template.Template // This is the storage location for all of our html files
@@ -27,9 +25,13 @@ func init() {
 	r.GET("/api/objectives.json", API_GetObjectives)
 
 	r.GET("/select", selectBookFromForm)
+	r.GET("/edit", getSimpleObjectiveEditor)
 
-	r.POST("/api/makeCatalog", API_MakeCatalog)
-	r.POST("/api/makeBook", API_MakeBook)
+	r.GET("/api/makeCatalog", API_MakeCatalog)
+	r.GET("/api/makeBook", API_MakeBook)
+	r.GET("/api/makeChapter", API_MakeChapter)
+	r.GET("/api/makeSection", API_MakeSection)
+	r.GET("/api/makeObjective", API_MakeObjective)
 
 	r.GET("/favicon.ico", favIcon)
 	http.Handle("/public/", http.StripPrefix("/public", http.FileServer(http.Dir("public/"))))
@@ -70,6 +72,12 @@ func MakeBookKey(ctx context.Context, id int64) *datastore.Key {
 func MakeChapterKey(ctx context.Context, id int64) *datastore.Key {
 	return datastore.NewKey(ctx, "Chapters", "", id, nil)
 }
+func MakeSectionKey(ctx context.Context, id int64) *datastore.Key {
+	return datastore.NewKey(ctx, "Sections", "", id, nil)
+}
+func MakeObjectiveKey(ctx context.Context, id int64) *datastore.Key {
+	return datastore.NewKey(ctx, "Objectives", "", id, nil)
+}
 
 func initalizeData(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	ctx := appengine.NewContext(req)
@@ -107,6 +115,87 @@ func initalizeData(res http.ResponseWriter, req *http.Request, params httprouter
 func selectBookFromForm(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	ServeTemplateWithParams(res, req, "bookSelection.html", nil)
 }
+
+func getSimpleObjectiveEditor(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	// Fixed point of edit. we will preform requests for this data later.
+	// ctx := appengine.NewContext(req)
+
+	ObjectiveID, numErr := strconv.Atoi(req.FormValue("ID"))
+	if numErr != nil || ObjectiveID == 0 {
+		http.Redirect(res, req, "/select?status=invalid_id", http.StatusTemporaryRedirect)
+	}
+	ctx := appengine.NewContext(req)
+
+	objKey := MakeObjectiveKey(ctx, int64(ObjectiveID))
+	obj_temp := Objective{}
+	objectiveGetErr := datastore.Get(ctx, objKey, &obj_temp)
+	HandleError(res, objectiveGetErr)
+
+	ve := VIEW_Editor{}
+	ve.ObjectiveID = objKey.IntID()
+	ve.ObjectiveTitle = obj_temp.Title
+	ve.ObjectiveVersion = obj_temp.Version
+	ve.Content = obj_temp.Content
+	ve.KeyTakeaways = obj_temp.KeyTakeaways
+	ve.SectionID = obj_temp.SectionID
+
+	ServeTemplateWithParams(res, req, "addData.html", ve)
+}
+
+// ***************************************************************
+
+// catKey := MakeCatalogKey(ctx, "Fixed-Data-Catalog")
+// fixedCatalog := Catalog{"Fixed-Data-Catalog"}
+// _, catPutErr := datastore.Put(ctx, catKey, &fixedCatalog)
+// HandleError(res, catPutErr)
+
+// bookKey := MakeBookKey(ctx, 0)
+// fixedBook := Book{}
+// fixedBook.Title = "Fixed-Data-Book"
+// fixedBook.CatalogTitle = fixedCatalog.Name
+// fixedBookID, bookPutErr := datastore.Put(ctx, bookKey, &fixedBook)
+// HandleError(res, bookPutErr)
+
+// chapterKey := MakeChapterKey(ctx, 0)
+// fixedChapter := Chapter{}
+// fixedChapter.Title = "Fixed-Data-Chapter"
+// fixedChapter.BookID = fixedBookID.IntID()
+// fixedChapterID, chatperPutErr := datastore.Put(ctx, chapterKey, &fixedChapter)
+// HandleError(res, chatperPutErr)
+
+// sectionKey := MakeSectionKey(ctx, 0)
+// fixedSection := Section{}
+// fixedSection.Title = "Fixed-Data-Section"
+// fixedSection.ChapterID = fixedChapterID.IntID()
+// fixedSectionID, sectionPutErr := datastore.Put(ctx, sectionKey, &fixedSection)
+// HandleError(res, sectionPutErr)
+
+// ObjectiveID, numErr := strconv.Atoi(req.FormValue("ID"))
+// var ObjectiveKey datastore.Key
+// fixedObjective := Objective{}
+// if numErr != nil {
+// 	ObjectiveID = 0
+// 	objectiveKey = MakeObjectiveKey(ctx, int64(ObjectiveID))
+// } else {
+// 	objectiveKey = MakeObjectiveKey(ctx, int64(ObjectiveID))
+// 	objectiveGetErr := datastore.Get(ctx, objectiveKey, &fixedObjective)
+// 	HandleError(res, objectiveGetErr)
+// }
+
+// ve := VIEW_Editor{}
+// ve.BookID = fixedBookID.IntID()
+// ve.BookTitle = fixedBook.Title
+// ve.ChapterID = fixedChapterID.IntID()
+// ve.ChapterTitle = fixedChapter.Title
+// ve.Content = fixedObjective.Content
+// ve.KeyTakeaways = fixedObjective.KeyTakeaways
+// ve.ObjectiveID = ObjectiveKey.IntID()
+// ve.ObjectiveTitle = fixedObjective.Title
+// ve.ObjectiveVersion = fixedObjective.Version
+// ve.SectionID = fixedSectionID.IntID()
+// ve.SectionTitle = fixedSection.Title
+
+// ***************************************************************
 
 // func bookSelectedFromForm(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 // 	i, numErr := strconv.Atoi(req.FormValue("BookID"))
