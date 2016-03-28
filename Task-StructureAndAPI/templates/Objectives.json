@@ -1,0 +1,13 @@
+{
+    "type":"List - Objective",
+    "count":{{len .}},
+    "results":[
+    {{range $index,$e := .}}{{if $index}},
+    {{end}}   {
+        "Title":"{{$e.Title}}",
+        "SectionID":{{$e.SectionID}},
+        "Version":{{$e.Version}},
+        "ID":{{$e.ID}}
+        }{{end}}
+    ]
+}

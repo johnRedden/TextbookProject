@@ -1,0 +1,12 @@
+{
+    "type":"Objective",
+    "count":1,
+    "results":[
+    {
+        "Title":"{{.Title}}",
+        "SectionID":{{.SectionID}},
+        "Version":{{.Version}},
+        "ID":{{.ID}}
+    }
+    ]
+}

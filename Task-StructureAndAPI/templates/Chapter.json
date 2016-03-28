@@ -1,0 +1,12 @@
+{
+    "type":"Chapter",
+    "count":1,
+    "results":[
+    {
+        "Title":"{{.Title}}",
+        "BookID":{{.BookID}},
+        "Version":{{.Version}},
+        "ID":{{.ID}}
+    }
+    ]
+}

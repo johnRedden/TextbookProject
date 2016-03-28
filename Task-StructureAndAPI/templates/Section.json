@@ -1,0 +1,12 @@
+{
+    "type":"Section",
+    "count":1,
+    "results":[
+    {
+        "Title":"{{.Title}}",
+        "ChapterID":{{.ChapterID}},
+        "Version":{{.Version}},
+        "ID":{{.ID}}
+    }
+    ]
+}
