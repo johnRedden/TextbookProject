@@ -25,6 +25,8 @@ func init() {
 	r.GET("/api/catalogs.json", API_GetCatalogData)
 	r.GET("/api/chapters.json", API_GetChapterData)
 	r.GET("/select", selectBookFromForm)
+	r.POST("/api/makeCatalog", API_MakeCatalog)
+	r.POST("/api/makeBook", API_MakeBook)
 
 	r.GET("/favicon.ico", favIcon)
 	http.Handle("/public/", http.StripPrefix("/public", http.FileServer(http.Dir("public/"))))
@@ -56,7 +58,7 @@ func home(res http.ResponseWriter, req *http.Request, params httprouter.Params) 
 
 // *************************************
 // Keys
-func makeCatalogKey(ctx context.Context, keyname string) *datastore.Key {
+func MakeCatalogKey(ctx context.Context, keyname string) *datastore.Key {
 	return datastore.NewKey(ctx, "Catalogs", keyname, 0, nil)
 }
 func MakeBookKey(ctx context.Context, id int64) *datastore.Key {
@@ -73,7 +75,7 @@ func initalizeData(res http.ResponseWriter, req *http.Request, params httprouter
 	chapterTitles := []string{"Nothing", "Making of", "Readme", "Sometimes always", "Nevermore", "A New Begining", "The Founding of the three states", "Taking over the Tri-State Area!", "Finally", "The End!", "Only when your down", "Over and Out", "Chapter titles are harder than book titles", "Part 1: Part 2", "Part 2: Part 1 again", "Integration", "Newtons Method"}
 
 	for _, k := range catalogTitles {
-		ck := makeCatalogKey(ctx, k)
+		ck := MakeCatalogKey(ctx, k)
 		cc := Catalog{"Basic Catalog", 0, "eduNet"}
 		_, err := datastore.Put(ctx, ck, &cc)
 		HandleError(res, err)
