@@ -1,1 +1,13 @@
-{"type":"Chapter","count":{{len .}},"results":[{{range .}}{"Title":"{{.Title}}","BookID":{{.BookID}},"Version":{{.Version}},"ID":{{.ID}}},{{end}}{"Title":"New Chapter","BookID":0,"Version":0,"ID":0}]}
+{
+    "type":"Chapter",
+    "count":{{len .}},
+    "results":[
+    {{range $index,$e := .}}{{if $index}},
+    {{end}}   {
+        "Title":"{{$e.Title}}",
+        "BookID":{{$e.BookID}},
+        "Version":{{$e.Version}},
+        "ID":{{$e.ID}}
+        }{{end}}
+    ]
+}

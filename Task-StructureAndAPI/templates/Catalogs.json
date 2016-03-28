@@ -1,1 +1,13 @@
-{"type":"Catalog","count":{{len .}},"results":[{{range .}}{"Name":"{{.Name}}","Company":"{{.Company}}","Version":{{.Version}},"ID":"{{.ID}}"},{{end}}{"Name":"New Catalog","Company":"","Version":0,"ID":"__NewCatalog"}]}
+{
+    "type":"Catalog",
+    "count":{{len .}},
+    "results":[
+    {{range $index,$e := .}}{{if $index}},
+    {{end}}   {
+        "Name":"{{$e.Name}}",
+        "Company":"{{$e.Company}}",
+        "Version":{{$e.Version}},
+        "ID":"{{$e.ID}}"
+        }{{end}}
+    ]
+}

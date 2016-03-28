@@ -1,1 +1,14 @@
-{"type":"Book","count":{{len .}},"results":[{{range .}}{"Title":"{{.Title}}","Catalog":"{{.CatalogTitle}}","Author":"{{.Author}}","Version":{{.Version}},"ID":{{.ID}}},{{end}}{"Title":"New Book","Catalog":"","Author":"","Version":0,"ID":0}]}
+{
+    "type":"Book",
+    "count":{{len .}},
+    "results":[
+    {{range $index,$e := .}}{{if $index}},
+    {{end}}   {
+        "Title":"{{$e.Title}}",
+        "Catalog":"{{$e.CatalogTitle}}",
+        "Author":"{{$e.Author}}",
+        "Version":{{$e.Version}},
+        "ID":{{$e.ID}}
+        }{{end}}
+    ]
+}
