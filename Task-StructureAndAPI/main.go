@@ -20,10 +20,14 @@ func init() {
 	http.Handle("/", r)
 	r.GET("/", home)
 	r.GET("/init", initalizeData)
-	r.GET("/api/books.json", API_GetBookData)
-	r.GET("/api/catalogs.json", API_GetCatalogData)
-	r.GET("/api/chapters.json", API_GetChapterData)
+	r.GET("/api/catalogs.json", API_GetCatalogs)
+	r.GET("/api/books.json", API_GetBooks)
+	r.GET("/api/chapters.json", API_GetChapters)
+	r.GET("/api/sections.json", API_GetSections)
+	r.GET("/api/objectives.json", API_GetObjectives)
+
 	r.GET("/select", selectBookFromForm)
+
 	r.POST("/api/makeCatalog", API_MakeCatalog)
 	r.POST("/api/makeBook", API_MakeBook)
 

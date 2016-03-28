@@ -16,6 +16,10 @@ import (
 	"strconv"
 )
 
+// -------------------------------------------------------------------
+// Structures
+// Internal use structures for ID handling
+
 type catalogWithID struct {
 	ID string
 	Catalog
@@ -28,8 +32,20 @@ type chapterWithID struct {
 	ID int64
 	Chapter
 }
+type sectionWithID struct {
+	ID int64
+	Section
+}
+type objectiveWithID struct {
+	ID int64
+	Objective
+}
 
-// Post data calls. There should be relavant form data in these calls
+// -------------------------------------------------------------------
+// Post Data calls
+// API calls for singular objects.
+// Please read each call for expected input/output
+
 func API_MakeCatalog(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	// Post call for making a catalog, we would check for a signed in user here.
 	// Expects data from at minimum CatalogName
@@ -67,6 +83,7 @@ func API_MakeCatalog(res http.ResponseWriter, req *http.Request, params httprout
 
 	fmt.Fprint(res, `{"result":"success","reason":"","code":0}`)
 }
+
 func API_MakeBook(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	// Here is where we get a bit more complicated.
 	// One stop shop for everything related to making a book
@@ -121,20 +138,18 @@ func API_MakeBook(res http.ResponseWriter, req *http.Request, params httprouter.
 	HandleError(res, errDatastore)
 
 	fmt.Fprint(res, `{"result":"success","reason":"","code":0}`)
-
-}
-func API_MakeChapter(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-
-}
-func API_MakeSection(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-
-}
-func API_MakeObjective(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-
 }
 
-// Get data calls, these will Fprint for reading
-func API_GetCatalogData(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+func API_MakeChapter(res http.ResponseWriter, req *http.Request, params httprouter.Params)   {}
+func API_MakeSection(res http.ResponseWriter, req *http.Request, params httprouter.Params)   {}
+func API_MakeObjective(res http.ResponseWriter, req *http.Request, params httprouter.Params) {}
+
+// -------------------------------------------------------------------
+// Query Data calls
+// API calls for multiple objects.
+// Will extend this later to detect singular calls
+
+func API_GetCatalogs(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	ctx := appengine.NewContext(req)
 	q := datastore.NewQuery("Catalogs")
 	cataloglist := make([]catalogWithID, 0)
@@ -152,7 +167,7 @@ func API_GetCatalogData(res http.ResponseWriter, req *http.Request, params httpr
 	ServeTemplateWithParams(res, req, "Catalogs.json", cataloglist)
 }
 
-func API_GetBookData(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+func API_GetBooks(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	ctx := appengine.NewContext(req)
 	q := datastore.NewQuery("Books")
 
@@ -176,7 +191,7 @@ func API_GetBookData(res http.ResponseWriter, req *http.Request, params httprout
 	ServeTemplateWithParams(res, req, "Books.json", booklist)
 }
 
-func API_GetChapterData(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+func API_GetChapters(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	ctx := appengine.NewContext(req)
 	q := datastore.NewQuery("Chapters")
 
@@ -202,7 +217,65 @@ func API_GetChapterData(res http.ResponseWriter, req *http.Request, params httpr
 	ServeTemplateWithParams(res, req, "Chapters.json", chapterList)
 }
 
-func API_GetSectionData(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+func API_GetSections(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	ctx := appengine.NewContext(req)
+	q := datastore.NewQuery("Sections")
 
+	queryChapterID := req.FormValue("ChapterID")
+	if queryChapterID != "" { // Ensure that a BookID was indeed sent.
+		i, numErr := strconv.Atoi(queryChapterID) // does that BookID contain a number?
+		HandleError(res, numErr)
+		q = q.Filter("ChapterID =", int64(i))
+	}
+
+	sectionList := make([]sectionWithID, 0)
+	for t := q.Run(ctx); ; {
+		var x Section
+		k, qErr := t.Next(&x)
+		if qErr == datastore.Done {
+			break
+		} else if qErr != nil {
+			http.Error(res, qErr.Error(), http.StatusInternalServerError)
+		}
+		sectionList = append(sectionList, sectionWithID{k.IntID(), x})
+	}
+
+	ServeTemplateWithParams(res, req, "Sections.json", sectionList)
 }
-func API_GetObjectiveData() {}
+
+func API_GetObjectives(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	ctx := appengine.NewContext(req)
+	q := datastore.NewQuery("Objectives")
+
+	querySectionID := req.FormValue("SectionID")
+	if querySectionID != "" { // Ensure that a BookID was indeed sent.
+		i, numErr := strconv.Atoi(querySectionID) // does that BookID contain a number?
+		HandleError(res, numErr)
+		q = q.Filter("SectionID =", int64(i))
+	}
+
+	objectiveList := make([]objectiveWithID, 0)
+	for t := q.Run(ctx); ; {
+		var x Objective
+		k, qErr := t.Next(&x)
+		if qErr == datastore.Done {
+			break
+		} else if qErr != nil {
+			http.Error(res, qErr.Error(), http.StatusInternalServerError)
+		}
+		objectiveList = append(objectiveList, objectiveWithID{k.IntID(), x})
+	}
+
+	ServeTemplateWithParams(res, req, "Objectives.json", objectiveList)
+}
+
+// -------------------------------------------------------------------
+// Query Data calls
+// API calls for singular objects.
+// Please read each section for expected input/outpu
+
+func API_GetCatalog()   {}
+func API_GetBook()      {}
+func API_GetChapter()   {}
+func API_GetSection()   {}
+func API_GetObjective() {}
