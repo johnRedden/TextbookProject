@@ -1,5 +1,5 @@
 {
-    "type":"Catalog",
+    "type":"List - Catalog",
     "count":{{len .}},
     "results":[
     {{range $index,$e := .}}{{if $index}},

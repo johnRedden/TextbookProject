@@ -1,5 +1,5 @@
 {
-    "type":"Book",
+    "type":"List - Book",
     "count":{{len .}},
     "results":[
     {{range $index,$e := .}}{{if $index}},

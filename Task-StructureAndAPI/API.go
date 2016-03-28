@@ -35,10 +35,14 @@ func API_MakeCatalog(res http.ResponseWriter, req *http.Request, params httprout
 	// Expects data from at minimum CatalogName
 	// Also has data in from Company and Version
 	// Version should be a well formed stringed float
+	// Codes:
+	// 		0 - Success, All completed
+	// 		418 - Failure, Authentication error, likely caused by a user not signed in or not allowed.
+	// 		400 - Failure, Expected data missing
 
 	catalogName := req.FormValue("CatalogName")
 	if catalogName == "" {
-		fmt.Fprint(res, `{"result":"failure","reason":"Empty Catalog Name"}`)
+		fmt.Fprint(res, `{"result":"failure","reason":"Empty Catalog Name","code":400}`)
 		return
 	}
 	// handle incoming data Company
@@ -61,7 +65,7 @@ func API_MakeCatalog(res http.ResponseWriter, req *http.Request, params httprout
 	_, errDatastore := datastore.Put(ctx, ck, &catalogForDatastore)
 	HandleError(res, errDatastore)
 
-	fmt.Fprint(res, `{"result":"success","reason":""}`)
+	fmt.Fprint(res, `{"result":"success","reason":"","code":0}`)
 }
 func API_MakeBook(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	// Here is where we get a bit more complicated.
@@ -71,6 +75,10 @@ func API_MakeBook(res http.ResponseWriter, req *http.Request, params httprouter.
 	// Taking in mandatory options CatalogName and BookName
 	// Optional options Author,Version
 	// TODO: Add in tags functionality
+	// Codes:
+	// 		0 - Success, All completed
+	// 		418 - Failure, Authentication error, likely caused by a user not signed in or not allowed.
+	// 		400 - Failure, Expected data missing
 
 	bookID, numErr := strconv.Atoi(req.FormValue("BookID"))
 	if numErr != nil {
@@ -79,13 +87,13 @@ func API_MakeBook(res http.ResponseWriter, req *http.Request, params httprouter.
 
 	catalogName := req.FormValue("CatalogName")
 	if catalogName == "" {
-		fmt.Fprint(res, `{"result":"failure","reason":"Empty Catalog Name"}`)
+		fmt.Fprint(res, `{"result":"failure","reason":"Empty Catalog Name","code":400}`)
 		return
 	}
 
 	bookName := req.FormValue("BookName")
 	if bookName == "" {
-		fmt.Fprint(res, `{"result":"failure","reason":"Empty Book Name"}`)
+		fmt.Fprint(res, `{"result":"failure","reason":"Empty Book Name","code":400}`)
 		return
 	}
 	// handle incoming data Company
@@ -112,7 +120,7 @@ func API_MakeBook(res http.ResponseWriter, req *http.Request, params httprouter.
 	_, errDatastore := datastore.Put(ctx, bk, &bookForDatastore)
 	HandleError(res, errDatastore)
 
-	fmt.Fprint(res, `{"result":"success","reason":""}`)
+	fmt.Fprint(res, `{"result":"success","reason":"","code":0}`)
 
 }
 func API_MakeChapter(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
@@ -126,7 +134,6 @@ func API_MakeObjective(res http.ResponseWriter, req *http.Request, params httpro
 }
 
 // Get data calls, these will Fprint for reading
-// Using this as ref: https://github.com/FelixVicis/f15_advWeb_finalProject/blob/master/04_Backend_Functionality/public/templates/signup.html
 func API_GetCatalogData(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	ctx := appengine.NewContext(req)
 	q := datastore.NewQuery("Catalogs")
@@ -195,5 +202,7 @@ func API_GetChapterData(res http.ResponseWriter, req *http.Request, params httpr
 	ServeTemplateWithParams(res, req, "Chapters.json", chapterList)
 }
 
-func API_GetSectionData()   {}
+func API_GetSectionData(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+
+}
 func API_GetObjectiveData() {}

@@ -1,5 +1,5 @@
 {
-    "type":"Chapter",
+    "type":"List - Chapter",
     "count":{{len .}},
     "results":[
     {{range $index,$e := .}}{{if $index}},
