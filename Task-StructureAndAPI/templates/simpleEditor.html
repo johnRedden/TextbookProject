@@ -16,7 +16,7 @@
     <p>Section: <input id="JQ-SectionTitle" value="{{.SectionTitle}}" readonly></p><br>
     <p>Objective: <input id="JQ-ObjectiveTitle" value="{{.ObjectiveTitle}}"></p><br>
 
-    <p>Version:<input id="JQ-Version" value="{{.ObjectiveVersion}}" readonly></p><br>
+    <p>Version:<input id="JQ-Version" value="{{.ObjectiveVersion}}"></p><br>
 
     <p>Content:</p><textarea id="JQ-Content">{{html .Content}}</textarea><br>
     <p>KeyTakeaways:</p><textarea id="JQ-KeyTakeaways">{{html .KeyTakeaways}}</textarea><br><br>
@@ -27,7 +27,30 @@
 
     <script type="text/javascript">
         $(document).ready(function(){
+            console.log("Ready!")
+            $("#JQ-SubmitButton").click(function(){
+                console.log("Click Called!!")
+                sectID = $("#JQ-SectionID").val()
+                ObjeName = $("#JQ-ObjectiveTitle").val()
+                objeID = $("#JQ-ObjectiveID").val()
+                ver = $("#JQ-Version").val()
+                cont = $("#JQ-Content").val()
+                ktw = $("#JQ-KeyTakeaways").val()
+                $.post("/api/makeObjective",{SectionID:sectID,ObjectiveName:ObjeName,ID:objeID,Version:ver,Content:cont,KeyTakeaways:ktw},function(data){
+                    j = $.parseJSON(data);
+                    console.log(j.result +":"+ j.reason)
+                    if (j.code == 0){
+                        $("#JQ-Results").val("Submission Success")
+                    } else {
+                        $("#JQ-Results").val(j.reason)
+                    }
+                });
+                $.wait(function(){$("#JQ-Results").val("")},3)
+            });
 
+            $.wait = function( callback, seconds){
+               return window.setTimeout( callback, seconds * 1000 );
+            }
         });
     </script>
 

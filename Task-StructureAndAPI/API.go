@@ -48,7 +48,7 @@ type objectiveWithID struct {
 
 func API_MakeCatalog(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	// Post call for making a catalog, we would check for a signed in user here.
-	// Expects data from at minimum CatalogName
+	// Expects data from CatalogName
 	// Also has data in from Company and Version
 	// Version should be a well formed stringed float
 	// Codes:
@@ -234,8 +234,8 @@ func API_MakeSection(res http.ResponseWriter, req *http.Request, params httprout
 
 func API_MakeObjective(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	// Post call  for Objective creation, same structure as above.
-	// Mandatory Options: ChapterID, SectionName
-	// Optional: ID, Version
+	// Mandatory Options: ObjectiveName, SectionID
+	// Optional: ID, Version, Content, KeyTakeaways
 	// Codes:
 	// 		0 - Success, All completed
 	// 		418 - Failure, Authentication error, likely caused by a user not signed in or not allowed.

@@ -27,11 +27,11 @@ func init() {
 	r.GET("/select", selectBookFromForm)
 	r.GET("/edit", getSimpleObjectiveEditor)
 
-	r.GET("/api/makeCatalog", API_MakeCatalog)
-	r.GET("/api/makeBook", API_MakeBook)
-	r.GET("/api/makeChapter", API_MakeChapter)
-	r.GET("/api/makeSection", API_MakeSection)
-	r.GET("/api/makeObjective", API_MakeObjective)
+	r.POST("/api/makeCatalog", API_MakeCatalog)
+	r.POST("/api/makeBook", API_MakeBook)
+	r.POST("/api/makeChapter", API_MakeChapter)
+	r.POST("/api/makeSection", API_MakeSection)
+	r.POST("/api/makeObjective", API_MakeObjective)
 
 	r.GET("/favicon.ico", favIcon)
 	http.Handle("/public/", http.StripPrefix("/public", http.FileServer(http.Dir("public/"))))
@@ -113,7 +113,7 @@ func initalizeData(res http.ResponseWriter, req *http.Request, params httprouter
 }
 
 func selectBookFromForm(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	ServeTemplateWithParams(res, req, "bookSelection.html", nil)
+	ServeTemplateWithParams(res, req, "simpleSelector.html", nil)
 }
 
 func getSimpleObjectiveEditor(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
@@ -131,15 +131,34 @@ func getSimpleObjectiveEditor(res http.ResponseWriter, req *http.Request, params
 	objectiveGetErr := datastore.Get(ctx, objKey, &obj_temp)
 	HandleError(res, objectiveGetErr)
 
+	sect_temp := Section{}
+	sectionGetErr := datastore.Get(ctx, MakeSectionKey(ctx, obj_temp.SectionID), &sect_temp)
+	HandleError(res, sectionGetErr)
+
+	chap_temp := Chapter{}
+	chapterGetErr := datastore.Get(ctx, MakeChapterKey(ctx, sect_temp.ChapterID), &chap_temp)
+	HandleError(res, chapterGetErr)
+
+	book_temp := Book{}
+	bookGetErr := datastore.Get(ctx, MakeBookKey(ctx, chap_temp.BookID), &book_temp)
+	HandleError(res, bookGetErr)
+
 	ve := VIEW_Editor{}
 	ve.ObjectiveID = objKey.IntID()
+	ve.SectionID = obj_temp.SectionID
+	ve.ChapterID = sect_temp.ChapterID
+	ve.BookID = chap_temp.BookID
+
 	ve.ObjectiveTitle = obj_temp.Title
+	ve.SectionTitle = sect_temp.Title
+	ve.ChapterTitle = chap_temp.Title
+	ve.BookTitle = book_temp.Title
+
 	ve.ObjectiveVersion = obj_temp.Version
 	ve.Content = obj_temp.Content
 	ve.KeyTakeaways = obj_temp.KeyTakeaways
-	ve.SectionID = obj_temp.SectionID
 
-	ServeTemplateWithParams(res, req, "addData.html", ve)
+	ServeTemplateWithParams(res, req, "simpleEditor.html", ve)
 }
 
 // ***************************************************************
