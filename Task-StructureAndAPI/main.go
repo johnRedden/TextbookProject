@@ -23,6 +23,7 @@ func init() {
 	r.GET("/api/chapters.json", API_GetChapters)
 	r.GET("/api/sections.json", API_GetSections)
 	r.GET("/api/objectives.json", API_GetObjectives)
+	r.GET("/api/objective.html", API_GetObjectiveHTML)
 
 	r.GET("/select", selectBookFromForm)
 	r.GET("/edit", getSimpleObjectiveEditor)

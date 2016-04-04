@@ -405,6 +405,30 @@ func API_GetObjectives(res http.ResponseWriter, req *http.Request, params httpro
 	ServeTemplateWithParams(res, req, "Objectives.json", objectiveList)
 }
 
+func API_GetObjectiveHTML(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	// Post call  for Objective creation, same structure as above.
+	// Mandatory Options: ObjectiveName, SectionID
+	// Optional: ID, Version, Content, KeyTakeaways
+	// Codes:
+	// 		0 - Success, All completed
+	// 		418 - Failure, Authentication error, likely caused by a user not signed in or not allowed.
+	// 		400 - Failure, Expected data missing
+
+	ObjectiveID, numErr := strconv.Atoi(req.FormValue("ID"))
+	if numErr != nil {
+		fmt.Fprint(res, `{"result":"failure","reason":"Empty ID","code":400}`)
+		return
+	}
+
+	ctx := appengine.NewContext(req)
+	objKey := MakeObjectiveKey(ctx, int64(ObjectiveID))
+	obj_temp := Objective{}
+	objectiveGetErr := datastore.Get(ctx, objKey, &obj_temp)
+	HandleError(res, objectiveGetErr)
+
+	ServeTemplateWithParams(res, req, "ObjectiveHTML.gohtml", obj_temp.Content)
+}
+
 // -------------------------------------------------------------------
 // Query Data calls
 // API calls for singular objects.
