@@ -116,6 +116,7 @@ func API_MakeBook(res http.ResponseWriter, req *http.Request, params httprouter.
 	// handle incoming data Company
 	auth := req.FormValue("Author")
 	// handle incoming data Version
+
 	ver64, errFloat := strconv.ParseFloat(req.FormValue("Version"), 32)
 	var ver32 float32
 	if errFloat != nil {
@@ -172,10 +173,17 @@ func API_MakeChapter(res http.ResponseWriter, req *http.Request, params httprout
 		ver32 = float32(ver64)
 	}
 
+	orderInt, errInt := strconv.Atoi(req.FormValue("Order"))
+	if errInt != nil || chapterID == 0 {
+		orderInt, errInt = GetLargestOrder(req, "Chapters", int64(bookID))
+		HandleError(res, errInt)
+	}
+
 	chapterForDatastore := Chapter{}
 	chapterForDatastore.Title = chapterName
 	chapterForDatastore.Version = ver32
-	chapterForDatastore.BookID = int64(bookID)
+	chapterForDatastore.Parent = int64(bookID)
+	chapterForDatastore.OrderNumber = orderInt
 
 	ctx := appengine.NewContext(req)
 
@@ -218,10 +226,17 @@ func API_MakeSection(res http.ResponseWriter, req *http.Request, params httprout
 		ver32 = float32(ver64)
 	}
 
+	orderInt, errInt := strconv.Atoi(req.FormValue("Order"))
+	if errInt != nil || sectionID == 0 {
+		orderInt, errInt = GetLargestOrder(req, "Sections", int64(chapterID))
+		HandleError(res, errInt)
+	}
+
 	sectionForDatastore := Section{}
 	sectionForDatastore.Title = sectionName
 	sectionForDatastore.Version = ver32
-	sectionForDatastore.ChapterID = int64(chapterID)
+	sectionForDatastore.Parent = int64(chapterID)
+	sectionForDatastore.OrderNumber = orderInt
 
 	ctx := appengine.NewContext(req)
 
@@ -264,12 +279,19 @@ func API_MakeObjective(res http.ResponseWriter, req *http.Request, params httpro
 		ver32 = float32(ver64)
 	}
 
+	orderInt, errInt := strconv.Atoi(req.FormValue("Order"))
+	if errInt != nil || ObjectiveID == 0 {
+		orderInt, errInt = GetLargestOrder(req, "Objectives", int64(sectionID))
+		HandleError(res, errInt)
+	}
+
 	objectiveForDatastore := Objective{}
 	objectiveForDatastore.Title = objectiveName
-	objectiveForDatastore.SectionID = int64(sectionID)
+	objectiveForDatastore.Parent = int64(sectionID)
 	objectiveForDatastore.Version = ver32
 	objectiveForDatastore.Content = req.FormValue("Content")
 	objectiveForDatastore.KeyTakeaways = req.FormValue("KeyTakeaways")
+	objectiveForDatastore.OrderNumber = orderInt
 
 	ctx := appengine.NewContext(req)
 
@@ -439,3 +461,26 @@ func API_GetBook()      {}
 func API_GetChapter()   {}
 func API_GetSection()   {}
 func API_GetObjective() {}
+
+// -------------------------------------------------------------------
+//
+//
+//
+type OrderedObject struct {
+	OrderNumber int
+}
+
+func GetLargestOrder(req *http.Request, namespace string, parentKey int64) (int, error) {
+	ctx := appengine.NewContext(req)
+	q := datastore.NewQuery(namespace)
+	q = q.Filter("Parent =", parentKey).Order("-OrderNumber").Project("OrderNumber")
+
+	largestOrder := OrderedObject{}
+	_, qErr := q.Run(ctx).Next(&largestOrder)
+	if qErr == datastore.Done {
+		return 0, nil
+	} else if qErr != nil {
+		return 0, qErr
+	}
+	return largestOrder.OrderNumber + 1, nil
+}

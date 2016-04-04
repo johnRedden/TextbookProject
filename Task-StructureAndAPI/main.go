@@ -17,7 +17,7 @@ func init() {
 	r := httprouter.New()
 	http.Handle("/", r)
 	r.GET("/", home)
-	r.GET("/init", initalizeData)
+	// r.GET("/init", initalizeData)
 	r.GET("/api/catalogs.json", API_GetCatalogs)
 	r.GET("/api/books.json", API_GetBooks)
 	r.GET("/api/chapters.json", API_GetChapters)
@@ -80,38 +80,38 @@ func MakeObjectiveKey(ctx context.Context, id int64) *datastore.Key {
 	return datastore.NewKey(ctx, "Objectives", "", id, nil)
 }
 
-func initalizeData(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	ctx := appengine.NewContext(req)
+// func initalizeData(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+// 	ctx := appengine.NewContext(req)
 
-	catalogTitles := []string{"default_catalog", "Math", "Science", "***"}
-	chapterTitles := []string{"Nothing", "Making of", "Readme", "Sometimes always", "Nevermore", "A New Begining", "The Founding of the three states", "Taking over the Tri-State Area!", "Finally", "The End!", "Only when your down", "Over and Out", "Chapter titles are harder than book titles", "Part 1: Part 2", "Part 2: Part 1 again", "Integration", "Newtons Method"}
+// 	catalogTitles := []string{"default_catalog", "Math", "Science", "***"}
+// 	chapterTitles := []string{"Nothing", "Making of", "Readme", "Sometimes always", "Nevermore", "A New Begining", "The Founding of the three states", "Taking over the Tri-State Area!", "Finally", "The End!", "Only when your down", "Over and Out", "Chapter titles are harder than book titles", "Part 1: Part 2", "Part 2: Part 1 again", "Integration", "Newtons Method"}
 
-	for _, k := range catalogTitles {
-		ck := MakeCatalogKey(ctx, k)
-		cc := Catalog{"Basic Catalog", 0, "eduNet"}
-		_, err := datastore.Put(ctx, ck, &cc)
-		HandleError(res, err)
-	}
+// 	for _, k := range catalogTitles {
+// 		ck := MakeCatalogKey(ctx, k)
+// 		cc := Catalog{"Basic Catalog", 0, "eduNet"}
+// 		_, err := datastore.Put(ctx, ck, &cc)
+// 		HandleError(res, err)
+// 	}
 
-	for i, title := range []string{"Hello ", "World", "A list", "Of titles", "The Hobbit", "Lord of the Trees", "A brand new cat", "Gone with the start", "Not on your life", "Bores", "Party Time with Party Pete: A Ride Of Your Life: Not for your pets!", "Marko Polo, Silly Game or Deadly Secret?", "Starbucks, The REAL addiction"} {
-		bookInput := Book{}
-		bookInput.Title = title
-		bookInput.CatalogTitle = catalogTitles[(i % 4)]
-		bk := MakeBookKey(ctx, 0)
-		k, err2 := datastore.Put(ctx, bk, &bookInput)
-		HandleError(res, err2)
-		for ii := 0; ii < 3; ii += 1 {
-			chapterInput := Chapter{}
-			chapterInput.Title = chapterTitles[(int(k.IntID())+ii)%15] // trying some hashing functions to psuedo random the chapter titles.
-			chapterInput.BookID = k.IntID()
-			ck := MakeChapterKey(ctx, 0)
-			_, err3 := datastore.Put(ctx, ck, &chapterInput)
-			HandleError(res, err3)
-		}
-	}
+// 	for i, title := range []string{"Hello ", "World", "A list", "Of titles", "The Hobbit", "Lord of the Trees", "A brand new cat", "Gone with the start", "Not on your life", "Bores", "Party Time with Party Pete: A Ride Of Your Life: Not for your pets!", "Marko Polo, Silly Game or Deadly Secret?", "Starbucks, The REAL addiction"} {
+// 		bookInput := Book{}
+// 		bookInput.Title = title
+// 		bookInput.CatalogTitle = catalogTitles[(i % 4)]
+// 		bk := MakeBookKey(ctx, 0)
+// 		k, err2 := datastore.Put(ctx, bk, &bookInput)
+// 		HandleError(res, err2)
+// 		for ii := 0; ii < 3; ii += 1 {
+// 			chapterInput := Chapter{}
+// 			chapterInput.Title = chapterTitles[(int(k.IntID())+ii)%15] // trying some hashing functions to psuedo random the chapter titles.
+// 			chapterInput.Parent = k.IntID()
+// 			ck := MakeChapterKey(ctx, 0)
+// 			_, err3 := datastore.Put(ctx, ck, &chapterInput)
+// 			HandleError(res, err3)
+// 		}
+// 	}
 
-	ServeTemplateWithParams(res, req, "printme.html", "Datastore has been initalized!")
-}
+// 	ServeTemplateWithParams(res, req, "printme.html", "Datastore has been initalized!")
+// }
 
 func selectBookFromForm(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	ServeTemplateWithParams(res, req, "simpleSelector.html", nil)
@@ -133,22 +133,22 @@ func getSimpleObjectiveEditor(res http.ResponseWriter, req *http.Request, params
 	HandleError(res, objectiveGetErr)
 
 	sect_temp := Section{}
-	sectionGetErr := datastore.Get(ctx, MakeSectionKey(ctx, obj_temp.SectionID), &sect_temp)
+	sectionGetErr := datastore.Get(ctx, MakeSectionKey(ctx, obj_temp.Parent), &sect_temp)
 	HandleError(res, sectionGetErr)
 
 	chap_temp := Chapter{}
-	chapterGetErr := datastore.Get(ctx, MakeChapterKey(ctx, sect_temp.ChapterID), &chap_temp)
+	chapterGetErr := datastore.Get(ctx, MakeChapterKey(ctx, sect_temp.Parent), &chap_temp)
 	HandleError(res, chapterGetErr)
 
 	book_temp := Book{}
-	bookGetErr := datastore.Get(ctx, MakeBookKey(ctx, chap_temp.BookID), &book_temp)
+	bookGetErr := datastore.Get(ctx, MakeBookKey(ctx, chap_temp.Parent), &book_temp)
 	HandleError(res, bookGetErr)
 
 	ve := VIEW_Editor{}
 	ve.ObjectiveID = objKey.IntID()
-	ve.SectionID = obj_temp.SectionID
-	ve.ChapterID = sect_temp.ChapterID
-	ve.BookID = chap_temp.BookID
+	ve.SectionID = obj_temp.Parent
+	ve.ChapterID = sect_temp.Parent
+	ve.BookID = chap_temp.Parent
 
 	ve.ObjectiveTitle = obj_temp.Title
 	ve.SectionTitle = sect_temp.Title

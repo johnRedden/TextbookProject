@@ -29,25 +29,26 @@ type Book struct { // Book has an ancestor in catalog, searchable based on catal
 	// Copyright date
 }
 type Chapter struct { // Chapter has an ancestor in Book. Chapter only has meaning from book.
-	Title   string
-	Version float32 `datastore:,noindex`
-	BookID  int64   // key.intID for Book
-	// OrderNumber int
+	Title       string
+	Version     float32 `datastore:,noindex`
+	Parent      int64   // key.intID for Book
+	OrderNumber int
 }
 type Section struct {
-	Title     string
-	Version   float32 `datastore:,noindex`
-	ChapterID int64   // key.intID for Chapter
-	// OrderNumber int
+	Title       string
+	Version     float32 `datastore:,noindex`
+	Parent      int64   // key.intID for Chapter
+	OrderNumber int
 	// Text string `datastore:,noindex`
 }
 type Objective struct {
-	Title     string
-	Version   float32 `datastore:,noindex`
-	SectionID int64   // key.intID for Section
+	Title        string
+	Version      float32 `datastore:,noindex`
+	Parent       int64   // key.intID for Section
+	Content      string  `datastore:,noindex`
+	KeyTakeaways string  `datastore:,noindex` // or array of strings
+	OrderNumber  int
 	// Author       string  //or array of strings // doesnt make sense to have this here. the book knows it's author.
-	Content      string `datastore:,noindex`
-	KeyTakeaways string `datastore:,noindex` // or array of strings
 	// Rating       int    `datastore:,noindex` // out of 5 stars
 }
 
