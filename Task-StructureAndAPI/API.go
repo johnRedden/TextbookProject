@@ -17,39 +17,15 @@ import (
 )
 
 // -------------------------------------------------------------------
-// Structures
-// Internal use structures for ID handling
-
-type catalogWithID struct {
-	ID string
-	Catalog
-}
-type bookWithID struct {
-	ID int64
-	Book
-}
-type chapterWithID struct {
-	ID int64
-	Chapter
-}
-type sectionWithID struct {
-	ID int64
-	Section
-}
-type objectiveWithID struct {
-	ID int64
-	Objective
-}
-
-// -------------------------------------------------------------------
 // Post Data calls
 // API calls for singular objects.
 // Please read each call for expected input/output
+////////
 
 func API_MakeCatalog(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	// Post call for making a catalog, we would check for a signed in user here.
-	// Expects data from CatalogName
-	// Also has data in from Company and Version
+	// Mandatory Options: CatalogName
+	// Optional Options: Company, Version
 	// Version should be a well formed stringed float
 	// Codes:
 	// 		0 - Success, All completed
@@ -61,26 +37,24 @@ func API_MakeCatalog(res http.ResponseWriter, req *http.Request, params httprout
 		fmt.Fprint(res, `{"result":"failure","reason":"Empty Catalog Name","code":400}`)
 		return
 	}
-	// handle incoming data Company
-	comp := req.FormValue("Company")
-	// handle incoming data Version
-	ver64, errFloat := strconv.ParseFloat(req.FormValue("Version"), 32)
-	var ver32 float32
-	if errFloat != nil {
-		ver32 = float32(ver64)
-	}
-	// Make our catalog
-	catalogForDatastore := Catalog{}
+
+	catalogForDatastore, getErr := GetCatalogFromDatastore(req, catalogName)
+	HandleError(res, getErr) // If this catalog already exists. We should go get that information to update it.
 	catalogForDatastore.Name = catalogName
-	catalogForDatastore.Company = comp
-	catalogForDatastore.Version = ver32
+
+	if req.FormValue("Company") != "" {
+		catalogForDatastore.Company = req.FormValue("Company")
+	}
+
+	if req.FormValue("Version") != "" {
+		ver64, errFloat := strconv.ParseFloat(req.FormValue("Version"), 64)
+		if errFloat == nil {
+			catalogForDatastore.Version = ver64
+		}
+	}
 	// Get the datastore up and running!
-	ctx := appengine.NewContext(req)
-
-	ck := MakeCatalogKey(ctx, catalogName)
-	_, errDatastore := datastore.Put(ctx, ck, &catalogForDatastore)
-	HandleError(res, errDatastore)
-
+	_, putErr := PutCatalogIntoDatastore(req, catalogForDatastore)
+	HandleError(res, putErr)
 	fmt.Fprint(res, `{"result":"success","reason":"","code":0}`)
 }
 
@@ -89,215 +63,187 @@ func API_MakeBook(res http.ResponseWriter, req *http.Request, params httprouter.
 	// One stop shop for everything related to making a book
 	// If you feed in an ID it will update that specific id
 	// If no id is given, will make a new one.
-	// Taking in mandatory options CatalogName and BookName
-	// Optional options Author,Version
-	// TODO: Add in tags functionality
+	// Mandatory Options: CatalogName, BookName OR ID
+	// Optional Options: Author, Version, Tags
 	// Codes:
 	// 		0 - Success, All completed
 	// 		418 - Failure, Authentication error, likely caused by a user not signed in or not allowed.
 	// 		400 - Failure, Expected data missing
 
-	bookID, numErr := strconv.Atoi(req.FormValue("ID"))
-	if numErr != nil {
-		bookID = 0
-	}
+	bookID, _ := strconv.Atoi(req.FormValue("ID"))
 
-	catalogName := req.FormValue("CatalogName")
-	if catalogName == "" {
+	bookForDatastore, getErr := GetBookFromDatastore(req, int64(bookID))
+	HandleError(res, getErr)
+
+	if req.FormValue("CatalogName") != "" { // if your giving me a catalog, we're good
+		bookForDatastore.CatalogTitle = req.FormValue("CatalogName")
+	} else if bookID == 0 { // new books must have a catalog
 		fmt.Fprint(res, `{"result":"failure","reason":"Empty Catalog Name","code":400}`)
 		return
 	}
 
-	bookName := req.FormValue("BookName")
-	if bookName == "" {
+	if req.FormValue("BookName") != "" { // if your giving me a title, we're good
+		bookForDatastore.Title = req.FormValue("BookName")
+	} else if bookID == 0 { // new books must have a title
 		fmt.Fprint(res, `{"result":"failure","reason":"Empty Book Name","code":400}`)
 		return
 	}
-	// handle incoming data Company
-	auth := req.FormValue("Author")
-	// handle incoming data Version
 
-	ver64, errFloat := strconv.ParseFloat(req.FormValue("Version"), 32)
-	var ver32 float32
-	if errFloat != nil {
-		ver32 = float32(ver64)
+	if req.FormValue("Author") != "" { // if updating author
+		bookForDatastore.Author = req.FormValue("Author")
 	}
 
-	// TODO: Add in something to allow for tags.
-	// string parsing maybe?
+	if req.FormValue("Version") != "" { // if updating version
+		ver64, errFloat := strconv.ParseFloat(req.FormValue("Version"), 64)
+		if errFloat == nil {
+			bookForDatastore.Version = ver64
+		}
+	}
 
-	bookForDatastore := Book{}
-	bookForDatastore.Title = bookName
-	bookForDatastore.CatalogTitle = catalogName
-	bookForDatastore.Author = auth
-	bookForDatastore.Version = ver32
+	if req.FormValue("Tags") != "" { // if updating tags
+		bookForDatastore.Tags = req.FormValue("Tags")
+	}
 
-	ctx := appengine.NewContext(req)
-
-	bk := MakeBookKey(ctx, int64(bookID))
-	_, errDatastore := datastore.Put(ctx, bk, &bookForDatastore)
-	HandleError(res, errDatastore)
+	_, putErr := PutBookIntoDatastore(req, bookForDatastore)
+	HandleError(res, putErr)
 
 	fmt.Fprint(res, `{"result":"success","reason":"","code":0}`)
 }
 
 func API_MakeChapter(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	// Post call  for chapter creation, same structure as above.
-	// Mandatory Options: BookID, ChapterName
-	// Optional: ID, Version
+	// Mandatory Options: BookID, ChapterName OR ID
+	// Optional Options: Version
 	// Codes:
 	// 		0 - Success, All completed
 	// 		418 - Failure, Authentication error, likely caused by a user not signed in or not allowed.
 	// 		400 - Failure, Expected data missing
 
-	chapterID, numErr := strconv.Atoi(req.FormValue("ID"))
-	if numErr != nil {
-		chapterID = 0
-	}
+	chapterID, _ := strconv.Atoi(req.FormValue("ID"))
+
+	chapterForDatastore, getErr := GetChapterFromDatastore(req, int64(chapterID))
+	HandleError(res, getErr)
 
 	bookID, numErr2 := strconv.Atoi(req.FormValue("BookID"))
-	if numErr2 != nil {
+	if numErr2 == nil { // if your giving me a catalog, we're good
+		chapterForDatastore.Parent = int64(bookID)
+	} else if chapterID == 0 { // new books must have a catalog
 		fmt.Fprint(res, `{"result":"failure","reason":"Empty BookID","code":400}`)
 		return
 	}
 
-	chapterName := req.FormValue("ChapterName")
-	if chapterName == "" {
+	if req.FormValue("ChapterName") != "" { // if your giving me a title, we're good
+		chapterForDatastore.Title = req.FormValue("ChapterName")
+	} else if chapterID == 0 { // new books must have a title
 		fmt.Fprint(res, `{"result":"failure","reason":"Empty chapter Name","code":400}`)
 		return
 	}
-	// handle incoming data Version
-	ver64, errFloat := strconv.ParseFloat(req.FormValue("Version"), 32)
-	var ver32 float32
-	if errFloat != nil {
-		ver32 = float32(ver64)
+
+	if req.FormValue("Version") != "" { // if updating version
+		ver64, errFloat := strconv.ParseFloat(req.FormValue("Version"), 64)
+		if errFloat == nil {
+			chapterForDatastore.Version = ver64
+		}
 	}
 
-	orderInt, errInt := strconv.Atoi(req.FormValue("Order"))
-	if errInt != nil || chapterID == 0 {
-		orderInt, errInt = GetLargestOrder(req, "Chapters", int64(bookID))
-		HandleError(res, errInt)
-	}
-
-	chapterForDatastore := Chapter{}
-	chapterForDatastore.Title = chapterName
-	chapterForDatastore.Version = ver32
-	chapterForDatastore.Parent = int64(bookID)
-	chapterForDatastore.OrderNumber = orderInt
-
-	ctx := appengine.NewContext(req)
-
-	ck := MakeChapterKey(ctx, int64(chapterID))
-	_, errDatastore := datastore.Put(ctx, ck, &chapterForDatastore)
-	HandleError(res, errDatastore)
+	_, putErr := PutChapterIntoDatastore(req, chapterForDatastore)
+	HandleError(res, putErr)
 
 	fmt.Fprint(res, `{"result":"success","reason":"","code":0}`)
 }
 
 func API_MakeSection(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	// Post call  for Section creation, same structure as above.
-	// Mandatory Options: ChapterID, SectionName
-	// Optional: ID, Version
+	// Mandatory Options: ChapterID, SectionName OR ID
+	// Optional Options:  Version
 	// Codes:
 	// 		0 - Success, All completed
 	// 		418 - Failure, Authentication error, likely caused by a user not signed in or not allowed.
 	// 		400 - Failure, Expected data missing
 
-	sectionID, numErr := strconv.Atoi(req.FormValue("ID"))
-	if numErr != nil {
-		sectionID = 0
-	}
+	sectionID, _ := strconv.Atoi(req.FormValue("ID"))
+
+	sectionForDatastore, getErr := GetSectionFromDatastore(req, int64(sectionID))
+	HandleError(res, getErr)
 
 	chapterID, numErr2 := strconv.Atoi(req.FormValue("ChapterID"))
-	if numErr2 != nil {
+	if numErr2 == nil { // if your giving me a catalog, we're good
+		sectionForDatastore.Parent = int64(chapterID)
+	} else if sectionID == 0 { // new books must have a catalog
 		fmt.Fprint(res, `{"result":"failure","reason":"Empty ChapterID","code":400}`)
 		return
 	}
 
-	sectionName := req.FormValue("SectionName")
-	if sectionName == "" {
+	if req.FormValue("SectionName") != "" { // if your giving me a title, we're good
+		sectionForDatastore.Title = req.FormValue("SectionName")
+	} else if sectionID == 0 { // new books must have a title
 		fmt.Fprint(res, `{"result":"failure","reason":"Empty section Name","code":400}`)
 		return
 	}
-	// handle incoming data Version
-	ver64, errFloat := strconv.ParseFloat(req.FormValue("Version"), 32)
-	var ver32 float32
-	if errFloat != nil {
-		ver32 = float32(ver64)
+
+	if req.FormValue("Version") != "" { // if updating version
+		ver64, errFloat := strconv.ParseFloat(req.FormValue("Version"), 64)
+		if errFloat == nil {
+			sectionForDatastore.Version = ver64
+		}
 	}
 
-	orderInt, errInt := strconv.Atoi(req.FormValue("Order"))
-	if errInt != nil || sectionID == 0 {
-		orderInt, errInt = GetLargestOrder(req, "Sections", int64(chapterID))
-		HandleError(res, errInt)
-	}
-
-	sectionForDatastore := Section{}
-	sectionForDatastore.Title = sectionName
-	sectionForDatastore.Version = ver32
-	sectionForDatastore.Parent = int64(chapterID)
-	sectionForDatastore.OrderNumber = orderInt
-
-	ctx := appengine.NewContext(req)
-
-	ck := MakeSectionKey(ctx, int64(sectionID))
-	_, errDatastore := datastore.Put(ctx, ck, &sectionForDatastore)
-	HandleError(res, errDatastore)
+	_, putErr := PutSectionIntoDatastore(req, sectionForDatastore)
+	HandleError(res, putErr)
 
 	fmt.Fprint(res, `{"result":"success","reason":"","code":0}`)
 }
 
 func API_MakeObjective(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	// Post call  for Objective creation, same structure as above.
-	// Mandatory Options: ObjectiveName, SectionID
-	// Optional: ID, Version, Content, KeyTakeaways
+	// Mandatory Options: ObjectiveName, SectionID OR ID
+	// Optional Options: Version, Content, KeyTakeaways, Author
 	// Codes:
 	// 		0 - Success, All completed
 	// 		418 - Failure, Authentication error, likely caused by a user not signed in or not allowed.
 	// 		400 - Failure, Expected data missing
 
-	ObjectiveID, numErr := strconv.Atoi(req.FormValue("ID"))
-	if numErr != nil {
-		ObjectiveID = 0
-	}
+	ObjectiveID, _ := strconv.Atoi(req.FormValue("ID"))
+
+	objectiveForDatastore, getErr := GetObjectiveFromDatastore(req, int64(ObjectiveID))
+	HandleError(res, getErr)
 
 	sectionID, numErr2 := strconv.Atoi(req.FormValue("SectionID"))
-	if numErr2 != nil {
+	if numErr2 == nil { // if your giving me a catalog, we're good
+		objectiveForDatastore.Parent = int64(sectionID)
+	} else if ObjectiveID == 0 { // new books must have a catalog
 		fmt.Fprint(res, `{"result":"failure","reason":"Empty SectionID","code":400}`)
 		return
 	}
 
-	objectiveName := req.FormValue("ObjectiveName")
-	if objectiveName == "" {
+	if req.FormValue("ObjectiveName") != "" { // if your giving me a title, we're good
+		objectiveForDatastore.Title = req.FormValue("ObjectiveName")
+	} else if ObjectiveID == 0 { // new books must have a title
 		fmt.Fprint(res, `{"result":"failure","reason":"Empty Objective Name","code":400}`)
 		return
 	}
-	// handle incoming data Version
-	ver64, errFloat := strconv.ParseFloat(req.FormValue("Version"), 32)
-	var ver32 float32
-	if errFloat != nil {
-		ver32 = float32(ver64)
+
+	if req.FormValue("Version") != "" { // if updating version
+		ver64, errFloat := strconv.ParseFloat(req.FormValue("Version"), 64)
+		if errFloat == nil {
+			objectiveForDatastore.Version = ver64
+		}
 	}
 
-	orderInt, errInt := strconv.Atoi(req.FormValue("Order"))
-	if errInt != nil || ObjectiveID == 0 {
-		orderInt, errInt = GetLargestOrder(req, "Objectives", int64(sectionID))
-		HandleError(res, errInt)
+	if req.FormValue("Content") != "" {
+		objectiveForDatastore.Content = req.FormValue("Content")
 	}
 
-	objectiveForDatastore := Objective{}
-	objectiveForDatastore.Title = objectiveName
-	objectiveForDatastore.Parent = int64(sectionID)
-	objectiveForDatastore.Version = ver32
-	objectiveForDatastore.Content = req.FormValue("Content")
-	objectiveForDatastore.KeyTakeaways = req.FormValue("KeyTakeaways")
-	objectiveForDatastore.OrderNumber = orderInt
+	if req.FormValue("KeyTakeaways") != "" {
+		objectiveForDatastore.KeyTakeaways = req.FormValue("KeyTakeaways")
+	}
 
-	ctx := appengine.NewContext(req)
+	if req.FormValue("Author") != "" {
+		objectiveForDatastore.Author = req.FormValue("Author")
+	}
 
-	ck := MakeObjectiveKey(ctx, int64(ObjectiveID))
-	_, errDatastore := datastore.Put(ctx, ck, &objectiveForDatastore)
-	HandleError(res, errDatastore)
+	_, putErr := PutObjectiveIntoDatastore(req, objectiveForDatastore)
+	HandleError(res, putErr)
 
 	fmt.Fprint(res, `{"result":"success","reason":"","code":0}`)
 }
@@ -306,11 +252,12 @@ func API_MakeObjective(res http.ResponseWriter, req *http.Request, params httpro
 // Query Data calls
 // API calls for multiple objects.
 // Will extend this later to detect singular calls
+///////
 
 func API_GetCatalogs(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	ctx := appengine.NewContext(req)
 	q := datastore.NewQuery("Catalogs")
-	cataloglist := make([]catalogWithID, 0)
+	cataloglist := make([]Catalog, 0)
 	for t := q.Run(ctx); ; {
 		var x Catalog
 		k, qErr := t.Next(&x)
@@ -319,7 +266,8 @@ func API_GetCatalogs(res http.ResponseWriter, req *http.Request, params httprout
 		} else if qErr != nil {
 			http.Error(res, qErr.Error(), http.StatusInternalServerError)
 		}
-		cataloglist = append(cataloglist, catalogWithID{k.StringID(), x})
+		x.ID = k.StringID()
+		cataloglist = append(cataloglist, x)
 	}
 
 	ServeTemplateWithParams(res, req, "Catalogs.json", cataloglist)
@@ -334,7 +282,7 @@ func API_GetBooks(res http.ResponseWriter, req *http.Request, params httprouter.
 		q = q.Filter("CatalogTitle =", queryCatalogName)
 	}
 
-	booklist := make([]bookWithID, 0)
+	booklist := make([]Book, 0)
 	for t := q.Run(ctx); ; {
 		var x Book
 		k, qErr := t.Next(&x)
@@ -343,7 +291,8 @@ func API_GetBooks(res http.ResponseWriter, req *http.Request, params httprouter.
 		} else if qErr != nil {
 			http.Error(res, qErr.Error(), http.StatusInternalServerError)
 		}
-		booklist = append(booklist, bookWithID{k.IntID(), x})
+		x.ID = k.IntID()
+		booklist = append(booklist, x)
 	}
 
 	ServeTemplateWithParams(res, req, "Books.json", booklist)
@@ -360,7 +309,7 @@ func API_GetChapters(res http.ResponseWriter, req *http.Request, params httprout
 		q = q.Filter("Parent =", int64(i))
 	}
 
-	chapterList := make([]chapterWithID, 0)
+	chapterList := make([]Chapter, 0)
 	for t := q.Run(ctx); ; {
 		var x Chapter
 		k, qErr := t.Next(&x)
@@ -369,7 +318,8 @@ func API_GetChapters(res http.ResponseWriter, req *http.Request, params httprout
 		} else if qErr != nil {
 			http.Error(res, qErr.Error(), http.StatusInternalServerError)
 		}
-		chapterList = append(chapterList, chapterWithID{k.IntID(), x})
+		x.ID = k.IntID()
+		chapterList = append(chapterList, x)
 	}
 
 	ServeTemplateWithParams(res, req, "Chapters.json", chapterList)
@@ -386,7 +336,7 @@ func API_GetSections(res http.ResponseWriter, req *http.Request, params httprout
 		q = q.Filter("Parent =", int64(i))
 	}
 
-	sectionList := make([]sectionWithID, 0)
+	sectionList := make([]Section, 0)
 	for t := q.Run(ctx); ; {
 		var x Section
 		k, qErr := t.Next(&x)
@@ -395,7 +345,8 @@ func API_GetSections(res http.ResponseWriter, req *http.Request, params httprout
 		} else if qErr != nil {
 			http.Error(res, qErr.Error(), http.StatusInternalServerError)
 		}
-		sectionList = append(sectionList, sectionWithID{k.IntID(), x})
+		x.ID = k.IntID()
+		sectionList = append(sectionList, x)
 	}
 
 	ServeTemplateWithParams(res, req, "Sections.json", sectionList)
@@ -412,7 +363,7 @@ func API_GetObjectives(res http.ResponseWriter, req *http.Request, params httpro
 		q = q.Filter("Parent =", int64(i))
 	}
 
-	objectiveList := make([]objectiveWithID, 0)
+	objectiveList := make([]Objective, 0)
 	for t := q.Run(ctx); ; {
 		var x Objective
 		k, qErr := t.Next(&x)
@@ -421,16 +372,25 @@ func API_GetObjectives(res http.ResponseWriter, req *http.Request, params httpro
 		} else if qErr != nil {
 			http.Error(res, qErr.Error(), http.StatusInternalServerError)
 		}
-		objectiveList = append(objectiveList, objectiveWithID{k.IntID(), x})
+		x.ID = k.IntID()
+		objectiveList = append(objectiveList, x)
 	}
 
 	ServeTemplateWithParams(res, req, "Objectives.json", objectiveList)
 }
 
+// -------------------------------------------------------------------
+// Query Data calls
+// API calls for singular objects.
+// Please read each section for expected input/output
+/////////////
+
+func API_GetTOC_HTML() {}
+
 func API_GetObjectiveHTML(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// Post call  for Objective creation, same structure as above.
-	// Mandatory Options: ObjectiveName, SectionID
-	// Optional: ID, Version, Content, KeyTakeaways
+	// Get call for reciving a <section> view on Objective
+	// Mandatory Option: ID
+	// Optional Options:
 	// Codes:
 	// 		0 - Success, All completed
 	// 		418 - Failure, Authentication error, likely caused by a user not signed in or not allowed.
@@ -442,45 +402,8 @@ func API_GetObjectiveHTML(res http.ResponseWriter, req *http.Request, params htt
 		return
 	}
 
-	ctx := appengine.NewContext(req)
-	objKey := MakeObjectiveKey(ctx, int64(ObjectiveID))
-	obj_temp := Objective{}
-	objectiveGetErr := datastore.Get(ctx, objKey, &obj_temp)
-	HandleError(res, objectiveGetErr)
+	objectiveToScreen, getErr := GetObjectiveFromDatastore(req, int64(ObjectiveID))
+	HandleError(res, getErr)
 
-	ServeTemplateWithParams(res, req, "ObjectiveHTML.gohtml", obj_temp.Content)
-}
-
-// -------------------------------------------------------------------
-// Query Data calls
-// API calls for singular objects.
-// Please read each section for expected input/outpu
-
-func API_GetCatalog()   {}
-func API_GetBook()      {}
-func API_GetChapter()   {}
-func API_GetSection()   {}
-func API_GetObjective() {}
-
-// -------------------------------------------------------------------
-//
-//
-//
-type OrderedObject struct {
-	OrderNumber int
-}
-
-func GetLargestOrder(req *http.Request, namespace string, parentKey int64) (int, error) {
-	ctx := appengine.NewContext(req)
-	q := datastore.NewQuery(namespace)
-	q = q.Filter("Parent =", parentKey).Order("-OrderNumber").Project("OrderNumber")
-
-	largestOrder := OrderedObject{}
-	_, qErr := q.Run(ctx).Next(&largestOrder)
-	if qErr == datastore.Done {
-		return 0, nil
-	} else if qErr != nil {
-		return 0, qErr
-	}
-	return largestOrder.OrderNumber + 1, nil
+	ServeTemplateWithParams(res, req, "ObjectiveHTML.html", objectiveToScreen)
 }

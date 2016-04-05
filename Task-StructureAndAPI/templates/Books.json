@@ -8,6 +8,7 @@
         "Catalog":"{{$e.CatalogTitle}}",
         "Author":"{{$e.Author}}",
         "Version":{{$e.Version}},
+        "Tags":{{$e.Tags}},
         "ID":{{$e.ID}}
         }{{end}}
     ]

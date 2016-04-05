@@ -7,6 +7,7 @@
         "Title":"{{$e.Title}}",
         "SectionID":{{$e.Parent}},
         "Version":{{$e.Version}},
+        "Author":{{$e.Author}},
         "ID":{{$e.ID}}
         }{{end}}
     ]
