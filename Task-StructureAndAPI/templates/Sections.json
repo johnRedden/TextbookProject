@@ -5,7 +5,7 @@
     {{range $index,$e := .}}{{if $index}},
     {{end}}   {
         "Title":"{{$e.Title}}",
-        "ChapterID":{{$e.ChapterID}},
+        "ChapterID":{{$e.Parent}},
         "Version":{{$e.Version}},
         "ID":{{$e.ID}}
         }{{end}}

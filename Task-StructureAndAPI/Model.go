@@ -27,19 +27,22 @@ type Book struct { // Book has an ancestor in catalog, searchable based on catal
 	// ESBN-10 string
 	// ESBN-13 string
 	// Copyright date
+
+	// ChapterOrder   []int64 `datastore:,noindex`
 }
 type Chapter struct { // Chapter has an ancestor in Book. Chapter only has meaning from book.
 	Title       string
 	Version     float32 `datastore:,noindex`
 	Parent      int64   // key.intID for Book
 	OrderNumber int
+	// SectionOrder   []int64 `datastore:,noindex`
 }
 type Section struct {
 	Title       string
 	Version     float32 `datastore:,noindex`
 	Parent      int64   // key.intID for Chapter
 	OrderNumber int
-	// Text string `datastore:,noindex`
+	// ObjectiveOrder []int64 `datastore:,noindex`
 }
 type Objective struct {
 	Title        string
@@ -48,12 +51,12 @@ type Objective struct {
 	Content      string  `datastore:,noindex`
 	KeyTakeaways string  `datastore:,noindex` // or array of strings
 	OrderNumber  int
-	// Author       string  //or array of strings // doesnt make sense to have this here. the book knows it's author.
+	Author       string //or array of strings
 	// Rating       int    `datastore:,noindex` // out of 5 stars
 }
 
 type VIEW_Editor struct {
-	// This is the key daddy. This is the editor page for the book.
+	// This is the key; the editor page for the book.
 	// This struct technically contains Objective but for the sake of verbosity
 	//  all included datapoints are spelled out here.
 	// This struct will be the data submitted to the editor so a template for the editor

@@ -4,7 +4,7 @@
     "results":[
     {
         "Title":"{{.Title}}",
-        "BookID":{{.BookID}},
+        "BookID":{{.Parent}},
         "Version":{{.Version}},
         "ID":{{.ID}}
     }

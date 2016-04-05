@@ -357,7 +357,7 @@ func API_GetChapters(res http.ResponseWriter, req *http.Request, params httprout
 	if queryBookID != "" { // Ensure that a BookID was indeed sent.
 		i, numErr := strconv.Atoi(queryBookID) // does that BookID contain a number?
 		HandleError(res, numErr)
-		q = q.Filter("BookID =", int64(i))
+		q = q.Filter("Parent =", int64(i))
 	}
 
 	chapterList := make([]chapterWithID, 0)
@@ -383,7 +383,7 @@ func API_GetSections(res http.ResponseWriter, req *http.Request, params httprout
 	if queryChapterID != "" { // Ensure that a BookID was indeed sent.
 		i, numErr := strconv.Atoi(queryChapterID) // does that BookID contain a number?
 		HandleError(res, numErr)
-		q = q.Filter("ChapterID =", int64(i))
+		q = q.Filter("Parent =", int64(i))
 	}
 
 	sectionList := make([]sectionWithID, 0)
@@ -409,7 +409,7 @@ func API_GetObjectives(res http.ResponseWriter, req *http.Request, params httpro
 	if querySectionID != "" { // Ensure that a BookID was indeed sent.
 		i, numErr := strconv.Atoi(querySectionID) // does that BookID contain a number?
 		HandleError(res, numErr)
-		q = q.Filter("SectionID =", int64(i))
+		q = q.Filter("Parent =", int64(i))
 	}
 
 	objectiveList := make([]objectiveWithID, 0)
