@@ -7,7 +7,9 @@ Model.go by Allen J. Mills
     Description
 */
 
-import ()
+import (
+	"html/template"
+)
 
 // Catalog is the root structure, Everything below this will inherit from a Catalog.
 type Catalog struct {
@@ -50,8 +52,8 @@ type Objective struct {
 	Version float64 `datastore:,noindex`
 	Author  string  //or array of strings
 
-	Content      string `datastore:,noindex`
-	KeyTakeaways string `datastore:,noindex` // or array of strings
+	Content      template.HTML `datastore:,noindex`
+	KeyTakeaways template.HTML `datastore:,noindex` // or array of strings
 
 	Parent int64 // key.intID for Section
 	ID     int64 `datastore:"-"`
@@ -76,6 +78,7 @@ type VIEW_Editor struct {
 	ObjectiveTitle string
 
 	ObjectiveVersion float64
-	Content          string
-	KeyTakeaways     string
+	Content          template.HTML
+	KeyTakeaways     template.HTML
+	Author           string
 }

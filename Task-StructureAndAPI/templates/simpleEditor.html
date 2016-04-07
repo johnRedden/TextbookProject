@@ -1,30 +1,52 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title></title>
+    <title>Textbook Project: Editor</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap -->
+    <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
+    <!-- JQuery -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
-</head>
-<body>
-    <input id="JQ-BookID" type="hidden" value="{{.BookID}}" readonly>
-    <input id="JQ-ChapterID" type="hidden" value="{{.ChapterID}}" readonly>
-    <input id="JQ-SectionID" type="hidden" value="{{.SectionID}}" readonly>
-    <input id="JQ-ObjectiveID" type="hidden" value="{{.ObjectiveID}}" readonly>
-    <br>
+    <!-- CKEditor -->
+    <script src="http://cdn.ckeditor.com/4.5.3/full-all/ckeditor.js"></script>
+    <!-- Mathjax -->
+    <script type="text/javascript" async src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+    
 
-    <p>Book: <input id="JQ-BookTitle" value="{{.BookTitle}}" readonly></p><br>
-    <p>Chapter: <input id="JQ-ChapterTitle" value="{{.ChapterTitle}}" readonly></p><br>
-    <p>Section: <input id="JQ-SectionTitle" value="{{.SectionTitle}}" readonly></p><br>
-    <p>Objective: <input id="JQ-ObjectiveTitle" value="{{.ObjectiveTitle}}"></p><br>
-
-    <p>Version:<input id="JQ-Version" value="{{.ObjectiveVersion}}"></p><br>
-
-    <p>Content:</p><textarea id="JQ-Content">{{html .Content}}</textarea><br>
-    <p>KeyTakeaways:</p><textarea id="JQ-KeyTakeaways">{{html .KeyTakeaways}}</textarea><br><br>
-
-    <button id="JQ-SubmitButton">Submit</button><br>
-
-    <p>Results: <input id="JQ-Results" readonly></p><br>
-
+    <!-- Styling/Scripting -->
+    <style>
+        body {
+            font-size: larger;
+            background-color: oldlace;
+        }
+        textarea{
+            width:100%;
+            height:100px;
+            padding:5px;
+        }
+        .navbar { 
+             box-shadow: 0px 5px 3px -3px #888;
+             background-color: oldlace;
+        }
+        .good {
+            color: lightblue;
+        }
+        .bad {
+            color: lightpink;
+        }
+        .goodBack{
+              background-color: lightblue;
+        }
+        .badBack{
+              background-color: lightpink;
+        }
+        #myContainer{
+            margin-top: 200px;
+        }
+    </style>
     <script type="text/javascript">
         $(document).ready(function(){
             console.log("Ready!")
@@ -34,9 +56,10 @@
                 ObjeName = $("#JQ-ObjectiveTitle").val()
                 objeID = $("#JQ-ObjectiveID").val()
                 ver = $("#JQ-Version").val()
-                cont = $("#JQ-Content").val()
-                ktw = $("#JQ-KeyTakeaways").val()
-                $.post("/api/makeObjective",{SectionID:sectID,ObjectiveName:ObjeName,ID:objeID,Version:ver,Content:cont,KeyTakeaways:ktw},function(data){
+                cont = CKEDITOR.instances['JQ-Content'].getData();
+                ktw = CKEDITOR.instances['JQ-KeyTakeaways'].getData();
+                authr = $("#JQ-AuthorInput").val()
+                $.post("/api/makeObjective",{SectionID:sectID,ObjectiveName:ObjeName,ID:objeID,Version:ver,Content:cont,KeyTakeaways:ktw,Author:authr},function(data){
                     j = $.parseJSON(data);
                     console.log(j.result +":"+ j.reason)
                     if (j.code == 0){
@@ -51,9 +74,97 @@
             $.wait = function( callback, seconds){
                return window.setTimeout( callback, seconds * 1000 );
             }
+
+            var contentEditor = CKEDITOR.replace('JQ-Content',
+                {
+                    extraPlugins: 'mathjax',
+                    mathJaxLib: 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML'
+                });
+
+            var keyTakeawaysEditor = CKEDITOR.replace('JQ-KeyTakeaways',
+                {
+                    extraPlugins: 'mathjax',
+                    mathJaxLib: 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML'
+                });
         });
     </script>
+</head>
+<body>
+    <nav class="navbar navbar-default navbar-fixed-top">
+        <div class="container"> 
+            <div class="navbar-header">
+
+    <h2><img class="pull-left" src="/public/images/eduNetSystems-logo.png"/> &nbsp EduNetSystems Editor </h2>
+
+    <!-- Data Id's, Used for submission. -->
+    <input id="JQ-BookID" type="hidden" value="{{.BookID}}" readonly>
+    <input id="JQ-ChapterID" type="hidden" value="{{.ChapterID}}" readonly>
+    <input id="JQ-SectionID" type="hidden" value="{{.SectionID}}" readonly>
+    <input id="JQ-ObjectiveID" type="hidden" value="{{.ObjectiveID}}" readonly>
+
+    <!-- Objective Title -->
+    <div class="input-group">
+        <label class="input-group-addon">Objective:</label>
+        <input type="text" class="form-control" id="JQ-ObjectiveTitle" placeholder="Objective" value="{{.ObjectiveTitle}}">
+    </div>
+
+    <!-- Author -->
+    <div class="input-group">
+        <label class="input-group-addon">Author:</label>
+        <input type="text" class="form-control" id="JQ-AuthorInput" placeholder="Author" value="{{.Author}}">
+    </div>
+
+    <!-- Version -->
+    <div class="input-group">
+        <label class="input-group-addon">Version:</label>
+        <input type="text" class="form-control" placeholder="Version" id="JQ-Version" value="{{.ObjectiveVersion}}">
+
+        <!-- TODO: Hook in whatever these two things are supposed to be. -->
+        <span class="input-group-addon">
+            <span id="glyph" class="glyphicon glyphicon-saved good"> </span>
+        </span>
+        <span class="input-group-btn">
+            <!-- I've replaced the button here with a saved button instead -->
+            <button type="button" class="btn btn-default" id="JQ-SubmitButton">Save</button>
+        </span>
+    </div>
 
 
+
+    <p><em>online editor alpha version</em></p>
+
+            </div>
+        </div>
+    </nav>
+
+    <div class="container" id="myContainer">
+        <form class="well goodBack">
+            <strong>Content:</strong>
+            <textarea name="Message" id="JQ-Content" cols="10" wrap="hard" autofocus placeholder="Enter new message.">{{html .Content}}</textarea>
+        </form>
+        <form class="well goodBack">
+            <strong>Key Takeaways:</strong>
+            <textarea name="Message2" id="JQ-KeyTakeaways" wrap="hard" placeholder="KeyTakeaways">{{html .KeyTakeaways}}</textarea>
+        </form>
+    </div>
+
+    <footer class="text-center">
+        <div class="well">
+            <div class="container">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div><span class="glyphicon glyphicon-sunglasses"></span>2015 eduNetSystems.com</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </footer>
+
+    <p>Results: <input id="JQ-Results" readonly></p><br>
+
+    <!-- <p>Book: <input id="JQ-BookTitle" value="{{.BookTitle}}" readonly></p><br>
+    <p>Chapter: <input id="JQ-ChapterTitle" value="{{.ChapterTitle}}" readonly></p><br>
+    <p>Section: <input id="JQ-SectionTitle" value="{{.SectionTitle}}" readonly></p><br> -->
 </body>
 </html>

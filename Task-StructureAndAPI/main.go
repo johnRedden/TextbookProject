@@ -116,6 +116,7 @@ func getSimpleObjectiveEditor(res http.ResponseWriter, req *http.Request, params
 	ve.ObjectiveVersion = obj_temp.Version
 	ve.Content = obj_temp.Content
 	ve.KeyTakeaways = obj_temp.KeyTakeaways
+	ve.Author = obj_temp.Author
 
 	ServeTemplateWithParams(res, req, "simpleEditor.html", ve)
 }

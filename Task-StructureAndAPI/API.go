@@ -12,6 +12,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
+	"html/template"
 	"net/http"
 	"strconv"
 )
@@ -231,11 +232,11 @@ func API_MakeObjective(res http.ResponseWriter, req *http.Request, params httpro
 	}
 
 	if req.FormValue("Content") != "" {
-		objectiveForDatastore.Content = req.FormValue("Content")
+		objectiveForDatastore.Content = template.HTML(req.FormValue("Content"))
 	}
 
 	if req.FormValue("KeyTakeaways") != "" {
-		objectiveForDatastore.KeyTakeaways = req.FormValue("KeyTakeaways")
+		objectiveForDatastore.KeyTakeaways = template.HTML(req.FormValue("KeyTakeaways"))
 	}
 
 	if req.FormValue("Author") != "" {
