@@ -21,7 +21,10 @@
 
                     content.html('');
                     $.get("/api/objective.html?ID="+idval,function(data){
+                        console.log("Callback")
+                        console.log(data)
                         content.html(data);
+                        MathJax.Hub.Queue(["Typeset",MathJax.Hub,"span"]);
                     });
                 }
             });
@@ -34,6 +37,6 @@
 <body>
     <section>Objective ID: <input id="JQ-ObjectiveID-Input" class="enterWatch"></section>
     <input id="JQ-Status" style="display: none;" readonly></input>
-    <content id="JQ-Objective-Content"></content>
+    <div style="margin-left: 10px;" id="JQ-Objective-Content"></div>
 </body>
 </html>
