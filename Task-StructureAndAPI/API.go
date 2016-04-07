@@ -391,19 +391,19 @@ func API_GetObjectiveHTML(res http.ResponseWriter, req *http.Request, params htt
 	// Get call for reciving a <section> view on Objective
 	// Mandatory Option: ID
 	// Optional Options:
-	// Codes:
-	// 		0 - Success, All completed
-	// 		418 - Failure, Authentication error, likely caused by a user not signed in or not allowed.
-	// 		400 - Failure, Expected data missing
 
 	ObjectiveID, numErr := strconv.Atoi(req.FormValue("ID"))
 	if numErr != nil {
-		fmt.Fprint(res, `{"result":"failure","reason":"Empty ID","code":400}`)
+		fmt.Fprint(res, `<section><p>Request has failed: Invalid ID.</p></section>`)
 		return
 	}
 
 	objectiveToScreen, getErr := GetObjectiveFromDatastore(req, int64(ObjectiveID))
-	HandleError(res, getErr)
+	//HandleError(res, getErr)
+	if getErr != nil {
+		fmt.Fprint(res, `<section><p>Request has failed: No objective with given ID.</p></section>`)
+		return
+	}
 
 	ServeTemplateWithParams(res, req, "ObjectiveHTML.html", objectiveToScreen)
 }

@@ -32,6 +32,7 @@ func init() {
 	r.GET("/", home)
 	r.GET("/select", selectBookFromForm)
 	r.GET("/edit", getSimpleObjectiveEditor)
+	r.GET("/read", getSimpleObjectiveReader)
 	r.GET("/favicon.ico", favIcon)
 
 	http.Handle("/public/", http.StripPrefix("/public", http.FileServer(http.Dir("public/"))))
@@ -117,4 +118,8 @@ func getSimpleObjectiveEditor(res http.ResponseWriter, req *http.Request, params
 	ve.KeyTakeaways = obj_temp.KeyTakeaways
 
 	ServeTemplateWithParams(res, req, "simpleEditor.html", ve)
+}
+
+func getSimpleObjectiveReader(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	ServeTemplateWithParams(res, req, "simpleReader.html", nil)
 }

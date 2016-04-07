@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+
+
+    <script type="text/JavaScript">
+        $(document).ready(function(){
+            $(".enterWatch").keypress(function(e){
+                enterKey = 13
+                if (e.which == enterKey){
+                    idval = $("#JQ-ObjectiveID-Input").val()
+                    // status = $("#JQ-Status")
+                    content = $("#JQ-Objective-Content")
+
+                    content.html('');
+                    $.get("/api/objective.html?ID="+idval,function(data){
+                        content.html(data);
+                    });
+                }
+            });
+            $.wait = function( callback, seconds){
+               return window.setTimeout( callback, seconds * 1000 );
+            }
+        });
+    </script>
+</head>
+<body>
+    <section>Objective ID: <input id="JQ-ObjectiveID-Input" class="enterWatch"></section>
+    <input id="JQ-Status" style="display: none;" readonly></input>
+    <content id="JQ-Objective-Content"></content>
+</body>
+</html>
