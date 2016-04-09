@@ -24,7 +24,13 @@
                         console.log("Callback")
                         console.log(data)
                         content.html(data);
-                        MathJax.Hub.Queue(["Typeset",MathJax.Hub,"span"]);
+
+                        // ENS content is in... now jQuery the ENS html data
+                        $('#myTitle').html( $('.ENS-Title').html() );
+                        $('#myAuthor').html( 'by: ' + $('.ENS-Author').html() );
+                        $('#mySection').html( $('.ENS-Content').html() );
+
+                        MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
                     });
                 }
             });
@@ -37,6 +43,16 @@
 <body>
     <section>Objective ID: <input id="JQ-ObjectiveID-Input" class="enterWatch"></section>
     <input id="JQ-Status" style="display: none;" readonly></input>
-    <div style="margin-left: 10px;" id="JQ-Objective-Content"></div>
+
+    <div class="container" id="ENScontent">
+        <h1 id="myTitle"></h1>
+        <blockquote id="myAuthor"></blockquote>
+        <section id="mySection"></section>
+
+        <div>*********************** Raw ENS HTML Data below **************************</div>
+        <div style="margin-left: 10px;" id="JQ-Objective-Content"></div>
+        <div>*********************** Raw Data above **************************</div>
+
+    </div>
 </body>
 </html>
