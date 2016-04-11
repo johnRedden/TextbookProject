@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <!-- Bootstrap -->
+    <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
+    <!-- JQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <!-- Mathjax -->
+    <script type="text/javascript" async src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+
+    <script type="text/JavaScript">
+        $(document).ready(function(){
+            $(".enterWatch").keypress(function(e){
+                enterKey = 13
+                if (e.which == enterKey){
+                    idval = $("#JQ-ObjectiveID-Input").val()
+                    // status = $("#JQ-Status")
+                    content = $("#JQ-Objective-Content")
+
+                    content.html('');
+                    $.get("/api/objective.html?ID="+idval,function(data){
+                        console.log("Callback")
+                        console.log(data)
+                        content.html(data);
+
+                        // ENS content is in... now jQuery the ENS html data
+                        $('#myTitle').html( $('.ENS-Title').html() );
+                        $('#myAuthor').html( 'by: ' + $('.ENS-Author').html() );
+                        $('#mySection').html( $('.ENS-Content').html() );
+
+                        MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+                    });
+                }
+            });
+            $.wait = function( callback, seconds){
+               return window.setTimeout( callback, seconds * 1000 );
+            }
+        });
+    </script>
+</head>
+<body>
+    <section>Objective ID: <input id="JQ-ObjectiveID-Input" class="enterWatch"></section>
+    <input id="JQ-Status" style="display: none;" readonly></input>
+
+    <div class="container" id="ENScontent">
+        <h1 id="myTitle"></h1>
+        <blockquote id="myAuthor"></blockquote>
+        <section id="mySection"></section>
+
+        <div>*********************** Raw ENS HTML Data below **************************</div>
+        <div style="margin-left: 10px;" id="JQ-Objective-Content"></div>
+        <div>*********************** Raw Data above **************************</div>
+
+    </div>
+</body>
+</html>
