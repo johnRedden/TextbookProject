@@ -1,0 +1,13 @@
+{
+    "type":"List - Section",
+    "count":{{len .}},
+    "results":[
+    {{range $index,$e := .}}{{if $index}},
+    {{end}}   {
+        "Title":"{{$e.Title}}",
+        "ChapterID":{{$e.Parent}},
+        "Version":{{$e.Version}},
+        "ID":{{$e.ID}}
+        }{{end}}
+    ]
+}
