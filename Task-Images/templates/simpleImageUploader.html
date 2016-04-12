@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+</head>
+<body>
+
+<h1>Upload Image</h1>
+<form method="POST" enctype="multipart/form-data" action="/api/makeImage">
+    <input type="file" name="incomingImage">
+    <input type="submit">
+</form>
+
+<div>
+    {{range .}}
+    <a href="/api/getImage?id={{.}}">Image: {{.}}</a><br />
+    {{end}}
+</div>
+
+</body>
+</html>

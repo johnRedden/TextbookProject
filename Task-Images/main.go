@@ -16,8 +16,9 @@ func init() {
 	r := httprouter.New()
 	http.Handle("/", r)
 	r.GET("/image", IMAGE_PostUploadForm)
-	r.POST("/image", IMAGE_RecieveFormData)
+	r.POST("/image", IMAGE_API_PlaceImageIntoCS)
 	r.GET("/api/getImage", IMAGE_API_GetImageFromCS)
+	r.POST("/api/makeImage", IMAGE_API_PlaceImageIntoCS)
 
 	r.GET("/api/catalogs.json", API_GetCatalogs) // API GET json calls
 	r.GET("/api/books.json", API_GetBooks)

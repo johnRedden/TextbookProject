@@ -25,31 +25,24 @@ import (
 /////
 
 func IMAGE_PostUploadForm(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// Very Temporary arrangement.
-	// TODO: self.delete()
-	html := `
-        <h1>Upload Image</h1>
-        <form method="POST" enctype="multipart/form-data">
-        <input type="file" name="incomingImage">
-        <input type="submit">
-        </form>
-    `
-	res.Header().Set("Content-Type", "text/html; charset=utf-8")
-	io.WriteString(res, html)
+	ctx := appengine.NewContext(req)
+	imgl, _ := filesFromCS(ctx, nil)
+	ServeTemplateWithParams(res, req, "simpleImageUploader.html", imgl)
 }
-func IMAGE_RecieveFormData(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// Very Temporary arrangement.
-	// TODO: self.delete()
-	multipartFile, multipartHeader, fileError := req.FormFile("incomingImage")
-	HandleError(res, fileError)
-	defer multipartFile.Close()
 
-	fileName, prepareError := IMAGE_API_SendToCloudStorage(req, multipartFile, multipartHeader)
-	HandleError(res, prepareError)
-	res.Header().Set("Content-Type", "text/html; charset=utf-8")
+// func IMAGE_RecieveFormData(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+// 	// Very Temporary arrangement.
+// 	// TODO: self.delete()
+// 	multipartFile, multipartHeader, fileError := req.FormFile("incomingImage")
+// 	HandleError(res, fileError)
+// 	defer multipartFile.Close()
 
-	io.WriteString(res, `<img src="`+`https://storage.googleapis.com/`+GCS_BucketID+`\`+fileName+`" />`)
-}
+// 	fileName, prepareError := IMAGE_API_SendToCloudStorage(req, multipartFile, multipartHeader)
+// 	HandleError(res, prepareError)
+// 	res.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+// 	io.WriteString(res, `<img src="`+`https://storage.googleapis.com/`+GCS_BucketID+`\`+fileName+`" />`)
+// }
 
 // ------------------------------------
 // API - Parse/Prepare Image
@@ -98,7 +91,8 @@ func IMAGE_API_PlaceImageIntoCS(res http.ResponseWriter, req *http.Request, para
 
 	fileName, prepareError := IMAGE_API_SendToCloudStorage(req, multipartFile, multipartHeader)
 	HandleError(res, prepareError)
-	fmt.Fprint(res, `{"result":"success","reason":"","code":0,"ID":"`+fileName+`"}`)
+	http.Redirect(res, req, "/api/getImage?id="+fileName, http.StatusSeeOther)
+	// fmt.Fprint(res, `{"result":"success","reason":"","code":0,"ID":"`+fileName+`"}`)
 }
 func IMAGE_API_GetImageFromCS(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	id := req.FormValue("id")
@@ -158,7 +152,7 @@ func filesFromCS(ctx context.Context, q *storage.Query) ([]string, error) {
 	}
 
 	for _, elem := range objectList.Results {
-		results = append(results, "https://storage.googleapis.com/"+elem.Bucket+"/"+elem.Name)
+		results = append(results, elem.Name)
 	}
 	return results, nil
 }
