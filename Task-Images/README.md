@@ -1,12 +1,46 @@
 # Textbook Project
-### Structure and API
-* Getting into the meat and bones of the project. This will be the area that the API calls of the project are born. Hopefully we should be able to return things such as Name:Key pairs for catalogs, books, sections and be able to get and post such details.
-* Todo:
-  * Make tables for Catalog, Book, and Section.
-  * Make form for viewing *but not modifying* these three tables
-   This will take api calls for the aforementioned <key:name> pairs of the relevant tables. We should be able to query the api for specific catalogs, books, ect.
-  * Make for for viewing *and modifying* above. 
+### Images
 
-###### Work Started: Mar 17, 2016
-###### Work Finished: 
+In this section we've used Google Cloud Storage: 
+*Warning*, If you have not installed and setup GCS this project will not deploy/serve for you.
+
+
+
+
+### Instructions for GCloud Storage installation
+  1. *Dependency* - Google App Engine
+
+    If you have not already done so, install Google App Engine. [Quickstart Guide](https://cloud.google.com/appengine/docs/go/)
+  2. [Install GCS SDK](https://cloud.google.com/sdk/downloads)
+  3. Create a project on Google Cloud Platform
+
+    If you have not already made an account on [Google Cloud Console](https://console.cloud.google.com/project) you should do that now.
+  4. Create a Cloud Storage Bucket
+
+    Find, within the console, the section for cloud storage and create a bucket.
+  5. Install required packages
+
+    ```
+    go get -u golang.org/x/oauth2
+    go get -u google.golang.org/cloud/storage
+    go get -u google.golang.org/appengine/...
+    ```
+  6. Configure your project's App.yaml
+
+    ```
+    application: <Project ID>
+    version: 0
+    runtime: go
+    api_version: go1
+
+    handlers:
+    - url: /.*
+    script: _go_app
+    ```
+  7. Congratulations!
+
+You're all installed and ready to deploy your Appengine project including GCloud storage.
+
+**Final Note:**
+  Google Cloud Storage will only work when *deployed*. You can not use the storage features offline.
 
