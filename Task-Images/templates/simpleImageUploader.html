@@ -2,18 +2,39 @@
 <html>
 <head>
     <title></title>
+
+<script type="text/javascript">
+    var callbackNumb = "{{.CKEditorFuncNum}}";
+    console.log("Hey, I have started up with!"+callbackNumb)
+    function verifySelection(uri){
+        if (callbackNumb == ""){
+            return
+        }
+        console.log("Image selected: "+uri)
+        var urlOut = "/api/getImage?id="+uri
+        console.log("Turned into "+urlOut)
+        
+        window.opener.CKEDITOR.tools.callFunction(callbackNumb,urlOut);
+        window.close();
+    }
+</script>
 </head>
 <body>
 
 <h1>Upload Image</h1>
 <form method="POST" enctype="multipart/form-data" action="/api/makeImage">
-    <input type="file" name="incomingImage">
+    <input type="file" name="upload">
     <input type="submit">
 </form>
-
+<br>
+<button type="button" onclick="window.parent.location=window.parent.location.href;" id="refresh">Refresh List</button>
+<br>
 <div>
-    {{range .}}
-    <a href="/api/getImage?id={{.}}">Image: {{.}}</a><br />
+    {{range .Images}}
+    <button onclick='verifySelection("{{.}}")'>
+        <img src="/api/getImage?id={{.}}" style="max-width:20%;max-height: 20%;" />
+    </button>
+    <br />
     {{end}}
 </div>
 

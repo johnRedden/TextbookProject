@@ -20,6 +20,9 @@ func init() {
 	r.GET("/api/getImage", IMAGE_API_GetImageFromCS)
 	r.POST("/api/makeImage", IMAGE_API_PlaceImageIntoCS)
 
+	r.GET("/api/ckeditor/select", IMAGE_ACTION_CKEDITOR)
+	r.POST("/api/ckeditor/create", IMAGE_API_CKEDITOR_PlaceImageIntoCS)
+
 	r.GET("/api/catalogs.json", API_GetCatalogs) // API GET json calls
 	r.GET("/api/books.json", API_GetBooks)
 	r.GET("/api/chapters.json", API_GetChapters)

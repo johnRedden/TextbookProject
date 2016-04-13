@@ -78,13 +78,18 @@
             var contentEditor = CKEDITOR.replace('JQ-Content',
                 {
                     extraPlugins: 'mathjax',
-                    mathJaxLib: 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML'
+                    mathJaxLib: 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML',
+                    filebrowserBrowseUrl: '/image?action=browseURL',
+                    filebrowserImageBrowseUrl: '/image?action=browseImageURL',
+                    filebrowserUploadUrl: '/api/ckeditor/create?action=uploadURL',
+                    filebrowserImageUploadUrl: '/api/ckeditor/create?action=uploadImageURL'
                 });
 
             var keyTakeawaysEditor = CKEDITOR.replace('JQ-KeyTakeaways',
                 {
                     extraPlugins: 'mathjax',
-                    mathJaxLib: 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML'
+                    mathJaxLib: 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML',
+                    
                 });
         });
     </script>

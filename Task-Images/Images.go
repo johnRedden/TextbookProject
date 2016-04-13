@@ -27,7 +27,46 @@ import (
 func IMAGE_PostUploadForm(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	ctx := appengine.NewContext(req)
 	imgl, _ := filesFromCS(ctx, nil)
-	ServeTemplateWithParams(res, req, "simpleImageUploader.html", imgl)
+
+	imageBrowser := struct {
+		CKEditorFuncNum string
+		Images          []string
+	}{
+		req.FormValue("CKEditorFuncNum"),
+		imgl,
+	}
+
+	ServeTemplateWithParams(res, req, "simpleImageUploader.html", imageBrowser)
+}
+
+// set this up as /api/ckeditor/select?id=<imageid>
+func IMAGE_ACTION_CKEDITOR(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	id := req.FormValue("id")
+	messageOut := ""
+	urlOut := ""
+	if id == "" {
+		messageOut = "No image id given"
+	} else {
+		urlOut = "/api/getImage?id=" + id
+	}
+	fmt.Fprint(res, `<!DOCTYPE html><html><body><script type="text/javascript">window.parent.CKEDITOR.tools.callFunction('`+req.FormValue("CKEditorFuncNum")+`', "`+urlOut+`","`+messageOut+`");</script></body></html>`)
+}
+
+func IMAGE_API_CKEDITOR_PlaceImageIntoCS(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	// POST: url/API/UploadImage
+	multipartFile, multipartHeader, fileError := req.FormFile("upload")
+	if fileError != nil {
+		fmt.Fprint(res, `<!DOCTYPE html><html><body><script type="text/javascript">window.parent.CKEDITOR.tools.callFunction('`+req.FormValue("CKEditorFuncNum")+`',"","`+fileError.Error()+`");</script></body></html>`)
+		return
+	}
+	defer multipartFile.Close()
+
+	fileName, prepareError := IMAGE_API_SendToCloudStorage(req, multipartFile, multipartHeader)
+	if prepareError != nil {
+		fmt.Fprint(res, `<!DOCTYPE html><html><body><script type="text/javascript">window.parent.CKEDITOR.tools.callFunction('`+req.FormValue("CKEditorFuncNum")+`',"","`+prepareError.Error()+`");</script></body></html>`)
+		return
+	}
+	fmt.Fprint(res, `<!DOCTYPE html><html><body><script type="text/javascript">window.parent.CKEDITOR.tools.callFunction('`+req.FormValue("CKEditorFuncNum")+`', "`+"/api/getImage?id="+fileName+`","");</script></body></html>`)
 }
 
 // func IMAGE_RecieveFormData(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
@@ -85,15 +124,15 @@ func filterExtension(req *http.Request, hdr *multipart.FileHeader) (string, erro
 
 func IMAGE_API_PlaceImageIntoCS(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	// POST: url/API/UploadImage
-	multipartFile, multipartHeader, fileError := req.FormFile("incomingImage")
+	multipartFile, multipartHeader, fileError := req.FormFile("upload")
 	HandleError(res, fileError)
 	defer multipartFile.Close()
 
 	fileName, prepareError := IMAGE_API_SendToCloudStorage(req, multipartFile, multipartHeader)
 	HandleError(res, prepareError)
-	http.Redirect(res, req, "/api/getImage?id="+fileName, http.StatusSeeOther)
-	// fmt.Fprint(res, `{"result":"success","reason":"","code":0,"ID":"`+fileName+`"}`)
+	fmt.Fprint(res, `{"result":"success","reason":","code":0,"uri":"`+fileName+`"}`)
 }
+
 func IMAGE_API_GetImageFromCS(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	id := req.FormValue("id")
 	if id == "" {
