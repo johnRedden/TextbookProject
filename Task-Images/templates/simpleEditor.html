@@ -75,22 +75,17 @@
                return window.setTimeout( callback, seconds * 1000 );
             }
 
-            var contentEditor = CKEDITOR.replace('JQ-Content',
-                {
+            var stdConfig = {
                     extraPlugins: 'mathjax',
                     mathJaxLib: 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML',
-                    filebrowserBrowseUrl: '/image?action=browseURL',
                     filebrowserImageBrowseUrl: '/image?action=browseImageURL',
-                    filebrowserUploadUrl: '/api/ckeditor/create?action=uploadURL',
-                    filebrowserImageUploadUrl: '/api/ckeditor/create?action=uploadImageURL'
-                });
+                    filebrowserImageUploadUrl: '/api/ckeditor/create?action=uploadImageURL',
+                    filebrowserBrowseUrl: '/image?action=browseURL',
+                    filebrowserUploadUrl: '/api/ckeditor/create?action=uploadURL'
+                };
 
-            var keyTakeawaysEditor = CKEDITOR.replace('JQ-KeyTakeaways',
-                {
-                    extraPlugins: 'mathjax',
-                    mathJaxLib: 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML',
-                    
-                });
+            var contentEditor = CKEDITOR.replace('JQ-Content',stdConfig);
+            var keyTakeawaysEditor = CKEDITOR.replace('JQ-KeyTakeaways',stdConfig);
         });
     </script>
 </head>

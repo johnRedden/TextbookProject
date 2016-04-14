@@ -1,7 +1,7 @@
 package main
 
 /*
-filename.go by Allen J. Mills
+Images.go by Allen J. Mills
     mm.d.yy
 
     Description
@@ -21,14 +21,20 @@ import (
 )
 
 // ------------------------------------
-// Image Handlers
+// Form/Frame Handlers
 /////
 
 func IMAGE_PostUploadForm(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	ctx := appengine.NewContext(req)
-	imgl, _ := filesFromCS(ctx, nil)
+	// GET: /image/uploader
+	ServeTemplateWithParams(res, req, "simpleImageUploader.html", nil)
+}
 
-	imageBrowser := struct {
+func IMAGE_BrowserForm(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	// GET: /image
+	ctx := appengine.NewContext(req)
+	imgl, _ := filesFromCS(ctx, nil) // get a list of files out of the CS
+
+	imageBrowser := struct { // make a stuct on the fly for the page
 		CKEditorFuncNum string
 		Images          []string
 	}{
@@ -36,52 +42,77 @@ func IMAGE_PostUploadForm(res http.ResponseWriter, req *http.Request, params htt
 		imgl,
 	}
 
-	ServeTemplateWithParams(res, req, "simpleImageUploader.html", imageBrowser)
+	ServeTemplateWithParams(res, req, "simpleImageBrowser.html", imageBrowser)
 }
 
-// set this up as /api/ckeditor/select?id=<imageid>
-func IMAGE_ACTION_CKEDITOR(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	id := req.FormValue("id")
-	messageOut := ""
-	urlOut := ""
-	if id == "" {
-		messageOut = "No image id given"
-	} else {
-		urlOut = "/api/getImage?id=" + id
-	}
-	fmt.Fprint(res, `<!DOCTYPE html><html><body><script type="text/javascript">window.parent.CKEDITOR.tools.callFunction('`+req.FormValue("CKEditorFuncNum")+`', "`+urlOut+`","`+messageOut+`");</script></body></html>`)
-}
+// ------------------------------------
+// CKEditor Specific Handlers
+/////
 
+// Call: /api/ckeditor/create
 func IMAGE_API_CKEDITOR_PlaceImageIntoCS(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// POST: url/API/UploadImage
-	multipartFile, multipartHeader, fileError := req.FormFile("upload")
-	if fileError != nil {
-		fmt.Fprint(res, `<!DOCTYPE html><html><body><script type="text/javascript">window.parent.CKEDITOR.tools.callFunction('`+req.FormValue("CKEditorFuncNum")+`',"","`+fileError.Error()+`");</script></body></html>`)
+	// POST: url/api/ckeditor/create
+	multipartFile, multipartHeader, fileError := req.FormFile("upload") // pull the uploaded image out of the request
+	if fileError != nil {                                               // if there was an issue with the request, exit and note that to ckeditor
+		fmt.Fprint(res, `<!DOCTYPE html><html><body><script type="text/javascript">window.parent.CKEDITOR.tools.callFunction('`+req.FormValue("CKEditorFuncNum")+`',"","`+fileError.Error()+`");//window.close();</script></body></html>`)
 		return
 	}
 	defer multipartFile.Close()
 
-	fileName, prepareError := IMAGE_API_SendToCloudStorage(req, multipartFile, multipartHeader)
+	fileName, prepareError := IMAGE_API_SendToCloudStorage(req, multipartFile, multipartHeader) // send the image out to the cloudstore.
 	if prepareError != nil {
-		fmt.Fprint(res, `<!DOCTYPE html><html><body><script type="text/javascript">window.parent.CKEDITOR.tools.callFunction('`+req.FormValue("CKEditorFuncNum")+`',"","`+prepareError.Error()+`");</script></body></html>`)
+		fmt.Fprint(res, `<!DOCTYPE html><html><body><script type="text/javascript">window.parent.CKEDITOR.tools.callFunction('`+req.FormValue("CKEditorFuncNum")+`',"","`+prepareError.Error()+`");//window.close();</script></body></html>`)
 		return
 	}
-	fmt.Fprint(res, `<!DOCTYPE html><html><body><script type="text/javascript">window.parent.CKEDITOR.tools.callFunction('`+req.FormValue("CKEditorFuncNum")+`', "`+"/api/getImage?id="+fileName+`","");</script></body></html>`)
+
+	// image successfuly sent, let CK know the final url.
+	fmt.Fprint(res, `<!DOCTYPE html><html><body><script type="text/javascript">window.parent.CKEDITOR.tools.callFunction('`+req.FormValue("CKEditorFuncNum")+`', "`+"/api/getImage?id="+fileName+`","");//window.close();</script></body></html>`)
+	return
 }
 
-// func IMAGE_RecieveFormData(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-// 	// Very Temporary arrangement.
-// 	// TODO: self.delete()
-// 	multipartFile, multipartHeader, fileError := req.FormFile("incomingImage")
-// 	HandleError(res, fileError)
-// 	defer multipartFile.Close()
+// ------------------------------------
+// API - Post/Return Image to Cloud Storage
+/////
 
-// 	fileName, prepareError := IMAGE_API_SendToCloudStorage(req, multipartFile, multipartHeader)
-// 	HandleError(res, prepareError)
-// 	res.Header().Set("Content-Type", "text/html; charset=utf-8")
+func IMAGE_API_PlaceImageIntoCS(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	// POST: /api/makeImage
+	// this is the normal part of the image upload. --not tied to ckeditor
+	multipartFile, multipartHeader, fileError := req.FormFile("upload") // pull uploaded image.
+	if fileError != nil {                                               // handle error in a stable way, this will be a part of another page.
+		http.Redirect(res, req, "/image/uploader?status=failure", http.StatusSeeOther)
+		return
+	}
+	defer multipartFile.Close()
 
-// 	io.WriteString(res, `<img src="`+`https://storage.googleapis.com/`+GCS_BucketID+`\`+fileName+`" />`)
-// }
+	_, prepareError := IMAGE_API_SendToCloudStorage(req, multipartFile, multipartHeader)
+	if prepareError != nil { // send to CS and same as above.
+		http.Redirect(res, req, "/image/uploader?status=failure", http.StatusSeeOther)
+		return
+	}
+	// success, let user know that their image is waiting.
+	http.Redirect(res, req, "/image/uploader?status=success", http.StatusSeeOther)
+}
+
+func IMAGE_API_GetImageFromCS(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	// GET: /api/getImage
+	id := req.FormValue("id") // this is an id request only.
+	if id == "" {             // if no id, exit with failure.
+		fmt.Fprint(res, `{"result":"failure","reason":"missing image id","code":400}`)
+		return
+	}
+
+	ctx := appengine.NewContext(req) // quickly get a handle into CS
+	client, clientErr := storage.NewClient(ctx)
+	HandleError(res, clientErr)
+	defer client.Close()
+
+	obj := client.Bucket(GCS_BucketID).Object(id) // pull the object from cs
+
+	// We'll just copy the image data onto the response, letting the browser know that we're sending an image.
+	res.Header().Set("Content-Type", "image/jpeg; charset=utf-8")
+	rdr, _ := obj.NewReader(ctx)
+	io.Copy(res, rdr)
+}
 
 // ------------------------------------
 // API - Parse/Prepare Image
@@ -97,10 +128,10 @@ func IMAGE_API_SendToCloudStorage(req *http.Request, mpf multipart.File, hdr *mu
 	mpf.Seek(0, 0)                         // makeSHA moved the reader, move it back.
 
 	ctx := appengine.NewContext(req)
-	return uploadName, fileToCS(ctx, uploadName, mpf) // upload the file and name. if there is an error, our parent will catch it.
+	return uploadName, fileToCS(ctx, uploadName, mpf) // upload the file and name. if there is an error, our parent will catch it.}
 }
 
-func makeSHA(src multipart.File) string {
+func makeSHA(src multipart.File) string { // make a sha of the contents of the file. we do not want duplicate files.
 	h := sha1.New()
 	io.Copy(h, src)
 	return fmt.Sprintf("%x", h.Sum(nil))
@@ -108,6 +139,7 @@ func makeSHA(src multipart.File) string {
 
 func filterExtension(req *http.Request, hdr *multipart.FileHeader) (string, error) {
 	ext := hdr.Filename[strings.LastIndex(hdr.Filename, ".")+1:] // parse through the fileheader for it's extention.
+	ext = strings.ToLower(ext)                                   // uppercase, lowercase. all the same here.
 
 	for _, allowedExt := range Allowed_Filetypes { // for all allowed filetypes
 		if allowedExt == ext { // found it? Excellent!
@@ -116,41 +148,6 @@ func filterExtension(req *http.Request, hdr *multipart.FileHeader) (string, erro
 	}
 	// It was not a part of the allowed extentions, return an error.
 	return ext, fmt.Errorf("Filetype %s is not allowed by server.", ext)
-}
-
-// ------------------------------------
-// API - Post/Return Image to Cloud Storage
-/////
-
-func IMAGE_API_PlaceImageIntoCS(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// POST: url/API/UploadImage
-	multipartFile, multipartHeader, fileError := req.FormFile("upload")
-	HandleError(res, fileError)
-	defer multipartFile.Close()
-
-	fileName, prepareError := IMAGE_API_SendToCloudStorage(req, multipartFile, multipartHeader)
-	HandleError(res, prepareError)
-	fmt.Fprint(res, `{"result":"success","reason":","code":0,"uri":"`+fileName+`"}`)
-}
-
-func IMAGE_API_GetImageFromCS(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	id := req.FormValue("id")
-	if id == "" {
-		fmt.Fprint(res, `{"result":"failure","reason":"missing image id","code":400}`)
-		return
-	}
-
-	ctx := appengine.NewContext(req)
-	client, clientErr := storage.NewClient(ctx)
-	HandleError(res, clientErr)
-	defer client.Close()
-
-	obj := client.Bucket(GCS_BucketID).Object(id)
-
-	// We'll just copy the image data onto the response, letting the browser know that we're sending an image.
-	res.Header().Set("Content-Type", "image/jpeg; charset=utf-8")
-	rdr, _ := obj.NewReader(ctx)
-	io.Copy(res, rdr)
 }
 
 // ------------------------------------

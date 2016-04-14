@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+
+<script type="text/javascript">
+    var callbackNumb = "{{.CKEditorFuncNum}}";
+    // console.log("Hey, I have started up with!"+callbackNumb)
+    function verifySelection(uri){
+        // send this selected image back to the ckeditor
+        if (callbackNumb == ""){
+            return
+        }
+        // console.log("Image selected: "+uri)
+        var urlOut = "/api/getImage?id="+uri
+        // console.log("Turned into "+urlOut)
+        
+        window.opener.CKEDITOR.tools.callFunction(callbackNumb,urlOut);
+        window.close();
+    }
+</script>
+
+<style>
+    .flexer {
+        display: flex;
+        flex-wrap: wrap;
+    }
+    .image-button {
+        border: 1px solid gray;
+    }
+    .thumbnail {
+        max-width: 100px;
+        max-height: 100px;
+    }
+</style>
+
+</head>
+<body>
+
+<iframe src="/image/uploader">Uploader Iframe</iframe>
+
+<br>
+<button type="button" onclick="window.parent.location=window.parent.location.href;" id="refresh">Refresh List</button>
+<br>
+<div class="flexer">
+    {{range .Images}}
+    <button class="image-button" onclick='verifySelection("{{.}}")'>
+        <img class="thumbnail" src="/api/getImage?id={{.}}" />
+    </button>
+    <br />
+    {{end}}
+</div>
+</body>
+</html>

@@ -15,33 +15,35 @@ func init() {
 
 	r := httprouter.New()
 	http.Handle("/", r)
-	r.GET("/image", IMAGE_PostUploadForm)
-	r.POST("/image", IMAGE_API_PlaceImageIntoCS)
-	r.GET("/api/getImage", IMAGE_API_GetImageFromCS)
-	r.POST("/api/makeImage", IMAGE_API_PlaceImageIntoCS)
 
-	r.GET("/api/ckeditor/select", IMAGE_ACTION_CKEDITOR)
-	r.POST("/api/ckeditor/create", IMAGE_API_CKEDITOR_PlaceImageIntoCS)
+	// Images.go
+	r.GET("/image", IMAGE_BrowserForm)                                  // image browser <user>
+	r.GET("/image/uploader", IMAGE_PostUploadForm)                      // image uploader <user-internal>
+	r.GET("/api/getImage", IMAGE_API_GetImageFromCS)                    // image requester <user-internal>
+	r.POST("/api/makeImage", IMAGE_API_PlaceImageIntoCS)                // image creator <api>
+	r.POST("/api/ckeditor/create", IMAGE_API_CKEDITOR_PlaceImageIntoCS) // ckEditor, image creator <api>
 
-	r.GET("/api/catalogs.json", API_GetCatalogs) // API GET json calls
-	r.GET("/api/books.json", API_GetBooks)
-	r.GET("/api/chapters.json", API_GetChapters)
-	r.GET("/api/sections.json", API_GetSections)
-	r.GET("/api/objectives.json", API_GetObjectives)
+	// API.go, readers
+	r.GET("/api/catalogs.json", API_GetCatalogs)       // read datastore, catalogs <api>
+	r.GET("/api/books.json", API_GetBooks)             // read datastore, books <api>
+	r.GET("/api/chapters.json", API_GetChapters)       // read datastore, chapters <api>
+	r.GET("/api/sections.json", API_GetSections)       // read datastore, sections <api>
+	r.GET("/api/objectives.json", API_GetObjectives)   // read datastore, objectives <api>
+	r.GET("/api/objective.html", API_GetObjectiveHTML) // read datastore, objective as html <api>
 
-	r.GET("/api/objective.html", API_GetObjectiveHTML) // API GET html calls
+	// API.go, writers
+	r.POST("/api/makeCatalog", API_MakeCatalog)     // create datastore, catalog <api>
+	r.POST("/api/makeBook", API_MakeBook)           // create datastore, book <api>
+	r.POST("/api/makeChapter", API_MakeChapter)     // create datastore, chapter <api>
+	r.POST("/api/makeSection", API_MakeSection)     // create datastore, section <api>
+	r.POST("/api/makeObjective", API_MakeObjective) // create datastore, objective <api>
 
-	r.POST("/api/makeCatalog", API_MakeCatalog) // API POST make calls
-	r.POST("/api/makeBook", API_MakeBook)
-	r.POST("/api/makeChapter", API_MakeChapter)
-	r.POST("/api/makeSection", API_MakeSection)
-	r.POST("/api/makeObjective", API_MakeObjective)
-
-	r.GET("/", home)
-	r.GET("/select", selectBookFromForm)
-	r.GET("/edit", getSimpleObjectiveEditor)
-	r.GET("/read", getSimpleObjectiveReader)
-	r.GET("/favicon.ico", favIcon)
+	// main.go
+	r.GET("/", home)                         // Root page <user>
+	r.GET("/select", selectBookFromForm)     // select objective based on information <user>
+	r.GET("/edit", getSimpleObjectiveEditor) // edit objective given id <user>
+	r.GET("/read", getSimpleObjectiveReader) // read objective given id <user>
+	r.GET("/favicon.ico", favIcon)           // favicon <user>
 
 	http.Handle("/public/", http.StripPrefix("/public", http.FileServer(http.Dir("public/"))))
 
@@ -79,13 +81,12 @@ func home(res http.ResponseWriter, req *http.Request, params httprouter.Params) 
 }
 
 func selectBookFromForm(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// Req: GET /select
+	// GET: /select
 	ServeTemplateWithParams(res, req, "simpleSelector.html", nil)
 }
 
 func getSimpleObjectiveEditor(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// Req: GET /edit?ID=<Objective ID Number>
-	// ctx := appengine.NewContext(req)
+	// GET: /edit?ID=<Objective ID Number>
 
 	ObjectiveID, numErr := strconv.Atoi(req.FormValue("ID"))
 	if numErr != nil || ObjectiveID == 0 {
@@ -130,5 +131,6 @@ func getSimpleObjectiveEditor(res http.ResponseWriter, req *http.Request, params
 }
 
 func getSimpleObjectiveReader(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	// GET: /read
 	ServeTemplateWithParams(res, req, "simpleReader.html", nil)
 }

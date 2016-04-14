@@ -2,41 +2,40 @@
 <html>
 <head>
     <title></title>
-
-<script type="text/javascript">
-    var callbackNumb = "{{.CKEditorFuncNum}}";
-    console.log("Hey, I have started up with!"+callbackNumb)
-    function verifySelection(uri){
-        if (callbackNumb == ""){
-            return
-        }
-        console.log("Image selected: "+uri)
-        var urlOut = "/api/getImage?id="+uri
-        console.log("Turned into "+urlOut)
-        
-        window.opener.CKEDITOR.tools.callFunction(callbackNumb,urlOut);
-        window.close();
-    }
-</script>
 </head>
 <body>
-
 <h1>Upload Image</h1>
+<p id="JS-MessageZone"></p>
 <form method="POST" enctype="multipart/form-data" action="/api/makeImage">
     <input type="file" name="upload">
     <input type="submit">
 </form>
-<br>
-<button type="button" onclick="window.parent.location=window.parent.location.href;" id="refresh">Refresh List</button>
-<br>
-<div>
-    {{range .Images}}
-    <button onclick='verifySelection("{{.}}")'>
-        <img src="/api/getImage?id={{.}}" style="max-width:20%;max-height: 20%;" />
-    </button>
-    <br />
-    {{end}}
-</div>
 
+
+<script type="text/javascript">
+    function getQueryVariable(variable){
+        // Source: https://css-tricks.com/snippets/javascript/get-url-variables/
+        var query = window.location.search.substring(1);
+        var vars = query.split("&");
+        for (var i=0;i<vars.length;i++) {
+            var pair = vars[i].split("=");
+            if(pair[0] == variable){return pair[1];}
+        }
+        return(false);
+    }
+
+    window.onload = (function () {
+        var msgP = document.querySelector('#JS-MessageZone');
+        var ifCall = getQueryVariable("status");
+        if (!ifCall) {return;}
+
+        if (ifCall == "success") {
+            msgP.textContent = 'Image Successfully Uploaded';
+            return
+        }
+
+        msgP.textContent = 'There was an error in uploading your image';
+    })();
+</script>
 </body>
 </html>
