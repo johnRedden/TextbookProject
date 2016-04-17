@@ -71,6 +71,10 @@
                 $.wait(function(){$("#JQ-Results").val("")},3)
             });
 
+            $("#JQ-PreviewButton").click(function(){
+                console.log('preview clicked');
+            });
+
             $.wait = function( callback, seconds){
                return window.setTimeout( callback, seconds * 1000 );
             }
@@ -126,6 +130,7 @@
         <span class="input-group-btn">
             <!-- I've replaced the button here with a saved button instead -->
             <button type="button" class="btn btn-default" id="JQ-SubmitButton">Save</button>
+            <button type="button" class="btn btn-default" id="JQ-PreviewButton">Preview</button>
         </span>
     </div>
 
