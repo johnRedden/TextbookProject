@@ -46,6 +46,13 @@
         #myContainer{
             margin-top: 200px;
         }
+        .input-group-addon { 
+            width: 130px;
+            text-align:left;
+        }
+        .input-group { width: 100%; }
+
+
     </style>
     <script type="text/javascript">
         $(document).ready(function(){
@@ -55,6 +62,7 @@
                 sectID = $("#JQ-SectionID").val()
                 ObjeName = $("#JQ-ObjectiveTitle").val()
                 objeID = $("#JQ-ObjectiveID").val()
+                
                 ver = $("#JQ-Version").val()
                 cont = CKEDITOR.instances['JQ-Content'].getData();
                 ktw = CKEDITOR.instances['JQ-KeyTakeaways'].getData();
@@ -63,7 +71,9 @@
                     j = $.parseJSON(data);
                     console.log(j.result +":"+ j.reason)
                     if (j.code == 0){
-                        $("#JQ-Results").val("Submission Success")
+                        $("#JQ-Results").val("Submission Success");
+                        // reset save button
+                        toggleSaveBtn("saved");
                     } else {
                         $("#JQ-Results").val(j.reason)
                     }
@@ -73,6 +83,9 @@
 
             $("#JQ-PreviewButton").click(function(){
                 console.log('preview clicked');
+                objectiveID = $("#JQ-ObjectiveID").val();
+                var url = '/api/objective.html?ID='+objectiveID;
+                window.open(url,'_blank');
             });
 
             $.wait = function( callback, seconds){
@@ -90,56 +103,69 @@
 
             var contentEditor = CKEDITOR.replace('JQ-Content',stdConfig);
             var keyTakeawaysEditor = CKEDITOR.replace('JQ-KeyTakeaways',stdConfig);
+
+            // save button functionality  TODO: IF any input changes toggle!
+            contentEditor.on('change',function(){
+                toggleSaveBtn("save");
+            });
+
+
+            //utility functions
+            function toggleSaveBtn(status){
+                if(status==="saved"){
+                    $('#JQ-SubmitButton').removeClass('btn-danger').addClass('btn-success').html('<span id="saveGlyph" class="glyphicon glyphicon-ok"> </span> Saved');
+                    $('#JQ-PreviewButton').prop('disabled', false);
+                }else{
+                    $('#JQ-SubmitButton').removeClass('btn-success').addClass('btn-danger').html('<span id="saveGlyph" class="glyphicon glyphicon-exclamation-sign"> </span> Save');
+                    $('#JQ-PreviewButton').prop('disabled', true);
+                }
+
+            }
         });
     </script>
 </head>
 <body>
     <nav class="navbar navbar-default navbar-fixed-top">
         <div class="container"> 
-            <div class="navbar-header">
+        <div class="navbar-header">
 
-    <h2><img class="pull-left" src="/public/images/eduNetSystems-logo.png"/> &nbsp EduNetSystems Editor </h2>
+            <h2><img class="pull-left" src="/public/images/eduNetSystems-logo.png"/> &nbsp EduNetSystems Editor </h2>
 
-    <!-- Data Id's, Used for submission. -->
-    <input id="JQ-BookID" type="hidden" value="{{.BookID}}" readonly>
-    <input id="JQ-ChapterID" type="hidden" value="{{.ChapterID}}" readonly>
-    <input id="JQ-SectionID" type="hidden" value="{{.SectionID}}" readonly>
-    <input id="JQ-ObjectiveID" type="hidden" value="{{.ObjectiveID}}" readonly>
+            <!-- Data Id's, Used for submission. -->
+            <input id="JQ-BookID" type="hidden" value="{{.BookID}}" readonly>
+            <input id="JQ-ChapterID" type="hidden" value="{{.ChapterID}}" readonly>
+            <input id="JQ-SectionID" type="hidden" value="{{.SectionID}}" readonly>
+            <input id="JQ-ObjectiveID" type="hidden" value="{{.ObjectiveID}}" readonly>
 
-    <!-- Objective Title -->
-    <div class="input-group">
-        <label class="input-group-addon">Objective:</label>
-        <input type="text" class="form-control" id="JQ-ObjectiveTitle" placeholder="Objective" value="{{.ObjectiveTitle}}">
-    </div>
+            <!-- Objective Title -->
+            <div class="input-group">
+                <label class="input-group-addon">Objective:</label>
+                <input type="text" class="form-control" id="JQ-ObjectiveTitle" placeholder="Objective" value="{{.ObjectiveTitle}}">
+            </div>
 
-    <!-- Author -->
-    <div class="input-group">
-        <label class="input-group-addon">Author:</label>
-        <input type="text" class="form-control" id="JQ-AuthorInput" placeholder="Author" value="{{.Author}}">
-    </div>
+            <!-- Author -->
+            <div class="input-group">
+                <label class="input-group-addon">Author:</label>
+                <input type="text" class="form-control" id="JQ-AuthorInput" placeholder="Author" value="{{.Author}}">
+            </div>
 
-    <!-- Version -->
-    <div class="input-group">
-        <label class="input-group-addon">Version:</label>
-        <input type="text" class="form-control" placeholder="Version" id="JQ-Version" value="{{.ObjectiveVersion}}">
+            <!-- Version -->
+            <div class="input-group">
+                <label class="input-group-addon">Version:</label>
+                <input type="text" class="form-control" placeholder="Version" id="JQ-Version" value="{{.ObjectiveVersion}}">
 
-        <!-- TODO: Hook in whatever these two things are supposed to be. -->
-        <span class="input-group-addon">
-            <span id="glyph" class="glyphicon glyphicon-saved good"> </span>
-        </span>
-        <span class="input-group-btn">
-            <!-- I've replaced the button here with a saved button instead -->
-            <button type="button" class="btn btn-default" id="JQ-SubmitButton">Save</button>
-            <button type="button" class="btn btn-default" id="JQ-PreviewButton">Preview</button>
-        </span>
-    </div>
+                <!-- TODO: Hook in whatever these two things are supposed to be. -->
+                <span class="input-group-btn">
+                    <!-- I've replaced the button here with a saved button instead -->
+                    <button type="button" class="btn btn-success" id="JQ-SubmitButton"><span id="saveGlyph" class="glyphicon glyphicon-ok"> </span> Saved</button>
+                    <button type="button" class="btn btn-default" id="JQ-PreviewButton">Preview</button>
+                </span>
+            </div>
 
-
-
-    <p><em>online editor alpha version</em></p>
+            <p><em>online editor alpha version</em></p>
 
             </div>
-        </div>
+            </div>
     </nav>
 
     <div class="container" id="myContainer">
