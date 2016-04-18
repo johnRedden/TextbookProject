@@ -2,8 +2,10 @@ package main
 
 import (
 	"github.com/julienschmidt/httprouter"
+	"golang.org/x/net/context"
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
+	"google.golang.org/appengine/log"
 	"html/template"
 	"net/http"
 	"strconv"
@@ -57,6 +59,14 @@ func init() {
 func HandleError(res http.ResponseWriter, e error) {
 	// generic error handling for any error we encounter plus a message we've defined.
 	if e != nil {
+		http.Error(res, e.Error(), http.StatusInternalServerError)
+	}
+}
+
+func HandleErrorWithLog(res http.ResponseWriter, e error, tag string, ctx context.Context) {
+	// generic error handling for any error we encounter plus a message we've defined.
+	if e != nil {
+		log.Criticalf(ctx, "%s: %v", tag, e)
 		http.Error(res, e.Error(), http.StatusInternalServerError)
 	}
 }
@@ -123,8 +133,8 @@ func getSimpleObjectiveEditor(res http.ResponseWriter, req *http.Request, params
 	ve.BookTitle = book_temp.Title
 
 	ve.ObjectiveVersion = obj_temp.Version
-	ve.Content = obj_temp.Content
-	ve.KeyTakeaways = obj_temp.KeyTakeaways
+	ve.Content = template.HTML(obj_temp.Content)
+	ve.KeyTakeaways = template.HTML(obj_temp.KeyTakeaways)
 	ve.Author = obj_temp.Author
 
 	ServeTemplateWithParams(res, req, "simpleEditor.html", ve)

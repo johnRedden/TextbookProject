@@ -52,11 +52,17 @@ type Objective struct {
 	Version float64 `datastore:,noindex`
 	Author  string  //or array of strings
 
-	Content      template.HTML `datastore:,noindex`
-	KeyTakeaways template.HTML `datastore:,noindex` // or array of strings
+	Content      string `datastore:,noindex`
+	KeyTakeaways string `datastore:,noindex` // or array of strings
 
 	Parent int64 // key.intID for Section
 	ID     int64 `datastore:"-"`
+}
+
+type ObjectiveHTML struct {
+	Objective
+	Content      template.HTML
+	KeyTakeaways template.HTML
 }
 
 type VIEW_Editor struct {
