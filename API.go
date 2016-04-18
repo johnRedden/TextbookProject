@@ -233,11 +233,11 @@ func API_MakeObjective(res http.ResponseWriter, req *http.Request, params httpro
 	}
 
 	if req.FormValue("Content") != "" {
-		objectiveForDatastore.Content = req.FormValue("Content")
+		objectiveForDatastore.Content = template.HTML(req.FormValue("Content"))
 	}
 
 	if req.FormValue("KeyTakeaways") != "" {
-		objectiveForDatastore.KeyTakeaways = req.FormValue("KeyTakeaways")
+		objectiveForDatastore.KeyTakeaways = template.HTML(req.FormValue("KeyTakeaways"))
 	}
 
 	if req.FormValue("Author") != "" {
@@ -400,17 +400,12 @@ func API_GetObjectiveHTML(res http.ResponseWriter, req *http.Request, params htt
 		return
 	}
 
-	objectivePrepScreen, getErr := GetObjectiveFromDatastore(req, int64(ObjectiveID))
+	objectiveToScreen, getErr := GetObjectiveFromDatastore(req, int64(ObjectiveID))
 	//HandleError(res, getErr)
 	if getErr != nil {
 		fmt.Fprint(res, `<section><p>Request has failed: No objective with given ID.</p></section>`)
 		return
 	}
-
-	objectiveToScreen := ObjectiveHTML{}
-	objectiveToScreen.Objective = objectivePrepScreen
-	objectiveToScreen.Content = template.HTML(objectivePrepScreen.Content)
-	objectiveToScreen.KeyTakeaways = template.HTML(objectivePrepScreen.KeyTakeaways)
 
 	ServeTemplateWithParams(res, req, "ObjectiveHTML.html", objectiveToScreen)
 }

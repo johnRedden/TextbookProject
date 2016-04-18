@@ -14,14 +14,14 @@ import (
 // Catalog is the root structure, Everything below this will inherit from a Catalog.
 type Catalog struct {
 	Name    string
-	Version float64 `datastore:,noindex`
+	Version float64 `datastore:",noindex"`
 	Company string
 	ID      string `datastore:"-"`
 	// Company-Website string
 }
 type Book struct { // Book has an ancestor in catalog, searchable based on catalog that it was a part of.
 	Title   string
-	Version float64 `datastore:,noindex` // we will not query on versions. Do not need to store in a searchable way.
+	Version float64 `datastore:",noindex"` // we will not query on versions. Do not need to store in a searchable way.
 	Author  string  // or array of strings
 	Tags    string  // searchable tags to describe the book, We can search based on substring.
 
@@ -35,34 +35,28 @@ type Book struct { // Book has an ancestor in catalog, searchable based on catal
 
 type Chapter struct { // Chapter has an ancestor in Book. Chapter only has meaning from book.
 	Title   string
-	Version float64 `datastore:,noindex`
+	Version float64 `datastore:",noindex"`
 	Parent  int64   // key.intID for Book
 	ID      int64   `datastore:"-"` // self.ID assigned when pulled from datastore.
 }
 
 type Section struct {
 	Title   string
-	Version float64 `datastore:,noindex`
+	Version float64 `datastore:",noindex"`
 	Parent  int64   // key.intID for Chapter
 	ID      int64   `datastore:"-"`
 }
 
 type Objective struct {
 	Title   string
-	Version float64 `datastore:,noindex`
+	Version float64 `datastore:",noindex"`
 	Author  string  //or array of strings
 
-	Content      string `datastore:,noindex`
-	KeyTakeaways string `datastore:,noindex` // or array of strings
+	Content      template.HTML `datastore:",noindex"`
+	KeyTakeaways template.HTML `datastore:",noindex"` // or array of strings
 
 	Parent int64 // key.intID for Section
 	ID     int64 `datastore:"-"`
-}
-
-type ObjectiveHTML struct {
-	Objective
-	Content      template.HTML
-	KeyTakeaways template.HTML
 }
 
 type VIEW_Editor struct {
