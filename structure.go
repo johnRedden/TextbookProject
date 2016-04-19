@@ -69,6 +69,7 @@ func GetBookFromDatastore(req *http.Request, key int64) (Book, error) {
 	getErr := datastore.Get(ctx, bk, &bookToReturn)
 	if getErr == datastore.ErrNoSuchEntity {
 		getErr = nil
+		return bookToReturn, getErr // dont allow the id to be set
 	}
 	bookToReturn.ID = key
 	return bookToReturn, getErr

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TOC</title>
+
+<!-- JQuery -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+<script type="text/javascript">
+    var incomingID = "{{.}}";
+    var editAPI = "/edit?ID="
+    var readAPI = "/read?ID="
+    var deleteAPI = "/deleteObjective?ID="
+
+    $(document).ready(function(){
+        if (incomingID == "") {return ;}
+
+        $.get("/toc?ID="+incomingID,function(xml){
+            booktitle = $(xml).find("booktitle").text();
+            bookid = $(xml).find("bookid").text();
+            catalog = $(xml).find("catalog").text();
+
+            $("#JQ-TOC-Root").append(`<ul id="Book-Information"></ul>`)
+            $("#Book-Information").append(`<li id="Book-Title">`+booktitle+`</li>`)
+            $("#Book-Information").append(`<li id="Book-ID">`+bookid+`</li>`)
+            $("#Book-Information").append(`<li id="Book-Catalog">`+catalog+`</li>`)
+
+            $("#JQ-TOC-Root").append(`<ul id="Book-Chapters"></ul>`)
+            $(xml).find('chapter').each(function(){ // each chapter of book
+                singleChapterID = $(this).find("chapterid").text()
+                singleChapterName = $(this).find("chaptertitle").text()
+                $("#Book-Chapters").append(`<li id="`+singleChapterID+`">`+singleChapterName+`</li>`);
+
+                $(`li#`+singleChapterID).append(`<ul id="UL-`+singleChapterID+`"></ul>`)
+
+                $(this).find("section").each(function(){ // sections of each chapter
+                    singleSectionID = $(this).find("sectionid").text()
+                    singleSectionName = $(this).find("sectiontitle").text()
+
+                    $(`ul#UL-`+singleChapterID).append(`<li id="`+singleSectionID+`">`+singleSectionName+`</li>`);
+
+                    $(`li#`+singleSectionID).append(`<ul id="UL-`+singleSectionID+`"></ul>`)
+
+                    $(this).find("objective").each(function(){ // objectives of the section
+                        singleObjectiveID = $(this).find("objectiveid").text()
+                        singleObjectiveName = $(this).find("objectivetitle").text()
+                        // console.log(`ul#UL-`+singleSectionID)
+                        $(`ul#UL-`+singleSectionID).append(`<li id="`+singleObjectiveID+`">`+singleObjectiveName+`</li>`);
+                        buttons = `
+                            <a href="`+editAPI+singleObjectiveID+`">Edit</a>
+                            <a href="`+readAPI+singleObjectiveID+`">Read</a>
+                            <a href="`+deleteAPI+singleObjectiveID+`">Delete</a>`
+                        $(`ul#UL-`+singleSectionID).append(buttons);
+                    });
+                });
+            });
+        });
+    });
+</script>
+</head>
+<body>
+<section id="JQ-TOC-Root"></section>
+</body>
+</html>

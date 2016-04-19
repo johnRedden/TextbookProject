@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/julienschmidt/httprouter"
 	"golang.org/x/net/context"
 	"google.golang.org/appengine"
@@ -45,7 +46,12 @@ func init() {
 	r.GET("/select", selectBookFromForm)     // select objective based on information <user>
 	r.GET("/edit", getSimpleObjectiveEditor) // edit objective given id <user>
 	r.GET("/read", getSimpleObjectiveReader) // read objective given id <user>
-	r.GET("/favicon.ico", favIcon)           // favicon <user>
+
+	// main.go, Table of Contents
+	r.GET("/toc", getBookTOC)    // xml toc for a book <api>
+	r.GET("/toc.html", printTOC) // user viewable toc for a book <user>
+
+	r.GET("/favicon.ico", favIcon) // favicon <user>
 
 	http.Handle("/public/", http.StripPrefix("/public", http.FileServer(http.Dir("public/"))))
 
@@ -143,4 +149,95 @@ func getSimpleObjectiveEditor(res http.ResponseWriter, req *http.Request, params
 func getSimpleObjectiveReader(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	// GET: /read
 	ServeTemplateWithParams(res, req, "simpleReader.html", nil)
+}
+
+func getBookTOC(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	// GET: /toc?ID=<Book ID Number>
+
+	/// - - - -
+	// Initial Check, Ensure information is trivially good
+	/////////
+
+	BookID_In, numErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
+	if numErr != nil || BookID_In == 0 {
+		http.Redirect(res, req, "/?status=invalid_id", http.StatusTemporaryRedirect)
+	}
+
+	/// - - - -
+	// Gather Book information, ensure that book exists.
+	////////
+
+	BookTitle, BookCatalog, BookID_Out := func(req *http.Request, id int64) (string, string, int64) { // get book data
+		book_to_output, _ := GetBookFromDatastore(req, id)
+		return book_to_output.Title, book_to_output.CatalogTitle, book_to_output.ID
+	}(req, BookID_In)
+
+	if BookID_In != BookID_Out {
+		ServeTemplateWithParams(res, req, "printme.html", "ERROR! Incoming id not found!")
+		return
+	}
+
+	/// - - - -
+	// Prepare to make everything simple.
+	//////
+
+	ctx := appengine.NewContext(req)
+	type Title_ID struct { // struct for each layer.
+		Title string
+		ID    int64
+	}
+	gatherKindGroup := func(ctx context.Context, parentID int64, kind string) []Title_ID {
+		q := datastore.NewQuery(kind)
+		q = q.Filter("Parent =", parentID)
+		q = q.Project("Title")
+
+		output_chapters := make([]Title_ID, 0)
+		for t := q.Run(ctx); ; {
+			var cName struct{ Title string }
+			k, qErr := t.Next(&cName)
+
+			if qErr == datastore.Done {
+				break
+			} else if qErr != nil {
+				http.Error(res, qErr.Error(), http.StatusInternalServerError)
+			}
+
+			output_chapters = append(output_chapters, Title_ID{cName.Title, k.IntID()})
+		}
+		return output_chapters
+	}
+
+	/// - - - -
+	// Print header/Book information
+	//////
+
+	fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8"?><book>`) // Layer Book Information.
+	fmt.Fprintf(res, `<booktitle>%s</booktitle><bookid>%d</bookid><catalog>%s</catalog>`, BookTitle, BookID_Out, BookCatalog)
+
+	/// - - - -
+	// Gather & Print Sub information as available
+	//////
+
+	for _, singleChapter := range gatherKindGroup(ctx, BookID_Out, "Chapters") {
+		fmt.Fprintf(res, `<chapter><chaptertitle>%s</chaptertitle><chapterid>%d</chapterid>`, singleChapter.Title, singleChapter.ID)
+		for _, singleSection := range gatherKindGroup(ctx, singleChapter.ID, "Sections") {
+			fmt.Fprintf(res, `<section><sectiontitle>%s</sectiontitle><sectionid>%d</sectionid>`, singleSection.Title, singleSection.ID)
+			for _, singleObjective := range gatherKindGroup(ctx, singleSection.ID, "Objectives") {
+				fmt.Fprintf(res, `<objective><objectivetitle>%s</objectivetitle><objectiveid>%d</objectiveid></objective>`, singleObjective.Title, singleObjective.ID)
+			}
+			fmt.Fprint(res, `</section>`)
+		}
+		fmt.Fprint(res, `</chapter>`)
+	}
+
+	/// - - - -
+	// Close Book
+	//////
+
+	fmt.Fprint(res, `</book>`) // Layer book close
+}
+
+func printTOC(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	// GET: /toc.html?ID=<Book ID Number>
+	ServeTemplateWithParams(res, req, "toc.html", req.FormValue("ID"))
 }
