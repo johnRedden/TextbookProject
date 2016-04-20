@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/julienschmidt/httprouter"
 	"golang.org/x/net/context"
 	"google.golang.org/appengine"
@@ -19,12 +18,23 @@ func init() {
 	r := httprouter.New()
 	http.Handle("/", r)
 
+	//// -------------------------------------------
+	// Handlers
+	//
+	// On Tags:
+	//  * <user>: A page the user can interact with
+	//  * <user-internal>: A page that the user does not directly interact with but depends on.
+	//  * <api>: A request that preforms background actions.
+	//  * <auth>: (Modifier) This request will someday include user authentication.
+	//////
+
 	// Images.go
-	r.GET("/image", IMAGE_BrowserForm)                                  // image browser <user>
-	r.GET("/image/uploader", IMAGE_PostUploadForm)                      // image uploader <user-internal>
+	r.GET("/image", IMAGE_BrowserForm)                                  // image browser <user><auth>
+	r.GET("/image/uploader", IMAGE_PostUploadForm)                      // image uploader <user-internal><auth>
 	r.GET("/api/getImage", IMAGE_API_GetImageFromCS)                    // image requester <user-internal>
-	r.POST("/api/makeImage", IMAGE_API_PlaceImageIntoCS)                // image creator <api>
-	r.POST("/api/ckeditor/create", IMAGE_API_CKEDITOR_PlaceImageIntoCS) // ckEditor, image creator <api>
+	r.POST("/api/makeImage", IMAGE_API_PlaceImageIntoCS)                // image creator <api><auth>
+	r.GET("/api/deleteImage", IMAGE_API_RemoveImageFromCS)              // image deleter <api><auth>
+	r.POST("/api/ckeditor/create", IMAGE_API_CKEDITOR_PlaceImageIntoCS) // ckEditor, image creator <api><auth>
 
 	// API.go, readers
 	r.GET("/api/catalogs.json", API_GetCatalogs)       // read datastore, catalogs <api>
@@ -35,21 +45,29 @@ func init() {
 	r.GET("/api/objective.html", API_GetObjectiveHTML) // read datastore, objective as html <api>
 
 	// API.go, writers
-	r.POST("/api/makeCatalog", API_MakeCatalog)     // create datastore, catalog <api>
-	r.POST("/api/makeBook", API_MakeBook)           // create datastore, book <api>
-	r.POST("/api/makeChapter", API_MakeChapter)     // create datastore, chapter <api>
-	r.POST("/api/makeSection", API_MakeSection)     // create datastore, section <api>
-	r.POST("/api/makeObjective", API_MakeObjective) // create datastore, objective <api>
+	r.POST("/api/makeCatalog", API_MakeCatalog)     // create datastore, catalog <api><auth>
+	r.POST("/api/makeBook", API_MakeBook)           // create datastore, book <api><auth>
+	r.POST("/api/makeChapter", API_MakeChapter)     // create datastore, chapter <api><auth>
+	r.POST("/api/makeSection", API_MakeSection)     // create datastore, section <api><auth>
+	r.POST("/api/makeObjective", API_MakeObjective) // create datastore, objective <api><auth>
+
+	// API.go, deleters
+	// TODO: change to post
+	r.GET("/api/deleteCatalog", API_DeleteCatalog)     // delete datastore, catalog <api><auth>
+	r.GET("/api/deleteBook", API_DeleteBook)           // delete datastore, book <api><auth>
+	r.GET("/api/deleteChapter", API_DeleteChapter)     // delete datastore, chapter <api><auth>
+	r.GET("/api/deleteSection", API_DeleteSection)     // delete datastore, section <api><auth>
+	r.GET("/api/deleteObjective", API_DeleteObjective) // delete datastore, objective <api><auth>
 
 	// main.go
 	r.GET("/", home)                         // Root page <user>
 	r.GET("/select", selectBookFromForm)     // select objective based on information <user>
-	r.GET("/edit", getSimpleObjectiveEditor) // edit objective given id <user>
+	r.GET("/edit", getSimpleObjectiveEditor) // edit objective given id <user><auth>
 	r.GET("/read", getSimpleObjectiveReader) // read objective given id <user>
 
-	// main.go, Table of Contents
-	r.GET("/toc", getBookTOC)    // xml toc for a book <api>
-	r.GET("/toc.html", printTOC) // user viewable toc for a book <user>
+	// main.go/API.go, Table of Contents
+	r.GET("/toc", API_getTOC)        // xml toc for a book <api>
+	r.GET("/toc.html", getSimpleTOC) // user viewable toc for a book <user>
 
 	r.GET("/favicon.ico", favIcon) // favicon <user>
 
@@ -63,7 +81,7 @@ func init() {
 /////
 
 func HandleError(res http.ResponseWriter, e error) {
-	// generic error handling for any error we encounter plus a message we've defined.
+	// generic error handling for any error we encounter.
 	if e != nil {
 		http.Error(res, e.Error(), http.StatusInternalServerError)
 	}
@@ -103,6 +121,9 @@ func selectBookFromForm(res http.ResponseWriter, req *http.Request, params httpr
 
 func getSimpleObjectiveEditor(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	// GET: /edit?ID=<Objective ID Number>
+
+	// TODO: Authentication/Authorization here.
+	// CHECK: Does user x have permissions to preform this action?
 
 	ObjectiveID, numErr := strconv.Atoi(req.FormValue("ID"))
 	if numErr != nil || ObjectiveID == 0 {
@@ -148,96 +169,11 @@ func getSimpleObjectiveEditor(res http.ResponseWriter, req *http.Request, params
 
 func getSimpleObjectiveReader(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	// GET: /read
-	ServeTemplateWithParams(res, req, "simpleReader.html", nil)
+	readID := req.FormValue("ID")
+	ServeTemplateWithParams(res, req, "simpleReader.html", readID)
 }
 
-func getBookTOC(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// GET: /toc?ID=<Book ID Number>
-
-	/// - - - -
-	// Initial Check, Ensure information is trivially good
-	/////////
-
-	BookID_In, numErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
-	if numErr != nil || BookID_In == 0 {
-		http.Redirect(res, req, "/?status=invalid_id", http.StatusTemporaryRedirect)
-	}
-
-	/// - - - -
-	// Gather Book information, ensure that book exists.
-	////////
-
-	BookTitle, BookCatalog, BookID_Out := func(req *http.Request, id int64) (string, string, int64) { // get book data
-		book_to_output, _ := GetBookFromDatastore(req, id)
-		return book_to_output.Title, book_to_output.CatalogTitle, book_to_output.ID
-	}(req, BookID_In)
-
-	if BookID_In != BookID_Out {
-		ServeTemplateWithParams(res, req, "printme.html", "ERROR! Incoming id not found!")
-		return
-	}
-
-	/// - - - -
-	// Prepare to make everything simple.
-	//////
-
-	ctx := appengine.NewContext(req)
-	type Title_ID struct { // struct for each layer.
-		Title string
-		ID    int64
-	}
-	gatherKindGroup := func(ctx context.Context, parentID int64, kind string) []Title_ID {
-		q := datastore.NewQuery(kind)
-		q = q.Filter("Parent =", parentID)
-		q = q.Project("Title")
-
-		output_chapters := make([]Title_ID, 0)
-		for t := q.Run(ctx); ; {
-			var cName struct{ Title string }
-			k, qErr := t.Next(&cName)
-
-			if qErr == datastore.Done {
-				break
-			} else if qErr != nil {
-				http.Error(res, qErr.Error(), http.StatusInternalServerError)
-			}
-
-			output_chapters = append(output_chapters, Title_ID{cName.Title, k.IntID()})
-		}
-		return output_chapters
-	}
-
-	/// - - - -
-	// Print header/Book information
-	//////
-
-	fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8"?><book>`) // Layer Book Information.
-	fmt.Fprintf(res, `<booktitle>%s</booktitle><bookid>%d</bookid><catalog>%s</catalog>`, BookTitle, BookID_Out, BookCatalog)
-
-	/// - - - -
-	// Gather & Print Sub information as available
-	//////
-
-	for _, singleChapter := range gatherKindGroup(ctx, BookID_Out, "Chapters") {
-		fmt.Fprintf(res, `<chapter><chaptertitle>%s</chaptertitle><chapterid>%d</chapterid>`, singleChapter.Title, singleChapter.ID)
-		for _, singleSection := range gatherKindGroup(ctx, singleChapter.ID, "Sections") {
-			fmt.Fprintf(res, `<section><sectiontitle>%s</sectiontitle><sectionid>%d</sectionid>`, singleSection.Title, singleSection.ID)
-			for _, singleObjective := range gatherKindGroup(ctx, singleSection.ID, "Objectives") {
-				fmt.Fprintf(res, `<objective><objectivetitle>%s</objectivetitle><objectiveid>%d</objectiveid></objective>`, singleObjective.Title, singleObjective.ID)
-			}
-			fmt.Fprint(res, `</section>`)
-		}
-		fmt.Fprint(res, `</chapter>`)
-	}
-
-	/// - - - -
-	// Close Book
-	//////
-
-	fmt.Fprint(res, `</book>`) // Layer book close
-}
-
-func printTOC(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+func getSimpleTOC(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	// GET: /toc.html?ID=<Book ID Number>
 	ServeTemplateWithParams(res, req, "toc.html", req.FormValue("ID"))
 }

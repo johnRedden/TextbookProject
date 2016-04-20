@@ -37,11 +37,18 @@
             $.wait = function( callback, seconds){
                return window.setTimeout( callback, seconds * 1000 );
             }
+
+            if ("{{.}}") {
+                enterTrigger = jQuery.Event("keypress"); // simulate enterpress
+                enterTrigger.which = 13;
+                enterTrigger.keyCode = 13;
+                $(".enterWatch").trigger(enterTrigger);
+            }
         });
     </script>
 </head>
 <body>
-    <section>Objective ID: <input id="JQ-ObjectiveID-Input" class="enterWatch"></section>
+    <section>Objective ID: <input id="JQ-ObjectiveID-Input" class="enterWatch" value="{{.}}"></section>
     <input id="JQ-Status" style="display: none;" readonly></input>
 
     <div class="container" id="ENScontent">

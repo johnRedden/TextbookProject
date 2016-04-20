@@ -10,6 +10,7 @@ API.go by Allen J. Mills
 import (
 	"fmt"
 	"github.com/julienschmidt/httprouter"
+	"golang.org/x/net/context"
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
 	"html/template"
@@ -32,6 +33,9 @@ func API_MakeCatalog(res http.ResponseWriter, req *http.Request, params httprout
 	// 		0 - Success, All completed
 	// 		418 - Failure, Authentication error, likely caused by a user not signed in or not allowed.
 	// 		400 - Failure, Expected data missing
+
+	// TODO: Authentication/Authorization here.
+	// CHECK: Does user x have permissions to preform this action?
 
 	catalogName := req.FormValue("CatalogName")
 	if catalogName == "" {
@@ -70,6 +74,9 @@ func API_MakeBook(res http.ResponseWriter, req *http.Request, params httprouter.
 	// 		0 - Success, All completed
 	// 		418 - Failure, Authentication error, likely caused by a user not signed in or not allowed.
 	// 		400 - Failure, Expected data missing
+
+	// TODO: Authentication/Authorization here.
+	// CHECK: Does user x have permissions to preform this action?
 
 	bookID, _ := strconv.Atoi(req.FormValue("ID"))
 
@@ -120,6 +127,9 @@ func API_MakeChapter(res http.ResponseWriter, req *http.Request, params httprout
 	// 		418 - Failure, Authentication error, likely caused by a user not signed in or not allowed.
 	// 		400 - Failure, Expected data missing
 
+	// TODO: Authentication/Authorization here.
+	// CHECK: Does user x have permissions to preform this action?
+
 	chapterID, _ := strconv.Atoi(req.FormValue("ID"))
 
 	chapterForDatastore, getErr := GetChapterFromDatastore(req, int64(chapterID))
@@ -161,6 +171,9 @@ func API_MakeSection(res http.ResponseWriter, req *http.Request, params httprout
 	// 		0 - Success, All completed
 	// 		418 - Failure, Authentication error, likely caused by a user not signed in or not allowed.
 	// 		400 - Failure, Expected data missing
+
+	// TODO: Authentication/Authorization here.
+	// CHECK: Does user x have permissions to preform this action?
 
 	sectionID, _ := strconv.Atoi(req.FormValue("ID"))
 
@@ -204,6 +217,9 @@ func API_MakeObjective(res http.ResponseWriter, req *http.Request, params httpro
 	// 		418 - Failure, Authentication error, likely caused by a user not signed in or not allowed.
 	// 		400 - Failure, Expected data missing
 	ctx := appengine.NewContext(req)
+
+	// TODO: Authentication/Authorization here.
+	// CHECK: Does user x have permissions to preform this action?
 
 	ObjectiveID, _ := strconv.Atoi(req.FormValue("ID"))
 
@@ -382,17 +398,35 @@ func API_GetObjectives(res http.ResponseWriter, req *http.Request, params httpro
 }
 
 // -------------------------------------------------------------------
-// Query Data calls
+// Singular Data calls
 // API calls for singular objects.
 // Please read each section for expected input/output
 /////////////
 
-func API_GetTOC_HTML() {}
+// TODO: Fully Implement Deleters
+func API_DeleteCatalog(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	fmt.Fprint(res, `{"result":"failure","reason":"Not Implemented","code":500}`)
+}
+func API_DeleteBook(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	fmt.Fprint(res, `{"result":"failure","reason":"Not Implemented","code":500}`)
+}
+func API_DeleteChapter(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	fmt.Fprint(res, `{"result":"failure","reason":"Not Implemented","code":500}`)
+}
+func API_DeleteSection(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	fmt.Fprint(res, `{"result":"failure","reason":"Not Implemented","code":500}`)
+}
+func API_DeleteObjective(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	fmt.Fprint(res, `{"result":"failure","reason":"Not Implemented","code":500}`)
+}
 
 func API_GetObjectiveHTML(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	// Get call for reciving a <section> view on Objective
 	// Mandatory Option: ID
 	// Optional Options:
+
+	// TODO: Authentication/Authorization here.
+	// CHECK: Does user x have permissions to preform this action?
 
 	ObjectiveID, numErr := strconv.Atoi(req.FormValue("ID"))
 	if numErr != nil {
@@ -408,4 +442,96 @@ func API_GetObjectiveHTML(res http.ResponseWriter, req *http.Request, params htt
 	}
 
 	ServeTemplateWithParams(res, req, "ObjectiveHTML.html", objectiveToScreen)
+}
+
+func API_getTOC(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	// GET: /toc?ID=<Book ID Number>
+
+	/// - - - -
+	// Initial Check, Ensure information is trivially good
+	/////////
+
+	BookID_In, numErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
+	if numErr != nil || BookID_In == 0 {
+		fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8" ?><error><status>Failure</status><message>Invalid ID</message></error>`)
+		return
+		// http.Redirect(res, req, "/?status=invalid_id", http.StatusTemporaryRedirect)
+	}
+
+	/// - - - -
+	// Gather Book information, ensure that book exists.
+	////////
+
+	BookTitle, BookCatalog, BookID_Out := func(req *http.Request, id int64) (string, string, int64) { // get book data
+		book_to_output, _ := GetBookFromDatastore(req, id)
+		return book_to_output.Title, book_to_output.CatalogTitle, book_to_output.ID
+	}(req, BookID_In)
+
+	if BookID_In != BookID_Out {
+		fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8" ?><error><status>Failure</status><message>Book Not Found!</message></error>`)
+		// ServeTemplateWithParams(res, req, "printme.html", "ERROR! Incoming id not found!")
+		return
+	}
+
+	/// - - - -
+	// Prepare to make everything simple.
+	//////
+
+	ctx := appengine.NewContext(req)
+	type Title_ID struct { // struct for each layer.
+		Title string
+		ID    int64
+	}
+	gatherKindGroup := func(ctx context.Context, parentID int64, kind string) []Title_ID {
+		// Local function gatherKindGroup to collect Title/Key information for each given kind
+		q := datastore.NewQuery(kind)      // Make a query into the given kind
+		q = q.Filter("Parent =", parentID) // Limit to only the parent ID
+		q = q.Project("Title")             // return a struct containing only {Title string}
+
+		output_chapters := make([]Title_ID, 0)
+		for t := q.Run(ctx); ; { // standard query run.
+			var cName struct{ Title string }
+			k, qErr := t.Next(&cName)
+
+			if qErr == datastore.Done {
+				break
+			} else if qErr != nil {
+				http.Error(res, qErr.Error(), http.StatusInternalServerError)
+			}
+
+			output_chapters = append(output_chapters, Title_ID{cName.Title, k.IntID()})
+		}
+		return output_chapters
+	}
+
+	/// - - - -
+	// Print header/Book information
+	//////
+
+	fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8"?><book>`)
+	fmt.Fprintf(res, `<booktitle>%s</booktitle><bookid>%d</bookid><catalog>%s</catalog>`, BookTitle, BookID_Out, BookCatalog)
+
+	/// - - - -
+	// Gather & Print Sub information as available
+	//////
+
+	for _, singleChapter := range gatherKindGroup(ctx, BookID_Out, "Chapters") { // Sub-Layer Chapters
+		fmt.Fprintf(res, `<chapter><chaptertitle>%s</chaptertitle><chapterid>%d</chapterid>`, singleChapter.Title, singleChapter.ID)
+
+		for _, singleSection := range gatherKindGroup(ctx, singleChapter.ID, "Sections") {
+			fmt.Fprintf(res, `<section><sectiontitle>%s</sectiontitle><sectionid>%d</sectionid>`, singleSection.Title, singleSection.ID)
+
+			for _, singleObjective := range gatherKindGroup(ctx, singleSection.ID, "Objectives") {
+				fmt.Fprintf(res, `<objective><objectivetitle>%s</objectivetitle><objectiveid>%d</objectiveid></objective>`, singleObjective.Title, singleObjective.ID)
+			}
+			fmt.Fprint(res, `</section>`) // Close this section
+		}
+		fmt.Fprint(res, `</chapter>`) // Close this chapter
+	}
+
+	/// - - - -
+	// Close Book
+	//////
+
+	fmt.Fprint(res, `</book>`)
 }

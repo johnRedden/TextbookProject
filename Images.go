@@ -26,13 +26,23 @@ import (
 
 func IMAGE_PostUploadForm(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	// GET: /image/uploader
+
+	// TODO: Authentication/Authorization here.
+	// CHECK: Does user x have permissions to preform this action?
+	// ACTION: Give the user an internal permisions key?
+
 	ServeTemplateWithParams(res, req, "simpleImageUploader.html", nil)
 }
 
 func IMAGE_BrowserForm(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	// GET: /image
 	ctx := appengine.NewContext(req)
-	imgl, _ := filesFromCS(ctx, nil) // get a list of files out of the CS
+
+	// TODO: Authentication/Authorization here.
+	// CHECK: Does user x have permissions to preform this action?
+	// ACTION: Give the user an internal permisions key?
+
+	imgl, _ := getFileFromGCS(ctx, nil) // get a list of files out of the CS
 
 	imageBrowser := struct { // make a stuct on the fly for the page
 		CKEditorFuncNum string
@@ -52,6 +62,10 @@ func IMAGE_BrowserForm(res http.ResponseWriter, req *http.Request, params httpro
 // Call: /api/ckeditor/create
 func IMAGE_API_CKEDITOR_PlaceImageIntoCS(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	// POST: url/api/ckeditor/create
+
+	// TODO: Authentication/Authorization here.
+	// CHECK: Does user x have permissions to preform this action?
+
 	multipartFile, multipartHeader, fileError := req.FormFile("upload") // pull the uploaded image out of the request
 	if fileError != nil {                                               // if there was an issue with the request, exit and note that to ckeditor
 		fmt.Fprint(res, `<!DOCTYPE html><html><body><script type="text/javascript">window.parent.CKEDITOR.tools.callFunction('`+req.FormValue("CKEditorFuncNum")+`',"","`+fileError.Error()+`");//window.close();</script></body></html>`)
@@ -71,12 +85,16 @@ func IMAGE_API_CKEDITOR_PlaceImageIntoCS(res http.ResponseWriter, req *http.Requ
 }
 
 // ------------------------------------
-// API - Post/Return Image to Cloud Storage
+// API - Post/Return/Delete Image to Cloud Storage
 /////
 
 func IMAGE_API_PlaceImageIntoCS(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	// POST: /api/makeImage
 	// this is the normal part of the image upload. --not tied to ckeditor
+
+	// TODO: Authentication/Authorization here.
+	// CHECK: Does user x have permissions to preform this action?
+
 	multipartFile, multipartHeader, fileError := req.FormFile("upload") // pull uploaded image.
 	if fileError != nil {                                               // handle error in a stable way, this will be a part of another page.
 		http.Redirect(res, req, "/image/uploader?status=failure", http.StatusSeeOther)
@@ -114,6 +132,27 @@ func IMAGE_API_GetImageFromCS(res http.ResponseWriter, req *http.Request, params
 	io.Copy(res, rdr)
 }
 
+func IMAGE_API_RemoveImageFromCS(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	// GET: /api/removeImage
+	id := req.FormValue("id") // this is an id request only.
+	if id == "" {             // if no id, exit with failure.
+		fmt.Fprint(res, `{"result":"failure","reason":"missing image id","code":400}`)
+		return
+	}
+
+	// TODO: Authentication/Authorization here.
+	// CHECK: Does user x have permissions to preform this action?
+
+	ctx := appengine.NewContext(req)
+	csRemoveErr := removeFileFromGCS(ctx, id)
+
+	if csRemoveErr != nil {
+		fmt.Fprint(res, `{"result":"failure","reason":"Internal Error:`+csRemoveErr.Error()+`","code":500}`)
+		return
+	}
+	fmt.Fprint(res, `{"result":"success","reason":"","code":0}`)
+}
+
 // ------------------------------------
 // API - Parse/Prepare Image
 /////
@@ -128,7 +167,7 @@ func IMAGE_API_SendToCloudStorage(req *http.Request, mpf multipart.File, hdr *mu
 	mpf.Seek(0, 0)                         // makeSHA moved the reader, move it back.
 
 	ctx := appengine.NewContext(req)
-	return uploadName, fileToCS(ctx, uploadName, mpf) // upload the file and name. if there is an error, our parent will catch it.}
+	return uploadName, addFileToGCS(ctx, uploadName, mpf) // upload the file and name. if there is an error, our parent will catch it.}
 }
 
 func makeSHA(src multipart.File) string { // make a sha of the contents of the file. we do not want duplicate files.
@@ -152,9 +191,10 @@ func filterExtension(req *http.Request, hdr *multipart.FileHeader) (string, erro
 
 // ------------------------------------
 // API - Internal Cloud Storage functions
+// Local Only!
 /////
 
-func fileToCS(ctx context.Context, filename string, freader io.Reader) error {
+func addFileToGCS(ctx context.Context, filename string, freader io.Reader) error {
 	client, clientErr := storage.NewClient(ctx)
 	if clientErr != nil {
 		return clientErr
@@ -173,7 +213,16 @@ func fileToCS(ctx context.Context, filename string, freader io.Reader) error {
 	return csWriter.Close()
 }
 
-func filesFromCS(ctx context.Context, q *storage.Query) ([]string, error) {
+func removeFileFromGCS(ctx context.Context, filename string) error {
+	client, clientErr := storage.NewClient(ctx)
+	if clientErr != nil {
+		return clientErr
+	}
+	defer client.Close()
+	return client.Bucket(GCS_BucketID).Object(filename).Delete(ctx)
+}
+
+func getFileFromGCS(ctx context.Context, q *storage.Query) ([]string, error) {
 	results := make([]string, 0)
 
 	client, clientErr := storage.NewClient(ctx)

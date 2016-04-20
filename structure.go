@@ -56,6 +56,11 @@ func PutCatalogIntoDatastore(req *http.Request, c Catalog) (*datastore.Key, erro
 	rk, putErr := datastore.Put(ctx, ck, &c)
 	return rk, putErr
 }
+func RemoveCatalogFromDatastore(req *http.Request, catalogKey string) error {
+	ctx := appengine.NewContext(req)
+	ck := MakeCatalogKey(ctx, catalogKey)
+	return datastore.Delete(ctx, ck)
+}
 
 func GetBookFromDatastore(req *http.Request, key int64) (Book, error) {
 	if key == 0 {
@@ -81,6 +86,11 @@ func PutBookIntoDatastore(req *http.Request, b Book) (*datastore.Key, error) {
 	rk, putErr := datastore.Put(ctx, bk, &b)
 	return rk, putErr
 }
+func RemoveBookFromDatastore(req *http.Request, bookKey int64) error {
+	ctx := appengine.NewContext(req)
+	bk := MakeBookKey(ctx, bookKey)
+	return datastore.Delete(ctx, bk)
+}
 
 func GetChapterFromDatastore(req *http.Request, key int64) (Chapter, error) {
 	if key == 0 {
@@ -103,6 +113,11 @@ func PutChapterIntoDatastore(req *http.Request, c Chapter) (*datastore.Key, erro
 	ck := MakeChapterKey(ctx, c.ID)
 	rk, putErr := datastore.Put(ctx, ck, &c)
 	return rk, putErr
+}
+func RemoveChapterFromDatastore(req *http.Request, chapterKey int64) error {
+	ctx := appengine.NewContext(req)
+	ck := MakeChapterKey(ctx, chapterKey)
+	return datastore.Delete(ctx, ck)
 }
 
 func GetSectionFromDatastore(req *http.Request, key int64) (Section, error) {
@@ -127,6 +142,11 @@ func PutSectionIntoDatastore(req *http.Request, s Section) (*datastore.Key, erro
 	rk, putErr := datastore.Put(ctx, sk, &s)
 	return rk, putErr
 }
+func RemoveSectionFromDatastore(req *http.Request, sectionKey int64) error {
+	ctx := appengine.NewContext(req)
+	sk := MakeSectionKey(ctx, sectionKey)
+	return datastore.Delete(ctx, sk)
+}
 
 func GetObjectiveFromDatastore(req *http.Request, key int64) (Objective, error) {
 	if key == 0 {
@@ -150,4 +170,9 @@ func PutObjectiveIntoDatastore(req *http.Request, o Objective) (*datastore.Key, 
 	ok := MakeObjectiveKey(ctx, o.ID)
 	rk, putErr := datastore.Put(ctx, ok, &o)
 	return rk, putErr
+}
+func RemoveObjectiveFromDatastore(req *http.Request, objectiveKey int64) error {
+	ctx := appengine.NewContext(req)
+	ok := MakeObjectiveKey(ctx, objectiveKey)
+	return datastore.Delete(ctx, ok)
 }
