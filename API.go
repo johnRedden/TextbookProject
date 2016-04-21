@@ -10,7 +10,6 @@ API.go by Allen J. Mills
 import (
 	"fmt"
 	"github.com/julienschmidt/httprouter"
-	"golang.org/x/net/context"
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
 	"html/template"
@@ -405,19 +404,110 @@ func API_GetObjectives(res http.ResponseWriter, req *http.Request, params httpro
 
 // TODO: Fully Implement Deleters
 func API_DeleteCatalog(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	// TODO: Authentication/Authorization here.
+	// CHECK: Does user x have permissions to preform this action?
 	fmt.Fprint(res, `{"result":"failure","reason":"Not Implemented","code":500}`)
 }
 func API_DeleteBook(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	fmt.Fprint(res, `{"result":"failure","reason":"Not Implemented","code":500}`)
+	// TODO: Authentication/Authorization here.
+	// CHECK: Does user x have permissions to preform this action?
+	bookKey, convErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
+	if convErr != nil {
+		fmt.Fprint(res, `{"result":"failure","reason":"Invalid ID","code":400}`)
+		return
+	}
+
+	keyCollection := make([]*datastore.Key, 0) // From here on out, we will use the batch version of delete to ensure all or none of the objects are deleted.
+
+	ctx := appengine.NewContext(req)
+	keyCollection = append(keyCollection, MakeBookKey(ctx, bookKey))
+	for _, chaptNameKey := range Get_Name_ID_From_Parent(ctx, bookKey, "Chapters") {
+		keyCollection = append(keyCollection, MakeChapterKey(ctx, chaptNameKey.ID))
+		for _, sectNameKey := range Get_Name_ID_From_Parent(ctx, chaptNameKey.ID, "Sections") {
+			keyCollection = append(keyCollection, MakeSectionKey(ctx, sectNameKey.ID))
+			for _, objeNameKey := range Get_Name_ID_From_Parent(ctx, sectNameKey.ID, "Objectives") {
+				keyCollection = append(keyCollection, MakeObjectiveKey(ctx, objeNameKey.ID))
+			}
+		}
+	}
+
+	remvErr := datastore.DeleteMulti(ctx, keyCollection)
+	if remvErr != nil {
+		fmt.Fprint(res, `{"result":"failure","reason":"Internal Error:`+remvErr.Error()+`","code":500}`)
+	}
+
+	fmt.Fprint(res, `{"result":"success","reason":","code":0}`)
 }
 func API_DeleteChapter(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	fmt.Fprint(res, `{"result":"failure","reason":"Not Implemented","code":500}`)
+	// TODO: Authentication/Authorization here.
+	// CHECK: Does user x have permissions to preform this action?
+
+	chaptKey, convErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
+	if convErr != nil {
+		fmt.Fprint(res, `{"result":"failure","reason":"Invalid ID","code":400}`)
+		return
+	}
+
+	keyCollection := make([]*datastore.Key, 0) // From here on out, we will use the batch version of delete to ensure all or none of the objects are deleted.
+
+	ctx := appengine.NewContext(req)
+	keyCollection = append(keyCollection, MakeChapterKey(ctx, chaptKey))
+
+	for _, sectNameKey := range Get_Name_ID_From_Parent(ctx, chaptKey, "Sections") {
+		keyCollection = append(keyCollection, MakeSectionKey(ctx, sectNameKey.ID))
+
+		for _, objeNameKey := range Get_Name_ID_From_Parent(ctx, sectNameKey.ID, "Objectives") {
+			keyCollection = append(keyCollection, MakeObjectiveKey(ctx, objeNameKey.ID))
+		}
+	}
+
+	remvErr := datastore.DeleteMulti(ctx, keyCollection)
+	if remvErr != nil {
+		fmt.Fprint(res, `{"result":"failure","reason":"Internal Error:`+remvErr.Error()+`","code":500}`)
+	}
+
+	fmt.Fprint(res, `{"result":"success","reason":","code":0}`)
 }
 func API_DeleteSection(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	fmt.Fprint(res, `{"result":"failure","reason":"Not Implemented","code":500}`)
+	// TODO: Authentication/Authorization here.
+	// CHECK: Does user x have permissions to preform this action?
+	sectKey, convErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
+	if convErr != nil {
+		fmt.Fprint(res, `{"result":"failure","reason":"Invalid ID","code":400}`)
+		return
+	}
+
+	keyCollection := make([]*datastore.Key, 0) // From here on out, we will use the batch version of delete to ensure all or none of the objects are deleted.
+
+	ctx := appengine.NewContext(req)
+	keyCollection = append(keyCollection, MakeSectionKey(ctx, sectKey))
+
+	for _, objeNameKey := range Get_Name_ID_From_Parent(ctx, sectKey, "Objectives") {
+		keyCollection = append(keyCollection, MakeObjectiveKey(ctx, objeNameKey.ID))
+	}
+
+	remvErr := datastore.DeleteMulti(ctx, keyCollection)
+	if remvErr != nil {
+		fmt.Fprint(res, `{"result":"failure","reason":"Internal Error:`+remvErr.Error()+`","code":500}`)
+	}
+
+	fmt.Fprint(res, `{"result":"success","reason":","code":0}`)
 }
 func API_DeleteObjective(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	fmt.Fprint(res, `{"result":"failure","reason":"Not Implemented","code":500}`)
+	// TODO: Authentication/Authorization here.
+	// CHECK: Does user x have permissions to preform this action?
+	objKey, convErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
+	if convErr != nil {
+		fmt.Fprint(res, `{"result":"failure","reason":"Invalid ID","code":400}`)
+		return
+	}
+
+	remvErr := RemoveObjectiveFromDatastore(req, objKey)
+	if remvErr != nil {
+		fmt.Fprint(res, `{"result":"failure","reason":"Internal Error","code":500}`)
+	}
+
+	fmt.Fprint(res, `{"result":"success","reason":","code":0}`)
 }
 
 func API_GetObjectiveHTML(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
@@ -478,32 +568,7 @@ func API_getTOC(res http.ResponseWriter, req *http.Request, params httprouter.Pa
 	//////
 
 	ctx := appengine.NewContext(req)
-	type Title_ID struct { // struct for each layer.
-		Title string
-		ID    int64
-	}
-	gatherKindGroup := func(ctx context.Context, parentID int64, kind string) []Title_ID {
-		// Local function gatherKindGroup to collect Title/Key information for each given kind
-		q := datastore.NewQuery(kind)      // Make a query into the given kind
-		q = q.Filter("Parent =", parentID) // Limit to only the parent ID
-		q = q.Project("Title")             // return a struct containing only {Title string}
-
-		output_chapters := make([]Title_ID, 0)
-		for t := q.Run(ctx); ; { // standard query run.
-			var cName struct{ Title string }
-			k, qErr := t.Next(&cName)
-
-			if qErr == datastore.Done {
-				break
-			} else if qErr != nil {
-				http.Error(res, qErr.Error(), http.StatusInternalServerError)
-			}
-
-			output_chapters = append(output_chapters, Title_ID{cName.Title, k.IntID()})
-		}
-		return output_chapters
-	}
-
+	gatherKindGroup := Get_Name_ID_From_Parent // alias new function with old name.
 	/// - - - -
 	// Print header/Book information
 	//////

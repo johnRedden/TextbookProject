@@ -10,6 +10,9 @@
     var editAPI = "/edit?ID="
     var readAPI = "/read?ID="
     var deleteAPI = "/api/deleteObjective?ID="
+    var deleteSectionAPI = "/api/deleteSection?ID="
+    var deleteChapterAPI = "/api/deleteChapter?ID="
+    var deleteBookAPI = "/api/deleteBook?ID="
 
     $(document).ready(function(){
         if (incomingID == "") {return ;}
@@ -20,15 +23,16 @@
             catalog = $(xml).find("catalog").text();
 
             $("#JQ-TOC-Root").append(`<ul id="Book-Information"></ul>`)
+            $("#Book-Information").append(`<li id="Book-Catalog">`+catalog+`</li>`)
             $("#Book-Information").append(`<li id="Book-Title">`+booktitle+`</li>`)
             $("#Book-Information").append(`<li id="Book-ID">`+bookid+`</li>`)
-            $("#Book-Information").append(`<li id="Book-Catalog">`+catalog+`</li>`)
+            $("#Book-Information").append(`<a href="`+deleteBookAPI+bookid+`">Delete</a>`)
 
             $("#JQ-TOC-Root").append(`<ul id="Book-Chapters"></ul>`)
             $(xml).find('chapter').each(function(){ // each chapter of book
                 singleChapterID = $(this).find("chapterid").text()
                 singleChapterName = $(this).find("chaptertitle").text()
-                $("#Book-Chapters").append(`<li id="`+singleChapterID+`">`+singleChapterName+`</li>`);
+                $("#Book-Chapters").append(`<li id="`+singleChapterID+`" class="Chapter">`+singleChapterName+`<a href="`+deleteChapterAPI+singleChapterID+`">Delete</a></li>`);
 
                 $(`li#`+singleChapterID).append(`<ul id="UL-`+singleChapterID+`"></ul>`)
 
@@ -36,7 +40,7 @@
                     singleSectionID = $(this).find("sectionid").text()
                     singleSectionName = $(this).find("sectiontitle").text()
 
-                    $(`ul#UL-`+singleChapterID).append(`<li id="`+singleSectionID+`">`+singleSectionName+`</li>`);
+                    $(`ul#UL-`+singleChapterID).append(`<li id="`+singleSectionID+`" class="Section">`+singleSectionName+`<a href="`+deleteSectionAPI+singleSectionID+`">Delete</a></li>`);
 
                     $(`li#`+singleSectionID).append(`<ul id="UL-`+singleSectionID+`"></ul>`)
 
@@ -44,7 +48,7 @@
                         singleObjectiveID = $(this).find("objectiveid").text()
                         singleObjectiveName = $(this).find("objectivetitle").text()
                         // console.log(`ul#UL-`+singleSectionID)
-                        $(`ul#UL-`+singleSectionID).append(`<li id="`+singleObjectiveID+`">`+singleObjectiveName+`</li>`);
+                        $(`ul#UL-`+singleSectionID).append(`<li id="`+singleObjectiveID+`" class="Objective">`+singleObjectiveName+`</li>`);
                         buttons = `
                             <a href="`+editAPI+singleObjectiveID+`">Edit</a>
                             <a href="`+readAPI+singleObjectiveID+`">Read</a>
@@ -56,6 +60,49 @@
         });
     });
 </script>
+<style type="text/css">
+    * {
+        box-sizing: border-box;
+    }
+    #Book-Information {
+        position: fixed;
+        right: 10px;
+        top: 0px;
+        border: 1px solid black;
+        padding-right: 5px;
+        z-index: 1000;
+    }
+    #Book-Chapters {
+        position: relative;
+        border: 1px solid black;
+    }
+    a {
+        color: darkblue;
+        text-decoration: none;
+        border-radius: 3px;
+        border: 1px solid darkblue;
+    }
+    li.Chapter {
+        position: relative;
+        right: 40px;
+
+        list-style: none;
+        display: block;
+
+        font-size: 1.12em;
+        padding-bottom: 10px;
+    }
+    li.Chapter + li.Chapter {
+        border-top: 1px solid black;
+    }
+    li.Chapter * {
+        font-size: initial;
+    }
+    li.Chapter > a , li.Section > a{
+        margin-left: 10px;
+    }
+    
+</style>
 </head>
 <body>
 <section id="JQ-TOC-Root"></section>

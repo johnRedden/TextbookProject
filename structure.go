@@ -176,3 +176,35 @@ func RemoveObjectiveFromDatastore(req *http.Request, objectiveKey int64) error {
 	ok := MakeObjectiveKey(ctx, objectiveKey)
 	return datastore.Delete(ctx, ok)
 }
+
+// Datastore Simple retrival helper
+func Get_Name_ID_From_Parent(ctx context.Context, parentID int64, kind string) []struct {
+	Title string
+	ID    int64
+} {
+	// function gatherKindGroup to collect Title/Key information for each given kind
+	q := datastore.NewQuery(kind)      // Make a query into the given kind
+	q = q.Filter("Parent =", parentID) // Limit to only the parent ID
+	q = q.Project("Title")             // return a struct containing only {Title string}
+
+	output_chapters := make([]struct {
+		Title string
+		ID    int64
+	}, 0)
+	for t := q.Run(ctx); ; { // standard query run.
+		var cName struct{ Title string }
+		k, qErr := t.Next(&cName)
+
+		if qErr == datastore.Done {
+			break
+		} else if qErr != nil {
+			return output_chapters
+		}
+
+		output_chapters = append(output_chapters, struct {
+			Title string
+			ID    int64
+		}{cName.Title, k.IntID()})
+	}
+	return output_chapters
+}
