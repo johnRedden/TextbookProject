@@ -83,7 +83,7 @@ func API_MakeBook(res http.ResponseWriter, req *http.Request, params httprouter.
 	HandleError(res, getErr)
 
 	if req.FormValue("CatalogName") != "" { // if your giving me a catalog, we're good
-		bookForDatastore.CatalogTitle = req.FormValue("CatalogName")
+		bookForDatastore.Parent = req.FormValue("CatalogName")
 	} else if bookID == 0 { // new books must have a catalog
 		fmt.Fprint(res, `{"result":"failure","reason":"Empty Catalog Name","code":400}`)
 		return
@@ -296,7 +296,7 @@ func API_GetBooks(res http.ResponseWriter, req *http.Request, params httprouter.
 
 	queryCatalogName := req.FormValue("Catalog")
 	if queryCatalogName != "" {
-		q = q.Filter("CatalogTitle =", queryCatalogName)
+		q = q.Filter("Parent =", queryCatalogName)
 	}
 
 	booklist := make([]Book, 0)
@@ -406,7 +406,37 @@ func API_GetObjectives(res http.ResponseWriter, req *http.Request, params httpro
 func API_DeleteCatalog(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	// TODO: Authentication/Authorization here.
 	// CHECK: Does user x have permissions to preform this action?
-	fmt.Fprint(res, `{"result":"failure","reason":"Not Implemented","code":500}`)
+
+	catalogKey := req.FormValue("ID")
+	if catalogKey == "" {
+		fmt.Fprint(res, `{"result":"failure","reason":"Invalid ID","code":400}`)
+		return
+	}
+
+	keyCollection := make([]*datastore.Key, 0) // From here on out, we will use the batch version of delete to ensure all or none of the objects are deleted.
+
+	ctx := appengine.NewContext(req)
+	keyCollection = append(keyCollection, MakeCatalogKey(ctx, catalogKey))
+
+	for _, bookNameKey := range Get_Name_ID_From_Parent(ctx, catalogKey, "Books") {
+		keyCollection = append(keyCollection, MakeBookKey(ctx, bookNameKey.ID))
+		for _, chaptNameKey := range Get_Name_ID_From_Parent(ctx, bookNameKey.ID, "Chapters") {
+			keyCollection = append(keyCollection, MakeChapterKey(ctx, chaptNameKey.ID))
+			for _, sectNameKey := range Get_Name_ID_From_Parent(ctx, chaptNameKey.ID, "Sections") {
+				keyCollection = append(keyCollection, MakeSectionKey(ctx, sectNameKey.ID))
+				for _, objeNameKey := range Get_Name_ID_From_Parent(ctx, sectNameKey.ID, "Objectives") {
+					keyCollection = append(keyCollection, MakeObjectiveKey(ctx, objeNameKey.ID))
+				}
+			}
+		}
+	}
+
+	remvErr := datastore.DeleteMulti(ctx, keyCollection)
+	if remvErr != nil {
+		fmt.Fprint(res, `{"result":"failure","reason":"Internal Error:`+remvErr.Error()+`","code":500}`)
+	}
+
+	fmt.Fprint(res, `{"result":"success","reason":","code":0}`)
 }
 func API_DeleteBook(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	// TODO: Authentication/Authorization here.
@@ -554,7 +584,7 @@ func API_getTOC(res http.ResponseWriter, req *http.Request, params httprouter.Pa
 
 	BookTitle, BookCatalog, BookID_Out := func(req *http.Request, id int64) (string, string, int64) { // get book data
 		book_to_output, _ := GetBookFromDatastore(req, id)
-		return book_to_output.Title, book_to_output.CatalogTitle, book_to_output.ID
+		return book_to_output.Title, book_to_output.Parent, book_to_output.ID
 	}(req, BookID_In)
 
 	if BookID_In != BookID_Out {

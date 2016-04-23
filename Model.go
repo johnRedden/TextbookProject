@@ -29,8 +29,8 @@ type Book struct { // Book has an ancestor in catalog, searchable based on catal
 	// ESBN-13 string
 	// Copyright date
 
-	CatalogTitle string // This is the key.string for Catalog
-	ID           int64  `datastore:"-"` // self.ID, assigned when pulled from datastore.
+	Parent string // This is the key.string for Catalog
+	ID     int64  `datastore:"-"` // self.ID, assigned when pulled from datastore.
 }
 
 type Chapter struct { // Chapter has an ancestor in Book. Chapter only has meaning from book.

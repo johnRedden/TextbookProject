@@ -178,7 +178,7 @@ func RemoveObjectiveFromDatastore(req *http.Request, objectiveKey int64) error {
 }
 
 // Datastore Simple retrival helper
-func Get_Name_ID_From_Parent(ctx context.Context, parentID int64, kind string) []struct {
+func Get_Name_ID_From_Parent(ctx context.Context, parentID interface{}, kind string) []struct {
 	Title string
 	ID    int64
 } {
