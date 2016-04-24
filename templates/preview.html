@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <!-- Bootstrap -->
+    <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
+    <!-- JQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <!-- Mathjax -->
+    <script type="text/javascript" async src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+    </script>
+</head>
+<body>
+    <div class="container" id="ENScontent">
+        <h1 id="myTitle">{{.Title}}</h1>
+        <div id="ObjectiveInfo">
+            <p>{{.Version}}</p>
+            <p>{{.Author}}</p>
+        </div>
+        <content>
+            <section>{{.Content}}</section>
+            <p>Key Takeaways</p>
+            <section>{{.KeyTakeaways}}</section>
+        </content>
+    </div>
+</body>
+</html>
