@@ -64,6 +64,7 @@ func init() {
 	r.GET("/select", selectBookFromForm)     // select objective based on information <user>
 	r.GET("/edit", getSimpleObjectiveEditor) // edit objective given id <user><auth>
 	r.GET("/read", getSimpleObjectiveReader) // read objective given id <user>
+	r.GET("/preview", getObjectivePreview)
 
 	// main.go/API.go, Table of Contents
 	r.GET("/toc", API_getTOC)        // xml toc for a book <api>
@@ -176,4 +177,13 @@ func getSimpleObjectiveReader(res http.ResponseWriter, req *http.Request, params
 func getSimpleTOC(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	// GET: /toc.html?ID=<Book ID Number>
 	ServeTemplateWithParams(res, req, "toc.html", req.FormValue("ID"))
+}
+
+func getObjectivePreview(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	// GET: /toc.html?ID=<Book ID Number>
+	objKey, convErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
+	HandleError(res, convErr)
+	objToScreen, err := GetObjectiveFromDatastore(req, objKey)
+	HandleError(res, err)
+	ServeTemplateWithParams(res, req, "preview.html", objToScreen)
 }
