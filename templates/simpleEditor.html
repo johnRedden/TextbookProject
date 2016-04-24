@@ -15,7 +15,6 @@
     <!-- Mathjax -->
     <script type="text/javascript" async src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML"></script>
     
-
     <!-- Styling/Scripting -->
     <style>
         body {
@@ -84,7 +83,8 @@
             $("#JQ-PreviewButton").click(function(){
                 console.log('preview clicked');
                 objectiveID = $("#JQ-ObjectiveID").val();
-                var url = '/api/objective.html?ID='+objectiveID;
+                var url = '/preview?ID='+objectiveID;
+                //var url = '/api/objective.html?ID='+objectiveID;
                 window.open(url,'_blank');
             });
 
