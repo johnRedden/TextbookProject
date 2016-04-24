@@ -17,6 +17,7 @@
         }
     </style>
   </head>
+
   <body>
     <div class="container">
         <h2><span><img src="/public/images/eduNetSystems-logo.png"></span>EduNetSystems</h2>
@@ -24,55 +25,73 @@
     <div class="card text-xs-center">
 
       <div class="card-block">
-        <h4 class="card-title">EduNetSystems Catalogs</h4>
-        <p class="card-text">In the very distant future there will be many catalogs.</p>
-        <!-- dropdown button starts here -->
+        <h4 class="card-title">EduNetSystems Content Selector</h4>
+        <p class="card-text">In the very distant future there will be much content.</p>
+        
+        <!-- cat dropdown button starts here -->
         <div class="dropdown" id="catMenuDropdown">
-            <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                Choose a Catalog
-            </button>
+            <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" >Choose a Catalog</button>
             <div class="dropdown-menu" id="catMenu">
                 <a class="dropdown-item" href="/">Loading...</a>
             </div>
         </div>
+
+        <br/> <br/>
+
+        <!-- book dropdown button starts here -->        
+        <div class="dropdown invisible" id="bookMenuDropdown">
+          <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown">Choose a Book</button>
+          <div class="dropdown-menu" id="bookMenu">
+            <a class="dropdown-item" href="/">Loading...</a>
+          </div>
+        </div>
+
+        <br/> <br/>
+        
+        <!-- chapter dropdown button starts here -->        
+        <div class="dropdown invisible" id="chapterMenuDropdown">
+          <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenu3" data-toggle="dropdown">Choose a Chapter</button>
+          <div class="dropdown-menu" id="chapMenu">
+            <a class="dropdown-item" href="/">Loading...</a>
+          </div>
+        </div>
+
+        <br/> <br/>
+        
+        <!-- section dropdown button starts here -->        
+        <div class="dropdown invisible" id="sectionMenuDropdown">
+          <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenu4" data-toggle="dropdown">Choose a Section</button>
+          <div class="dropdown-menu" id="sectMenu">
+            <a class="dropdown-item" href="/">Loading...</a>
+          </div>
+        </div>
+
+        <br/> <br/>
+
+        <!-- objective dropdown button starts here -->        
+        <div class="dropdown invisible" id="objectiveMenuDropdown">
+          <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenu5" data-toggle="dropdown">Choose an Objective</button>
+          <div class="dropdown-menu" id="objMenu">
+            <a class="dropdown-item" href="/">Loading...</a>
+          </div>
+        </div>
+
+        <br/> <br/>
+        <!-- end of road buttons -->
+        <div id="actionGroup" class="btn-group btn-group-sm invisible">
+            <button type="button" id="gotoEditor" class="btn btn-success">Edit</button>
+            <button type="button" id="gotoPreview" class="btn btn-success">Preview</button>
+            <button type="button" class="btn btn-success">Delete</button>
+        </div>
+
+
       </div>
       <div class="card-footer text-muted" id='catFooter'>
         loading...
       </div>
     </div>
 
-    <!-- Choose a Book-->
-    <div class="card text-xs-center invisible" id='bookCard'>
-
-      <div class="card-block" >
-        <h4 class="card-title">EduNetSystems Books</h4>
-        <p class="card-text">In the very distant future there will be many books.</p>
-        
-        <!-- dropdown button starts here -->
-        <div class="dropdown" id="bookMenuDropdown">
-          <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            Choose a Book
-          </button>
-          <div class="dropdown-menu" id="bookMenu">
-            <a class="dropdown-item" href="/">Loading...</a>
-          </div>
-        </div>
-
-      </div>
-
-      <div class="card-footer text-muted" id="bookFooter">
-        loading...
-      </div>
-    </div>
-
-
-       <div class="card card-block text-xs-center invisible" id='endOfRoad'>
-          <h4 class="card-title">Awesome Chapters</h4>
-          <p class="card-text">coming soon</p>
-          <a href="#" class="btn btn-primary">Go somewhere</a>
-        </div>
-
-        <!-- New Entry Modal -->
+        <!-- **************** Generalized New Entry Modal -->
         <div id="inputModal" class="modal fade">
           <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -104,48 +123,27 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/js/bootstrap.min.js" integrity="sha384-vZ2WRJMwsjRMW/8U7i6PWi6AlO1L79snBrmgiDpgIWJ82z8eA5lenwvxbMV1PAh7" crossorigin="anonymous"></script>
 
     <script type="text/JavaScript">
-        // API Documentation
-        // GET /api/catalogs.json
-        // GET /api/books.json?Catalog={Catalog.ID}
+        // I totally need to refactor this!!
 
         $(document).ready(function(){
 
             // initiate page by getting list of catalogs *************************************************
-            popCatalogDropdown();
+            populateNextDropdown("catalogs");
+            //popCatalogDropdown();
             // handle catalog click events
+
             $('#catMenuDropdown').on('click','a',function(){
                 var cat = $(this).attr('name');
                 $('#dropdownMenu1').html(cat);
-                
+
+                localStorage.cat = cat;
+
                 if(cat==="newEntry"){
-                    $('#inputModal').modal('toggle');
-                    //make a new Catalog
-                    $('#submit').on('click',function(){
-                        
-                        var newCatName = $('#newEntry').val();
-                        console.log(newCatName);
-                        if(newCatName!==''){
-                            $.post("/api/makeCatalog",{CatalogName:newCatName},function(data){
-                                j = $.parseJSON(data);
-                                console.log(j.result +":"+ j.reason)
-                                $('#dropdownMenu1').html(newCatName);
-                                $('#bookCard').removeClass('invisible');
-                                popBookDropdown(cat);
-
-                            });
-                        }else{
-                            $('#dropdownMenu1').html("Choose a Catalog");
-                        }
-                    });
-
-                    $('#cancel').click(function(){
-                        //$('#inputModal').modal('toggle');
-                        $('#dropdownMenu1').html("Choose a Catalog");
-                    });
+                    addNewEntry("catalog");
 
                 }else{
-                    popBookDropdown(cat);
-                    $('#bookCard').removeClass('invisible');
+                    populateNextDropdown("books",cat);
+                    $('#bookMenuDropdown').removeClass('invisible');
                 }
 
             });
@@ -153,73 +151,231 @@
 
             $('#bookMenuDropdown').on('click','a',function(){
                 var id = $(this).attr('name');
-                var title = $(this).html();
+                var bookTitle = $(this).html();
 
-                $('#dropdownMenu2').html(title);
+                console.log(localStorage.cat+" in book");
+
+                localStorage.bookID = id;
+
+                $('#dropdownMenu2').html(bookTitle);
                 
-                if(id==="newBookEntry"){
-                    $('#inputModal').modal('toggle');
-                    //make a new Catalog
-                    $('#submit').on('click',function(){
-                        
-                        var cat = $('#dropdownMenu1').html();
-                        var newBookName = $('#newBookEntry').val();
-                       
-                        if(newBookName!==''){
-                            $.post("/api/makeBook",{CatalogName:cat,BookName:newBookName},function(data){
-                                j = $.parseJSON(data);
-                                console.log(j.result +":"+ j.reason)
-                                $('#dropdownMenu2').html(newBookName);
-                            });
-  
-                        }else{
-                            $('#dropdownMenu2').html("Choose a Book");
-                        }
-                    });
-
-                    $('#cancel').click(function(){
-                        //$('#inputModal').modal('toggle');
-                        $('#dropdownMenu2').html("Choose a Book");
-                    });
-
+                if(id==="newEntry"){
+                    addNewEntry("book");
                 }else{
-                    //popBookDropdown(cat);
-                    $('#endOfRoad').removeClass('invisible');
+                    //popChapterDropdown(id);
+                    populateNextDropdown("chapters",id);
+                    $('#chapterMenuDropdown').removeClass('invisible');
                 }
 
             });
 
-        });
-        //utility functions
-        function popCatalogDropdown(){
-            $.get("/api/catalogs.json",function(data,status){
-                j = $.parseJSON(data);
-                
-                $('#catFooter').html(j.results.length + " catalogs");
-                $("#catMenu").html('');
-                $.each( j.results, function( key, val ){
-                    $("#catMenu").append( '<a class="dropdown-item" href="#books" name='+val.ID+'>'+val.ID+'</a>');
-                });
-                $("#catMenu").append( '<div class="dropdown-divider"></div>' )
-                             .append( '<a class="dropdown-item" href="#catalogs" name="newEntry">New Catalog</a>' );
-            }); 
+           //*********************************************************************************
 
+            $('#chapterMenuDropdown').on('click','a',function(){
+                var id = $(this).attr('name');
+                var chapterTitle = $(this).html();
+
+                localStorage.chapterID = id;
+                
+                $('#dropdownMenu3').html(chapterTitle);
+                
+                if(id==="newEntry"){
+                    var cat = $('#dropdownMenu1').html();
+                    var bookID = $('#dropdownMenu2:selected').attr('name');
+                    addNewEntry("chapter")
+
+                }else{
+                    populateNextDropdown("sections",id);
+                    $('#sectionMenuDropdown').removeClass('invisible');
+                }
+
+            });
+
+           //*********************************************************************************
+
+            $('#sectionMenuDropdown').on('click','a',function(){
+                var id = $(this).attr('name');
+                var sectionTitle = $(this).html();
+
+                localStorage.sectionID = id;
+
+                $('#dropdownMenu4').html(sectionTitle);
+                
+                if(id==="newEntry"){
+                    addNewEntry("section")
+
+                }else{
+                    populateNextDropdown("objectives",id);
+                    $('#objectiveMenuDropdown').removeClass('invisible');
+                }
+
+            });
+
+           //*********************************************************************************
+
+            $('#objectiveMenuDropdown').on('click','a',function(){
+                var id = $(this).attr('name');
+                var objectiveTitle = $(this).html();
+
+                localStorage.objectiveID = id;
+
+                $('#dropdownMenu5').html(objectiveTitle);
+                
+                if(id==="newEntry"){
+                    addNewEntry("objective")
+
+                }else{
+                    $('#gotoEditor').on('click',function(){
+                        var url = '/edit?ID='+id;
+                        window.open(url,'_blank');                      
+                    });
+                    $('#gotoPreview').on('click',function(){
+                        var url = '/preview?ID='+id;
+                        window.open(url,'_blank');
+                    });
+
+                    $('#actionGroup').removeClass('invisible');
+                }
+
+                                    $('#gotoEditor').on('click',function(){
+                        var url = '/edit?ID='+id;
+                        window.open(url,'_blank');                      
+                    });
+                    $('#gotoPreview').on('click',function(){
+                        var url = '/preview?ID='+id;
+                        window.open(url,'_blank');
+                    });
+
+                    $('#actionGroup').removeClass('invisible');
+
+
+
+            });
+
+
+
+        });
+        //utility functions **********************************
+        function addNewEntry(req,cat,bookID){
+            var newName ="";
+
+            $('#inputModal').modal('toggle');
+
+            //make a new entry
+            $('#submit').on('click',function(){
+                        
+                newName = $('#newEntry').val();
+                if(newName){
+                    //var cat = cat = $('#catMenuDropdown').attr('name');
+                    console.log(newName + " - " + localStorage.cat + " - " + bookID);
+                    var url = "";
+                    switch(req){
+                        case "catalog":
+                            url = "/api/makeCatalog";
+                            qStr1 = "#catMenuDropdown";
+                            qStr2 = "#bookMenuDropdown";
+                            nextUp = "books";
+                            jsonArgs = {CatalogName:newName};
+                            localStorage.cat = newName;
+                            break;
+                        case "book":
+                            url = "/api/makeBook"
+                            qStr1 = "#bookMenuDropdown";
+                            qStr2 = "#chapterMenuDropdown";
+                            nextUp = "chapters";
+                            jsonArgs = {CatalogName:localStorage.cat,BookName:newName};
+                            break;
+                        case "chapter":
+                            url = "/api/makeChapter"
+                            qStr1 = "#chapterMenuDropdown";
+                            qStr2 = "#sectionMenuDropdown";
+                            nextUp = "sections";
+                            jsonArgs = {BookID:localStorage.bookID,ChapterName:newName};
+                            break;
+                        case "section":
+                            url = "/api/makeSection"
+                            qStr1 = "#sectionMenuDropdown";
+                            qStr2 = "#objectiveMenuDropdown";
+                            nextUp = "objectives";
+                            jsonArgs = {ChapterID:localStorage.chapterID,SectionName:newName};
+                            break;
+                        case "objective":
+                            url = "/api/makeObjective"
+                            qStr1 = "#objectiveMenuDropdown";
+                            qStr2 = "#endofline";
+                            nextUp = "show";
+                            jsonArgs = {SectionID:localStorage.sectionID,ObjectiveName:newName};
+                            break;
+                        default: 
+                            url = "";
+                    }
+
+                    $.post(url,jsonArgs,function(data){
+                        j = $.parseJSON(data);
+                        console.log(j.result +":"+ j.reason);
+                        location.reload();
+                        //$(qStr1).find('button:first').html(newName);
+                        //$(qStr2).removeClass('invisible');
+                        //repopulate current dropdown
+                        //populateNextDropdown(nextUp);
+
+                    });
+                }else{
+                    //$('#dropdownMenu1').html("Choose a Catalog");
+                }
+            });
+
+            $('#cancel').click(function(){
+                        //$('#inputModal').modal('toggle');
+                        //$('#dropdownMenu1').html("Choose a Catalog");
+            });
         }
-        function popBookDropdown(cat){
-            $.get("/api/books.json?Catalog="+cat,function(data, status){
+  
+        function populateNextDropdown(req,argID){
+            var url = "";
+            switch(req){
+                case "catalogs":
+                    url = "/api/catalogs.json";
+                    qStr = "#catMenu";
+                    break;
+                case "books":
+                    url = "/api/books.json?Catalog="+argID;
+                    qStr = "#bookMenu";
+                    break;
+                case "chapters":
+                    url = "/api/chapters.json?BookID="+argID;
+                    qStr = "#chapMenu";
+                    break;
+                case "sections":
+                    url = "/api/sections.json?ChapterID="+argID;
+                    qStr = "#sectMenu";
+                    break;
+                case "objectives":
+                    url = "/api/objectives.json?SectionID="+argID;
+                    qStr = "#objMenu";
+                    break;
+                default: 
+                    url = "";
+            }
+
+            $.get(url,function(data, status){
                 j = $.parseJSON(data);
-                console.log(j);
-                $("#bookFooter").html(j.results.length + " books");
-                $("#bookMenu").html('');
+                //console.log("in dropdown thing");
+                $("#catFooter").html(j.results.length + " " + req);
+                $(qStr).html('');
+
                 $.each( j.results, function( key, val ){
-                    $("#bookMenu").append( '<a class="dropdown-item" href="#chapters" name='+val.ID+'>'+val.Title+'</a>');
+                    if(req==="catalogs") val.Title = val.ID;//cat situation is different
+                    $(qStr).append( '<a class="dropdown-item" href="#" name='+val.ID+'>'+val.Title+'</a>');
                 });
-                $("#bookMenu").append( '<div class="dropdown-divider"></div>' )
-                              .append( '<a class="dropdown-item" href="#books" name="newBookEntry">New Book</a>' );
+                $(qStr).append( '<div class="dropdown-divider"></div>' )
+                              .append( '<a class="dropdown-item" href="#" name="newEntry">New Entry</a>' );
 
             });
 
         }
+
+
     </script>
   </body>
 </html>
