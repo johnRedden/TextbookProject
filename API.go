@@ -26,7 +26,7 @@ import (
 func API_MakeCatalog(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	// Post call for making a catalog, we would check for a signed in user here.
 	// Mandatory Options: CatalogName
-	// Optional Options: Company, Version
+	// Optional Options: Company, Version, Description
 	// Version should be a well formed stringed float
 	// Codes:
 	// 		0 - Success, All completed
@@ -56,6 +56,11 @@ func API_MakeCatalog(res http.ResponseWriter, req *http.Request, params httprout
 			catalogForDatastore.Version = ver64
 		}
 	}
+
+	if req.FormValue("Description") != "" {
+		catalogForDatastore.Description = template.HTML(req.FormValue("Description"))
+	}
+
 	// Get the datastore up and running!
 	_, putErr := PutCatalogIntoDatastore(req, catalogForDatastore)
 	HandleError(res, putErr)
@@ -68,7 +73,7 @@ func API_MakeBook(res http.ResponseWriter, req *http.Request, params httprouter.
 	// If you feed in an ID it will update that specific id
 	// If no id is given, will make a new one.
 	// Mandatory Options: CatalogName, BookName OR ID
-	// Optional Options: Author, Version, Tags
+	// Optional Options: Author, Version, Tags, Description
 	// Codes:
 	// 		0 - Success, All completed
 	// 		418 - Failure, Authentication error, likely caused by a user not signed in or not allowed.
@@ -111,6 +116,10 @@ func API_MakeBook(res http.ResponseWriter, req *http.Request, params httprouter.
 		bookForDatastore.Tags = req.FormValue("Tags")
 	}
 
+	if req.FormValue("Description") != "" {
+		bookForDatastore.Description = template.HTML(req.FormValue("Description"))
+	}
+
 	_, putErr := PutBookIntoDatastore(req, bookForDatastore)
 	HandleError(res, putErr)
 
@@ -120,7 +129,7 @@ func API_MakeBook(res http.ResponseWriter, req *http.Request, params httprouter.
 func API_MakeChapter(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	// Post call  for chapter creation, same structure as above.
 	// Mandatory Options: BookID, ChapterName OR ID
-	// Optional Options: Version
+	// Optional Options: Version, Description
 	// Codes:
 	// 		0 - Success, All completed
 	// 		418 - Failure, Authentication error, likely caused by a user not signed in or not allowed.
@@ -156,6 +165,10 @@ func API_MakeChapter(res http.ResponseWriter, req *http.Request, params httprout
 		}
 	}
 
+	if req.FormValue("Description") != "" {
+		chapterForDatastore.Description = template.HTML(req.FormValue("Description"))
+	}
+
 	_, putErr := PutChapterIntoDatastore(req, chapterForDatastore)
 	HandleError(res, putErr)
 
@@ -165,7 +178,7 @@ func API_MakeChapter(res http.ResponseWriter, req *http.Request, params httprout
 func API_MakeSection(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	// Post call  for Section creation, same structure as above.
 	// Mandatory Options: ChapterID, SectionName OR ID
-	// Optional Options:  Version
+	// Optional Options:  Version, Description
 	// Codes:
 	// 		0 - Success, All completed
 	// 		418 - Failure, Authentication error, likely caused by a user not signed in or not allowed.
@@ -199,6 +212,10 @@ func API_MakeSection(res http.ResponseWriter, req *http.Request, params httprout
 		if errFloat == nil {
 			sectionForDatastore.Version = ver64
 		}
+	}
+
+	if req.FormValue("Description") != "" {
+		sectionForDatastore.Description = template.HTML(req.FormValue("Description"))
 	}
 
 	_, putErr := PutSectionIntoDatastore(req, sectionForDatastore)
@@ -402,7 +419,6 @@ func API_GetObjectives(res http.ResponseWriter, req *http.Request, params httpro
 // Please read each section for expected input/output
 /////////////
 
-// TODO: Fully Implement Deleters
 func API_DeleteCatalog(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	// TODO: Authentication/Authorization here.
 	// CHECK: Does user x have permissions to preform this action?
