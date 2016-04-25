@@ -44,7 +44,7 @@ func GetCatalogFromDatastore(req *http.Request, key string) (Catalog, error) {
 	ck := MakeCatalogKey(ctx, key)
 	getErr := datastore.Get(ctx, ck, &catalogToReturn)
 	if getErr == datastore.ErrNoSuchEntity {
-		getErr = nil
+		return Catalog{}, nil
 	}
 	catalogToReturn.ID = key
 	return catalogToReturn, getErr
@@ -73,8 +73,7 @@ func GetBookFromDatastore(req *http.Request, key int64) (Book, error) {
 
 	getErr := datastore.Get(ctx, bk, &bookToReturn)
 	if getErr == datastore.ErrNoSuchEntity {
-		getErr = nil
-		return bookToReturn, getErr // dont allow the id to be set
+		return Book{}, nil
 	}
 	bookToReturn.ID = key
 	return bookToReturn, getErr
@@ -102,7 +101,7 @@ func GetChapterFromDatastore(req *http.Request, key int64) (Chapter, error) {
 	ck := MakeChapterKey(ctx, key)
 	getErr := datastore.Get(ctx, ck, &chatperToReturn)
 	if getErr == datastore.ErrNoSuchEntity {
-		getErr = nil
+		return Chapter{}, nil
 	}
 	chatperToReturn.ID = key
 	return chatperToReturn, getErr
@@ -130,7 +129,7 @@ func GetSectionFromDatastore(req *http.Request, key int64) (Section, error) {
 	sk := MakeSectionKey(ctx, key)
 	getErr := datastore.Get(ctx, sk, &sectionToReturn)
 	if getErr == datastore.ErrNoSuchEntity {
-		getErr = nil
+		return Section{}, nil
 	}
 	sectionToReturn.ID = key
 	return sectionToReturn, getErr
@@ -159,7 +158,7 @@ func GetObjectiveFromDatastore(req *http.Request, key int64) (Objective, error) 
 	ok := MakeObjectiveKey(ctx, key)
 	getErr := datastore.Get(ctx, ok, &objectiveToReturn)
 	if getErr == datastore.ErrNoSuchEntity {
-		getErr = nil
+		return Objective{}, nil
 	}
 	objectiveToReturn.ID = key
 	return objectiveToReturn, getErr
@@ -182,7 +181,7 @@ func Get_Name_ID_From_Parent(ctx context.Context, parentID interface{}, kind str
 	Title string
 	ID    int64
 } {
-	// function gatherKindGroup to collect Title/Key information for each given kind
+	// function Get_Name_ID_From_Parent to collect Title/Key information for each given kind
 	q := datastore.NewQuery(kind)      // Make a query into the given kind
 	q = q.Filter("Parent =", parentID) // Limit to only the parent ID
 	q = q.Project("Title")             // return a struct containing only {Title string}
