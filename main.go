@@ -36,12 +36,18 @@ func init() {
 	r.GET("/api/deleteImage", IMAGE_API_RemoveImageFromCS)              // image deleter <api><auth>
 	r.POST("/api/ckeditor/create", IMAGE_API_CKEDITOR_PlaceImageIntoCS) // ckEditor, image creator <api><auth>
 
-	// API.go, readers
-	r.GET("/api/catalogs.json", API_GetCatalogs)       // read datastore, catalogs <api>
-	r.GET("/api/books.json", API_GetBooks)             // read datastore, books <api>
-	r.GET("/api/chapters.json", API_GetChapters)       // read datastore, chapters <api>
-	r.GET("/api/sections.json", API_GetSections)       // read datastore, sections <api>
-	r.GET("/api/objectives.json", API_GetObjectives)   // read datastore, objectives <api>
+	// API.go, readers - Collection
+	r.GET("/api/catalogs.json", API_GetCatalogs)     // read datastore, catalogs <api>
+	r.GET("/api/books.json", API_GetBooks)           // read datastore, books <api>
+	r.GET("/api/chapters.json", API_GetChapters)     // read datastore, chapters <api>
+	r.GET("/api/sections.json", API_GetSections)     // read datastore, sections <api>
+	r.GET("/api/objectives.json", API_GetObjectives) // read datastore, objectives <api>
+
+	// API.go, readers - Singular
+	r.GET("/api/catalog.xml", API_GetCatalog)          // read datastore, catalog as xml <api>
+	r.GET("/api/book.xml", API_GetBook)                // read datastore, book as xml <api>
+	r.GET("/api/chapter.xml", API_GetChapter)          // read datastore, chapter as xml <api>
+	r.GET("/api/section.xml", API_GetSection)          // read datastore, section as xml <api>
 	r.GET("/api/objective.html", API_GetObjectiveHTML) // read datastore, objective as html <api>
 
 	// API.go, writers

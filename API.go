@@ -18,7 +18,7 @@ import (
 )
 
 // -------------------------------------------------------------------
-// Post Data calls
+// Creation Data calls
 // API calls for singular objects.
 // Please read each call for expected input/output
 ////////
@@ -283,9 +283,8 @@ func API_MakeObjective(res http.ResponseWriter, req *http.Request, params httpro
 }
 
 // -------------------------------------------------------------------
-// Query Data calls
+// Query/Collection Data calls
 // API calls for multiple objects.
-// Will extend this later to detect singular calls
 ///////
 
 func API_GetCatalogs(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
@@ -413,8 +412,212 @@ func API_GetObjectives(res http.ResponseWriter, req *http.Request, params httpro
 	ServeTemplateWithParams(res, req, "Objectives.json", objectiveList)
 }
 
+func API_getTOC(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	// GET: /toc?ID=<Book ID Number>
+
+	/// - - - -
+	// Initial Check, Ensure information is trivially good
+	/////////
+
+	BookID_In, numErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
+	if numErr != nil || BookID_In == 0 {
+		fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8" ?><error><status>Failure</status><message>Invalid ID</message></error>`)
+		return
+		// http.Redirect(res, req, "/?status=invalid_id", http.StatusTemporaryRedirect)
+	}
+
+	/// - - - -
+	// Gather Book information, ensure that book exists.
+	////////
+
+	BookTitle, BookCatalog, BookID_Out := func(req *http.Request, id int64) (string, string, int64) { // get book data
+		book_to_output, _ := GetBookFromDatastore(req, id)
+		return book_to_output.Title, book_to_output.Parent, book_to_output.ID
+	}(req, BookID_In)
+
+	if BookID_In != BookID_Out {
+		fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8" ?><error><status>Failure</status><message>Book Not Found!</message></error>`)
+		// ServeTemplateWithParams(res, req, "printme.html", "ERROR! Incoming id not found!")
+		return
+	}
+
+	/// - - - -
+	// Prepare to make everything simple.
+	//////
+
+	ctx := appengine.NewContext(req)
+	gatherKindGroup := Get_Name_ID_From_Parent // alias new function with old name.
+	/// - - - -
+	// Print header/Book information
+	//////
+
+	fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8"?><book>`)
+	fmt.Fprintf(res, `<booktitle>%s</booktitle><bookid>%d</bookid><catalog>%s</catalog>`, BookTitle, BookID_Out, BookCatalog)
+
+	/// - - - -
+	// Gather & Print Sub information as available
+	//////
+
+	for _, singleChapter := range gatherKindGroup(ctx, BookID_Out, "Chapters") { // Sub-Layer Chapters
+		fmt.Fprintf(res, `<chapter><chaptertitle>%s</chaptertitle><chapterid>%d</chapterid>`, singleChapter.Title, singleChapter.ID)
+
+		for _, singleSection := range gatherKindGroup(ctx, singleChapter.ID, "Sections") {
+			fmt.Fprintf(res, `<section><sectiontitle>%s</sectiontitle><sectionid>%d</sectionid>`, singleSection.Title, singleSection.ID)
+
+			for _, singleObjective := range gatherKindGroup(ctx, singleSection.ID, "Objectives") {
+				fmt.Fprintf(res, `<objective><objectivetitle>%s</objectivetitle><objectiveid>%d</objectiveid></objective>`, singleObjective.Title, singleObjective.ID)
+			}
+			fmt.Fprint(res, `</section>`) // Close this section
+		}
+		fmt.Fprint(res, `</chapter>`) // Close this chapter
+	}
+
+	/// - - - -
+	// Close Book
+	//////
+
+	fmt.Fprint(res, `</book>`)
+}
+
 // -------------------------------------------------------------------
 // Singular Data calls
+// API calls for singular objects.
+// Please read each section for expected input/output
+/////////////
+
+func API_GetCatalog(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	// Get call for reciving an xml view on Catalog
+	// Mandatory Option: ID
+	// Optional Options:
+
+	// TODO: Authentication/Authorization here.
+	// CHECK: Does user x have permissions to preform this action?
+
+	CatalogID := req.FormValue("ID")
+	if CatalogID == "" {
+		fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8" ?><error><status>Failure</status><message>Invalid ID</message></error>`)
+		return
+	}
+	Catalog_to_Output, geterr := GetCatalogFromDatastore(req, CatalogID)
+	if geterr != nil {
+		fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8" ?><error><status>Failure</status><message>ID Not Found!</message></error>`)
+		return
+	}
+	fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8"?><catalog>`)
+	fmt.Fprintf(res, `<title>%s</title>`, Catalog_to_Output.Name)
+	fmt.Fprintf(res, `<version>%f</version>`, Catalog_to_Output.Version)
+	fmt.Fprintf(res, `<parentid>%s</parentid>`, Catalog_to_Output.Company)
+	fmt.Fprint(res, `<description>`+Catalog_to_Output.Description+`</description>`)
+	fmt.Fprint(res, `</catalog>`)
+}
+
+func API_GetBook(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	// Get call for reciving an xml view on Book
+	// Mandatory Option: ID
+	// Optional Options:
+
+	// TODO: Authentication/Authorization here.
+	// CHECK: Does user x have permissions to preform this action?
+
+	BookID, convErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
+	if convErr != nil {
+		fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8" ?><error><status>Failure</status><message>Invalid ID</message></error>`)
+		return
+	}
+	Book_to_Output, geterr := GetBookFromDatastore(req, BookID)
+	if geterr != nil {
+		fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8" ?><error><status>Failure</status><message>ID Not Found!</message></error>`)
+		return
+	}
+	fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8"?><book>`)
+	fmt.Fprintf(res, `<title>%s</title>`, Book_to_Output.Title)
+	fmt.Fprintf(res, `<author>%s</author>`, Book_to_Output.Author)
+	fmt.Fprintf(res, `<version>%f</version>`, Book_to_Output.Version)
+	fmt.Fprintf(res, `<catalog>%s</catalog>`, Book_to_Output.Parent)
+	fmt.Fprintf(res, `<id>%d</id>`, Book_to_Output.ID)
+	fmt.Fprintf(res, `<tags>%s</tags>`, Book_to_Output.Tags)
+	fmt.Fprint(res, `<description>`+Book_to_Output.Description+`</description>`)
+	fmt.Fprint(res, `</book>`)
+}
+func API_GetChapter(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	// Get call for reciving an xml view on Chapter
+	// Mandatory Option: ID
+	// Optional Options:
+
+	// TODO: Authentication/Authorization here.
+	// CHECK: Does user x have permissions to preform this action?
+
+	ChapterID, convErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
+	if convErr != nil {
+		fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8" ?><error><status>Failure</status><message>Invalid ID</message></error>`)
+		return
+	}
+	Chapter_to_Output, geterr := GetChapterFromDatastore(req, ChapterID)
+	if geterr != nil {
+		fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8" ?><error><status>Failure</status><message>ID Not Found!</message></error>`)
+		return
+	}
+	fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8"?><chapter>`)
+	fmt.Fprintf(res, `<title>%s</title>`, Chapter_to_Output.Title)
+	fmt.Fprintf(res, `<version>%f</version>`, Chapter_to_Output.Version)
+	fmt.Fprintf(res, `<parentid>%d</parentid>`, Chapter_to_Output.Parent)
+	fmt.Fprintf(res, `<id>%d</id>`, Chapter_to_Output.ID)
+	fmt.Fprint(res, `<description>`+Chapter_to_Output.Description+`</description>`)
+	fmt.Fprint(res, `</chapter>`)
+}
+func API_GetSection(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	// Get call for reciving an xml view on Section
+	// Mandatory Option: ID
+	// Optional Options:
+
+	// TODO: Authentication/Authorization here.
+	// CHECK: Does user x have permissions to preform this action?
+
+	SectionID, convErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
+	if convErr != nil {
+		fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8" ?><error><status>Failure</status><message>Invalid ID</message></error>`)
+		return
+	}
+	Section_to_Output, geterr := GetSectionFromDatastore(req, SectionID)
+	if geterr != nil {
+		fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8" ?><error><status>Failure</status><message>ID Not Found!</message></error>`)
+		return
+	}
+	fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8"?><section>`)
+	fmt.Fprintf(res, `<title>%s</title>`, Section_to_Output.Title)
+	fmt.Fprintf(res, `<version>%f</version>`, Section_to_Output.Version)
+	fmt.Fprintf(res, `<parentid>%d</parentid>`, Section_to_Output.Parent)
+	fmt.Fprintf(res, `<id>%d</id>`, Section_to_Output.ID)
+	fmt.Fprint(res, `<description>`+Section_to_Output.Description+`</description>`)
+	fmt.Fprint(res, `</section>`)
+}
+
+func API_GetObjectiveHTML(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	// Get call for reciving a <section> view on Objective
+	// Mandatory Option: ID
+	// Optional Options:
+
+	// TODO: Authentication/Authorization here.
+	// CHECK: Does user x have permissions to preform this action?
+
+	ObjectiveID, numErr := strconv.Atoi(req.FormValue("ID"))
+	if numErr != nil {
+		fmt.Fprint(res, `<section><p>Request has failed: Invalid ID.</p></section>`)
+		return
+	}
+
+	objectiveToScreen, getErr := GetObjectiveFromDatastore(req, int64(ObjectiveID))
+	//HandleError(res, getErr)
+	if getErr != nil {
+		fmt.Fprint(res, `<section><p>Request has failed: No objective with given ID.</p></section>`)
+		return
+	}
+
+	ServeTemplateWithParams(res, req, "ObjectiveHTML.html", objectiveToScreen)
+}
+
+// -------------------------------------------------------------------
+// Deletion Data calls
 // API calls for singular objects.
 // Please read each section for expected input/output
 /////////////
@@ -554,95 +757,4 @@ func API_DeleteObjective(res http.ResponseWriter, req *http.Request, params http
 	}
 
 	fmt.Fprint(res, `{"result":"success","reason":","code":0}`)
-}
-
-func API_GetObjectiveHTML(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// Get call for reciving a <section> view on Objective
-	// Mandatory Option: ID
-	// Optional Options:
-
-	// TODO: Authentication/Authorization here.
-	// CHECK: Does user x have permissions to preform this action?
-
-	ObjectiveID, numErr := strconv.Atoi(req.FormValue("ID"))
-	if numErr != nil {
-		fmt.Fprint(res, `<section><p>Request has failed: Invalid ID.</p></section>`)
-		return
-	}
-
-	objectiveToScreen, getErr := GetObjectiveFromDatastore(req, int64(ObjectiveID))
-	//HandleError(res, getErr)
-	if getErr != nil {
-		fmt.Fprint(res, `<section><p>Request has failed: No objective with given ID.</p></section>`)
-		return
-	}
-
-	ServeTemplateWithParams(res, req, "ObjectiveHTML.html", objectiveToScreen)
-}
-
-func API_getTOC(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// GET: /toc?ID=<Book ID Number>
-
-	/// - - - -
-	// Initial Check, Ensure information is trivially good
-	/////////
-
-	BookID_In, numErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
-	if numErr != nil || BookID_In == 0 {
-		fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8" ?><error><status>Failure</status><message>Invalid ID</message></error>`)
-		return
-		// http.Redirect(res, req, "/?status=invalid_id", http.StatusTemporaryRedirect)
-	}
-
-	/// - - - -
-	// Gather Book information, ensure that book exists.
-	////////
-
-	BookTitle, BookCatalog, BookID_Out := func(req *http.Request, id int64) (string, string, int64) { // get book data
-		book_to_output, _ := GetBookFromDatastore(req, id)
-		return book_to_output.Title, book_to_output.Parent, book_to_output.ID
-	}(req, BookID_In)
-
-	if BookID_In != BookID_Out {
-		fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8" ?><error><status>Failure</status><message>Book Not Found!</message></error>`)
-		// ServeTemplateWithParams(res, req, "printme.html", "ERROR! Incoming id not found!")
-		return
-	}
-
-	/// - - - -
-	// Prepare to make everything simple.
-	//////
-
-	ctx := appengine.NewContext(req)
-	gatherKindGroup := Get_Name_ID_From_Parent // alias new function with old name.
-	/// - - - -
-	// Print header/Book information
-	//////
-
-	fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8"?><book>`)
-	fmt.Fprintf(res, `<booktitle>%s</booktitle><bookid>%d</bookid><catalog>%s</catalog>`, BookTitle, BookID_Out, BookCatalog)
-
-	/// - - - -
-	// Gather & Print Sub information as available
-	//////
-
-	for _, singleChapter := range gatherKindGroup(ctx, BookID_Out, "Chapters") { // Sub-Layer Chapters
-		fmt.Fprintf(res, `<chapter><chaptertitle>%s</chaptertitle><chapterid>%d</chapterid>`, singleChapter.Title, singleChapter.ID)
-
-		for _, singleSection := range gatherKindGroup(ctx, singleChapter.ID, "Sections") {
-			fmt.Fprintf(res, `<section><sectiontitle>%s</sectiontitle><sectionid>%d</sectionid>`, singleSection.Title, singleSection.ID)
-
-			for _, singleObjective := range gatherKindGroup(ctx, singleSection.ID, "Objectives") {
-				fmt.Fprintf(res, `<objective><objectivetitle>%s</objectivetitle><objectiveid>%d</objectiveid></objective>`, singleObjective.Title, singleObjective.ID)
-			}
-			fmt.Fprint(res, `</section>`) // Close this section
-		}
-		fmt.Fprint(res, `</chapter>`) // Close this chapter
-	}
-
-	/// - - - -
-	// Close Book
-	//////
-
-	fmt.Fprint(res, `</book>`)
 }

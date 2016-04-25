@@ -44,7 +44,7 @@ func GetCatalogFromDatastore(req *http.Request, key string) (Catalog, error) {
 	ck := MakeCatalogKey(ctx, key)
 	getErr := datastore.Get(ctx, ck, &catalogToReturn)
 	if getErr == datastore.ErrNoSuchEntity {
-		return Catalog{}, nil
+		getErr = nil
 	}
 	catalogToReturn.ID = key
 	return catalogToReturn, getErr
