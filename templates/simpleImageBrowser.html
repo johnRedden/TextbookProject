@@ -5,6 +5,7 @@
 
 <script type="text/javascript">
     var callbackNumb = "{{.CKEditorFuncNum}}";
+    var oid = "{{.ID}}";
     // console.log("Hey, I have started up with!"+callbackNumb)
     function verifySelection(uri){
         // send this selected image back to the ckeditor
@@ -37,7 +38,7 @@
 </head>
 <body>
 
-<iframe src="/image/uploader">Uploader Iframe</iframe>
+<iframe src="/image/uploader?oid={{.ID}}">Uploader Iframe</iframe>
 
 <br>
 <button type="button" onclick="window.parent.location=window.parent.location.href;" id="refresh">Refresh List</button>

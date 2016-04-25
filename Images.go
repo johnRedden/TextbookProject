@@ -31,7 +31,7 @@ func IMAGE_PostUploadForm(res http.ResponseWriter, req *http.Request, params htt
 	// CHECK: Does user x have permissions to preform this action?
 	// ACTION: Give the user an internal permisions key?
 
-	ServeTemplateWithParams(res, req, "simpleImageUploader.html", nil)
+	ServeTemplateWithParams(res, req, "simpleImageUploader.html", req.FormValue("oid"))
 }
 
 func IMAGE_BrowserForm(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
@@ -42,14 +42,23 @@ func IMAGE_BrowserForm(res http.ResponseWriter, req *http.Request, params httpro
 	// CHECK: Does user x have permissions to preform this action?
 	// ACTION: Give the user an internal permisions key?
 
-	imgl, _ := getFileFromGCS(ctx, nil) // get a list of files out of the CS
+	prefixQuery := storage.Query{}
+	if req.FormValue("oid") == "" {
+		prefixQuery.Prefix = "global"
+	} else {
+		prefixQuery.Prefix = req.FormValue("oid")
+	}
+
+	imgl, _ := getFileFromGCS(ctx, &prefixQuery) // get a list of files out of the CS
 
 	imageBrowser := struct { // make a stuct on the fly for the page
 		CKEditorFuncNum string
 		Images          []string
+		ID              string
 	}{
 		req.FormValue("CKEditorFuncNum"),
 		imgl,
+		req.FormValue("oid"),
 	}
 
 	ServeTemplateWithParams(res, req, "simpleImageBrowser.html", imageBrowser)
@@ -62,6 +71,7 @@ func IMAGE_BrowserForm(res http.ResponseWriter, req *http.Request, params httpro
 // Call: /api/ckeditor/create
 func IMAGE_API_CKEDITOR_PlaceImageIntoCS(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	// POST: url/api/ckeditor/create
+	// Settings: if oid is set, will create image with bucket of oid, otherwise default to global
 
 	// TODO: Authentication/Authorization here.
 	// CHECK: Does user x have permissions to preform this action?
@@ -73,7 +83,12 @@ func IMAGE_API_CKEDITOR_PlaceImageIntoCS(res http.ResponseWriter, req *http.Requ
 	}
 	defer multipartFile.Close()
 
-	fileName, prepareError := IMAGE_API_SendToCloudStorage(req, multipartFile, multipartHeader) // send the image out to the cloudstore.
+	prefix := req.FormValue("oid")
+	if prefix == "" {
+		prefix = "global"
+	}
+
+	fileName, prepareError := IMAGE_API_SendToCloudStorage(req, multipartFile, multipartHeader, prefix) // send the image out to the cloudstore.
 	if prepareError != nil {
 		fmt.Fprint(res, `<!DOCTYPE html><html><body><script type="text/javascript">window.parent.CKEDITOR.tools.callFunction('`+req.FormValue("CKEditorFuncNum")+`',"","`+prepareError.Error()+`");//window.close();</script></body></html>`)
 		return
@@ -90,6 +105,7 @@ func IMAGE_API_CKEDITOR_PlaceImageIntoCS(res http.ResponseWriter, req *http.Requ
 
 func IMAGE_API_PlaceImageIntoCS(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	// POST: /api/makeImage
+	// Settings: if oid is set, will create image with bucket of oid, otherwise default to global
 	// this is the normal part of the image upload. --not tied to ckeditor
 
 	// TODO: Authentication/Authorization here.
@@ -102,7 +118,12 @@ func IMAGE_API_PlaceImageIntoCS(res http.ResponseWriter, req *http.Request, para
 	}
 	defer multipartFile.Close()
 
-	_, prepareError := IMAGE_API_SendToCloudStorage(req, multipartFile, multipartHeader)
+	prefix := req.FormValue("oid")
+	if prefix == "" {
+		prefix = "global"
+	}
+
+	_, prepareError := IMAGE_API_SendToCloudStorage(req, multipartFile, multipartHeader, prefix)
 	if prepareError != nil { // send to CS and same as above.
 		http.Redirect(res, req, "/image/uploader?status=failure", http.StatusSeeOther)
 		return
@@ -157,14 +178,14 @@ func IMAGE_API_RemoveImageFromCS(res http.ResponseWriter, req *http.Request, par
 // API - Parse/Prepare Image
 /////
 
-func IMAGE_API_SendToCloudStorage(req *http.Request, mpf multipart.File, hdr *multipart.FileHeader) (string, error) {
+func IMAGE_API_SendToCloudStorage(req *http.Request, mpf multipart.File, hdr *multipart.FileHeader, prefix string) (string, error) {
 	ext, extErr := filterExtension(req, hdr) // ensure that file's extention is an image
 	if extErr != nil {                       // if it is not, exit, returning error
 		return "", extErr
 	}
 
-	uploadName := makeSHA(mpf) + "." + ext // build new filename based on the image data instead. this will keep us from making multiple files of the same data.
-	mpf.Seek(0, 0)                         // makeSHA moved the reader, move it back.
+	uploadName := prefix + makeSHA(mpf) + "." + ext // build new filename based on the image data instead. this will keep us from making multiple files of the same data.
+	mpf.Seek(0, 0)                                  // makeSHA moved the reader, move it back.
 
 	ctx := appengine.NewContext(req)
 	return uploadName, addFileToGCS(ctx, uploadName, mpf) // upload the file and name. if there is an error, our parent will catch it.}

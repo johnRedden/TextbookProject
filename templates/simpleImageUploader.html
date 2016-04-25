@@ -2,16 +2,6 @@
 <html>
 <head>
     <title></title>
-</head>
-<body>
-<h1>Upload Image</h1>
-<p id="JS-MessageZone"></p>
-<form method="POST" enctype="multipart/form-data" action="/api/makeImage">
-    <input type="file" name="upload">
-    <input type="submit">
-</form>
-
-
 <script type="text/javascript">
     function getQueryVariable(variable){
         // Source: https://css-tricks.com/snippets/javascript/get-url-variables/
@@ -37,5 +27,13 @@
         msgP.textContent = 'There was an error in uploading your image';
     })();
 </script>
+</head>
+<body>
+<h1>Upload Image</h1>
+<p id="JS-MessageZone"></p>
+<form id="JS-ImageUpload" method="POST" enctype="multipart/form-data" action="/api/makeImage?oid={{.}}">
+    <input type="file" name="upload">
+    <input type="submit">
+</form>
 </body>
 </html>

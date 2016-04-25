@@ -56,6 +56,7 @@
     <script type="text/javascript">
         $(document).ready(function(){
             console.log("Ready!")
+            objectiveID = $("#JQ-ObjectiveID").val();
             $("#JQ-SubmitButton").click(function(){
                 console.log("Click Called!!")
                 sectID = $("#JQ-SectionID").val()
@@ -82,7 +83,7 @@
 
             $("#JQ-PreviewButton").click(function(){
                 console.log('preview clicked');
-                objectiveID = $("#JQ-ObjectiveID").val();
+                // objectiveID = $("#JQ-ObjectiveID").val();
                 var url = '/preview?ID='+objectiveID;
                 //var url = '/api/objective.html?ID='+objectiveID;
                 window.open(url,'_blank');
@@ -95,10 +96,10 @@
             var stdConfig = {
                     extraPlugins: 'mathjax',
                     mathJaxLib: 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML',
-                    filebrowserImageBrowseUrl: '/image?action=browseImageURL',
-                    filebrowserImageUploadUrl: '/api/ckeditor/create?action=uploadImageURL',
-                    filebrowserBrowseUrl: '/image?action=browseURL',
-                    filebrowserUploadUrl: '/api/ckeditor/create?action=uploadURL'
+                    filebrowserImageBrowseUrl: '/image?action=browseImageURL&oid='+objectiveID,
+                    filebrowserImageUploadUrl: '/api/ckeditor/create?action=uploadImageURL&oid='+objectiveID,
+                    filebrowserBrowseUrl: '/image?action=browseURL&oid='+objectiveID,
+                    filebrowserUploadUrl: '/api/ckeditor/create?action=uploadURL&oid='+objectiveID
                 };
 
             var contentEditor = CKEDITOR.replace('JQ-Content',stdConfig);
