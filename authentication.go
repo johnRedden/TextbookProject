@@ -154,6 +154,7 @@ func AUTH_Register_GET(res http.ResponseWriter, req *http.Request, params httpro
 		http.Redirect(res, req, GetLoginURL(ctx, "/register?redirect="+req.FormValue("redirect")), http.StatusTemporaryRedirect)
 		return
 	}
+	// TODO: Create an actual login page and serve that.
 	page := `<!DOCTYPE html><html><body>
 <form method="POST">
     <p>Name: <input name="Name" autofocus></input></p>
@@ -169,15 +170,16 @@ func AUTH_Register_POST(res http.ResponseWriter, req *http.Request, params httpr
 	if u == nil {
 		// They are not logged in!
 		// No cross site attacks!
-		http.Error(res, "", http.StatusTeapot)
+		http.Error(res, ErrNotLoggedIn.Error(), http.StatusTeapot)
 		return
 	}
 
 	// Now that we're all satisfied. Lets grab that info.
+	// TODO: Replace permission with something significant.
 	uName := req.FormValue("Name")
-	perms := "0000"
+	perms := "none"
 	if u.Admin {
-		perms = "1777"
+		perms = "admin"
 	}
 
 	// Make user and add them to the datastore.
@@ -206,6 +208,8 @@ func AUTH_Register_POST(res http.ResponseWriter, req *http.Request, params httpr
 }
 
 func AUTH_UserInfo(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	// Temporary GET
+	// This is an excellent way to see just what session info we have and to verify login.
 	if err := MaintainSession(res, req); err == nil {
 		ctx := appengine.NewContext(req)
 		if pVal, err := GetPermissionUserFromSession(ctx); err == nil {

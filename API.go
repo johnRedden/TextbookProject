@@ -33,7 +33,11 @@ func API_MakeCatalog(res http.ResponseWriter, req *http.Request, params httprout
 	// 		418 - Failure, Authentication error, likely caused by a user not signed in or not allowed.
 	// 		400 - Failure, Expected data missing
 
-	// TODO: Authentication/Authorization here.
+	if sessErr := MaintainSession(res, req); sessErr != nil {
+		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization","code":418}`)
+		return
+	}
+
 	// CHECK: Does user x have permissions to preform this action?
 
 	catalogName := req.FormValue("CatalogName")
@@ -79,7 +83,11 @@ func API_MakeBook(res http.ResponseWriter, req *http.Request, params httprouter.
 	// 		418 - Failure, Authentication error, likely caused by a user not signed in or not allowed.
 	// 		400 - Failure, Expected data missing
 
-	// TODO: Authentication/Authorization here.
+	if sessErr := MaintainSession(res, req); sessErr != nil {
+		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization","code":418}`)
+		return
+	}
+
 	// CHECK: Does user x have permissions to preform this action?
 
 	bookID, _ := strconv.Atoi(req.FormValue("ID"))
@@ -135,7 +143,11 @@ func API_MakeChapter(res http.ResponseWriter, req *http.Request, params httprout
 	// 		418 - Failure, Authentication error, likely caused by a user not signed in or not allowed.
 	// 		400 - Failure, Expected data missing
 
-	// TODO: Authentication/Authorization here.
+	if sessErr := MaintainSession(res, req); sessErr != nil {
+		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization","code":418}`)
+		return
+	}
+
 	// CHECK: Does user x have permissions to preform this action?
 
 	chapterID, _ := strconv.Atoi(req.FormValue("ID"))
@@ -184,7 +196,11 @@ func API_MakeSection(res http.ResponseWriter, req *http.Request, params httprout
 	// 		418 - Failure, Authentication error, likely caused by a user not signed in or not allowed.
 	// 		400 - Failure, Expected data missing
 
-	// TODO: Authentication/Authorization here.
+	if sessErr := MaintainSession(res, req); sessErr != nil {
+		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization","code":418}`)
+		return
+	}
+
 	// CHECK: Does user x have permissions to preform this action?
 
 	sectionID, _ := strconv.Atoi(req.FormValue("ID"))
@@ -234,7 +250,11 @@ func API_MakeObjective(res http.ResponseWriter, req *http.Request, params httpro
 	// 		400 - Failure, Expected data missing
 	ctx := appengine.NewContext(req)
 
-	// TODO: Authentication/Authorization here.
+	if sessErr := MaintainSession(res, req); sessErr != nil {
+		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization","code":418}`)
+		return
+	}
+
 	// CHECK: Does user x have permissions to preform this action?
 
 	ObjectiveID, _ := strconv.Atoi(req.FormValue("ID"))
@@ -288,6 +308,11 @@ func API_MakeObjective(res http.ResponseWriter, req *http.Request, params httpro
 ///////
 
 func API_GetCatalogs(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	// Call for a json list of catalogs
+	// Mandatory Options:
+	// Optional Options:
+	// Codes:
+	// 		None, Data is either served or an http.Error is returned.
 	ctx := appengine.NewContext(req)
 	q := datastore.NewQuery("Catalogs")
 	cataloglist := make([]Catalog, 0)
@@ -307,6 +332,11 @@ func API_GetCatalogs(res http.ResponseWriter, req *http.Request, params httprout
 }
 
 func API_GetBooks(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	// Call for a json list of books, can limit on originating catalog.
+	// Mandatory Options:
+	// Optional Options: Catalog
+	// Codes:
+	// 		None, Data is either served or an http.Error is returned.
 	ctx := appengine.NewContext(req)
 	q := datastore.NewQuery("Books")
 
@@ -332,6 +362,11 @@ func API_GetBooks(res http.ResponseWriter, req *http.Request, params httprouter.
 }
 
 func API_GetChapters(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	// Call for a json list of chapters, can limit on originating book.
+	// Mandatory Options:
+	// Optional Options: BookID
+	// Codes:
+	// 		None, Data is either served or an http.Error is returned.
 	ctx := appengine.NewContext(req)
 	q := datastore.NewQuery("Chapters")
 
@@ -359,6 +394,11 @@ func API_GetChapters(res http.ResponseWriter, req *http.Request, params httprout
 }
 
 func API_GetSections(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	// Call for a json list of sections, can limit on originating chapter.
+	// Mandatory Options:
+	// Optional Options: ChapterID
+	// Codes:
+	// 		None, Data is either served or an http.Error is returned.
 	ctx := appengine.NewContext(req)
 	q := datastore.NewQuery("Sections")
 
@@ -386,6 +426,11 @@ func API_GetSections(res http.ResponseWriter, req *http.Request, params httprout
 }
 
 func API_GetObjectives(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	// Call for a json list of objectives, can limit on originating section.
+	// Mandatory Options:
+	// Optional Options: SectionID
+	// Codes:
+	// 		None, Data is either served or an http.Error is returned.
 	ctx := appengine.NewContext(req)
 	q := datastore.NewQuery("Objectives")
 
@@ -414,6 +459,12 @@ func API_GetObjectives(res http.ResponseWriter, req *http.Request, params httpro
 
 func API_getTOC(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	// GET: /toc?ID=<Book ID Number>
+	// Generates a well formed xml document detailing all the identifing information of a book.
+	// Mandatory Options: ID
+	// Optional Options:
+	// Codes:
+	// 		XML<status> Failure - read <message> of error for more information
+	// 		Success will return the well formed xml.
 
 	/// - - - -
 	// Initial Check, Ensure information is trivially good
@@ -490,9 +541,6 @@ func API_GetCatalog(res http.ResponseWriter, req *http.Request, params httproute
 	// Mandatory Option: ID
 	// Optional Options:
 
-	// TODO: Authentication/Authorization here.
-	// CHECK: Does user x have permissions to preform this action?
-
 	CatalogID := req.FormValue("ID")
 	if CatalogID == "" {
 		fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8" ?><error><status>Failure</status><message>Invalid ID</message></error>`)
@@ -515,9 +563,6 @@ func API_GetBook(res http.ResponseWriter, req *http.Request, params httprouter.P
 	// Get call for reciving an xml view on Book
 	// Mandatory Option: ID
 	// Optional Options:
-
-	// TODO: Authentication/Authorization here.
-	// CHECK: Does user x have permissions to preform this action?
 
 	BookID, convErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
 	if convErr != nil {
@@ -544,9 +589,6 @@ func API_GetChapter(res http.ResponseWriter, req *http.Request, params httproute
 	// Mandatory Option: ID
 	// Optional Options:
 
-	// TODO: Authentication/Authorization here.
-	// CHECK: Does user x have permissions to preform this action?
-
 	ChapterID, convErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
 	if convErr != nil {
 		fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8" ?><error><status>Failure</status><message>Invalid ID</message></error>`)
@@ -569,9 +611,6 @@ func API_GetSection(res http.ResponseWriter, req *http.Request, params httproute
 	// Get call for reciving an xml view on Section
 	// Mandatory Option: ID
 	// Optional Options:
-
-	// TODO: Authentication/Authorization here.
-	// CHECK: Does user x have permissions to preform this action?
 
 	SectionID, convErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
 	if convErr != nil {
@@ -597,9 +636,6 @@ func API_GetObjectiveHTML(res http.ResponseWriter, req *http.Request, params htt
 	// Mandatory Option: ID
 	// Optional Options:
 
-	// TODO: Authentication/Authorization here.
-	// CHECK: Does user x have permissions to preform this action?
-
 	ObjectiveID, numErr := strconv.Atoi(req.FormValue("ID"))
 	if numErr != nil {
 		fmt.Fprint(res, `<section><p>Request has failed: Invalid ID.</p></section>`)
@@ -623,7 +659,21 @@ func API_GetObjectiveHTML(res http.ResponseWriter, req *http.Request, params htt
 /////////////
 
 func API_DeleteCatalog(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// TODO: Authentication/Authorization here.
+	// Call for deletion of a Catalog
+	//  Will also delete all data pointing to it.
+	// Mandatory Options: ID
+	// Optional Options:
+	// Codes:
+	// 		0	- Success, All completed
+	// 		418	- Failure, Authentication error, likely caused by a user not signed in or not allowed.
+	// 		400	- Failure, Expected data Missing
+	// 		500	- Failure, Internal Services Error. Thrown when removal from Datastore cannot be completed.
+
+	if sessErr := MaintainSession(res, req); sessErr != nil {
+		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization","code":418}`)
+		return
+	}
+
 	// CHECK: Does user x have permissions to preform this action?
 
 	catalogKey := req.FormValue("ID")
@@ -658,8 +708,23 @@ func API_DeleteCatalog(res http.ResponseWriter, req *http.Request, params httpro
 	fmt.Fprint(res, `{"result":"success","reason":","code":0}`)
 }
 func API_DeleteBook(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// TODO: Authentication/Authorization here.
+	// Call for deletion of a Book
+	//  Will also delete all data pointing to it.
+	// Mandatory Options: ID
+	// Optional Options:
+	// Codes:
+	// 		0	- Success, All completed
+	// 		418	- Failure, Authentication error, likely caused by a user not signed in or not allowed.
+	// 		400	- Failure, Expected data Missing
+	// 		500	- Failure, Internal Services Error. Thrown when removal from Datastore cannot be completed.
+
+	if sessErr := MaintainSession(res, req); sessErr != nil {
+		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization","code":418}`)
+		return
+	}
+
 	// CHECK: Does user x have permissions to preform this action?
+
 	bookKey, convErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
 	if convErr != nil {
 		fmt.Fprint(res, `{"result":"failure","reason":"Invalid ID","code":400}`)
@@ -688,7 +753,21 @@ func API_DeleteBook(res http.ResponseWriter, req *http.Request, params httproute
 	fmt.Fprint(res, `{"result":"success","reason":","code":0}`)
 }
 func API_DeleteChapter(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// TODO: Authentication/Authorization here.
+	// Call for deletion of a Chapter
+	//  Will also delete all data pointing to it.
+	// Mandatory Options: ID
+	// Optional Options:
+	// Codes:
+	// 		0	- Success, All completed
+	// 		418	- Failure, Authentication error, likely caused by a user not signed in or not allowed.
+	// 		400	- Failure, Expected data Missing
+	// 		500	- Failure, Internal Services Error. Thrown when removal from Datastore cannot be completed.
+
+	if sessErr := MaintainSession(res, req); sessErr != nil {
+		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization","code":418}`)
+		return
+	}
+
 	// CHECK: Does user x have permissions to preform this action?
 
 	chaptKey, convErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
@@ -718,7 +797,21 @@ func API_DeleteChapter(res http.ResponseWriter, req *http.Request, params httpro
 	fmt.Fprint(res, `{"result":"success","reason":","code":0}`)
 }
 func API_DeleteSection(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// TODO: Authentication/Authorization here.
+	// Call for deletion of a Section
+	//  Will also delete all data pointing to it.
+	// Mandatory Options: ID
+	// Optional Options:
+	// Codes:
+	// 		0	- Success, All completed
+	// 		418	- Failure, Authentication error, likely caused by a user not signed in or not allowed.
+	// 		400	- Failure, Expected data Missing
+	// 		500	- Failure, Internal Services Error. Thrown when removal from Datastore cannot be completed.
+
+	if sessErr := MaintainSession(res, req); sessErr != nil {
+		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization","code":418}`)
+		return
+	}
+
 	// CHECK: Does user x have permissions to preform this action?
 	sectKey, convErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
 	if convErr != nil {
@@ -743,7 +836,20 @@ func API_DeleteSection(res http.ResponseWriter, req *http.Request, params httpro
 	fmt.Fprint(res, `{"result":"success","reason":","code":0}`)
 }
 func API_DeleteObjective(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// TODO: Authentication/Authorization here.
+	// Call for deletion of an objective
+	// Mandatory Options: ID
+	// Optional Options:
+	// Codes:
+	// 		0	- Success, All completed
+	// 		418	- Failure, Authentication error, likely caused by a user not signed in or not allowed.
+	// 		400	- Failure, Expected data Missing
+	// 		500	- Failure, Internal Services Error. Thrown when removal from Datastore cannot be completed.
+
+	if sessErr := MaintainSession(res, req); sessErr != nil {
+		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization","code":418}`)
+		return
+	}
+
 	// CHECK: Does user x have permissions to preform this action?
 	objKey, convErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
 	if convErr != nil {

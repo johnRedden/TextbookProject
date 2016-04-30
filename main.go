@@ -133,8 +133,12 @@ func selectBookFromForm(res http.ResponseWriter, req *http.Request, params httpr
 
 func getSimpleObjectiveEditor(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	// GET: /edit?ID=<Objective ID Number>
+	if sessErr := MaintainSession(res, req); sessErr != nil {
+		http.Error(res, sessErr.Error(), http.StatusUnauthorized)
+		// http.Redirect(res, req, "/?Error="+sessErr.Error(), http.StatusSeeOther)
+		return
+	}
 
-	// TODO: Authentication/Authorization here.
 	// CHECK: Does user x have permissions to preform this action?
 
 	ObjectiveID, numErr := strconv.Atoi(req.FormValue("ID"))
