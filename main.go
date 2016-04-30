@@ -71,12 +71,17 @@ func init() {
 	r.GET("/edit", getSimpleObjectiveEditor) // edit objective given id <user><auth>
 	r.GET("/read", getSimpleObjectiveReader) // read objective given id <user>
 	r.GET("/preview", getObjectivePreview)
+	r.GET("/favicon.ico", favIcon) // favicon <user>
 
 	// main.go/API.go, Table of Contents
 	r.GET("/toc", API_getTOC)        // xml toc for a book <api>
 	r.GET("/toc.html", getSimpleTOC) // user viewable toc for a book <user>
 
-	r.GET("/favicon.ico", favIcon) // favicon <user>
+	// authentication.go, Basic User Auth
+	r.GET("/login", AUTH_Login_GET)
+	r.GET("/register", AUTH_Register_GET)
+	r.POST("/register", AUTH_Register_POST)
+	r.GET("/user", AUTH_UserInfo)
 
 	http.Handle("/public/", http.StripPrefix("/public", http.FileServer(http.Dir("public/"))))
 
