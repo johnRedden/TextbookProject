@@ -166,6 +166,9 @@
                     //popChapterDropdown(id);
                     populateNextDropdown("chapters",id);
                     $('#chapterMenuDropdown').removeClass('invisible');
+
+                    var url = '/toc.html?ID='+id;
+                    window.open(url,'_blank'); 
                 }
 
             });
