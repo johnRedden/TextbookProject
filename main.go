@@ -25,14 +25,14 @@ func init() {
 	//  * <user>: A page the user can interact with
 	//  * <user-internal>: A page that the user does not directly interact with but depends on.
 	//  * <api>: A request that preforms background actions.
-	//  * <auth>: (Modifier) This request will someday include user authentication.
+	//  * <auth>: (Modifier) This request requires user authentication. **Not Entrirely Rolled Out**
 	//////
 
 	// Images.go
+	r.GET("/image", IMAGE_API_GetImageFromCS)                           // image requester /api/getImage <user>
+	r.GET("/api/getImage", IMAGE_API_GetImageFromCS)                    // Duplicate of /image, *outdated* <user-internal>
 	r.GET("/image/browser", IMAGE_BrowserForm)                          // image browser <user><auth>
 	r.GET("/image/uploader", IMAGE_PostUploadForm)                      // image uploader <user-internal><auth>
-	r.GET("/api/getImage", IMAGE_API_GetImageFromCS)                    // image requester <user-internal>
-	r.GET("/image", IMAGE_API_GetImageFromCS)                           // Duplicate of /api/getImage <user>
 	r.POST("/api/makeImage", IMAGE_API_PlaceImageIntoCS)                // image creator <api><auth>
 	r.POST("/api/deleteImage", IMAGE_API_RemoveImageFromCS)             // image deleter <api><auth>
 	r.POST("/api/ckeditor/create", IMAGE_API_CKEDITOR_PlaceImageIntoCS) // ckEditor, image creator <api><auth>
@@ -65,7 +65,7 @@ func init() {
 	r.POST("/api/deleteSection", API_DeleteSection)     // delete datastore, section <api><auth>
 	r.POST("/api/deleteObjective", API_DeleteObjective) // delete datastore, objective <api><auth>
 
-	// main.go
+	// main.go, Site Structure
 	r.GET("/", home)                         // Root page <user>
 	r.GET("/select", selectBookFromForm)     // select objective based on information <user>
 	r.GET("/edit", getSimpleObjectiveEditor) // edit objective given id <user><auth>

@@ -134,6 +134,7 @@ func IMAGE_API_PlaceImageIntoCS(res http.ResponseWriter, req *http.Request, para
 
 func IMAGE_API_GetImageFromCS(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	// GET: /api/getImage
+	// GET: /image
 	id := req.FormValue("id") // this is an id request only.
 	if id == "" {             // if no id, exit with failure.
 		fmt.Fprint(res, `{"result":"failure","reason":"missing image id","code":400}`)
