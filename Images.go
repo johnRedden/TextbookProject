@@ -35,7 +35,7 @@ func IMAGE_PostUploadForm(res http.ResponseWriter, req *http.Request, params htt
 }
 
 func IMAGE_BrowserForm(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// GET: /image
+	// GET: /image/browser
 	ctx := appengine.NewContext(req)
 
 	// TODO: Authentication/Authorization here.
@@ -95,7 +95,7 @@ func IMAGE_API_CKEDITOR_PlaceImageIntoCS(res http.ResponseWriter, req *http.Requ
 	}
 
 	// image successfuly sent, let CK know the final url.
-	fmt.Fprint(res, `<!DOCTYPE html><html><body><script type="text/javascript">window.parent.CKEDITOR.tools.callFunction('`+req.FormValue("CKEditorFuncNum")+`', "`+"/api/getImage?id="+fileName+`","");//window.close();</script></body></html>`)
+	fmt.Fprint(res, `<!DOCTYPE html><html><body><script type="text/javascript">window.parent.CKEDITOR.tools.callFunction('`+req.FormValue("CKEditorFuncNum")+`', "`+"/image?id="+fileName+`","");//window.close();</script></body></html>`)
 	return
 }
 

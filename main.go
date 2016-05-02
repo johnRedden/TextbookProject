@@ -29,9 +29,10 @@ func init() {
 	//////
 
 	// Images.go
-	r.GET("/image", IMAGE_BrowserForm)                                  // image browser <user><auth>
+	r.GET("/image/browser", IMAGE_BrowserForm)                          // image browser <user><auth>
 	r.GET("/image/uploader", IMAGE_PostUploadForm)                      // image uploader <user-internal><auth>
 	r.GET("/api/getImage", IMAGE_API_GetImageFromCS)                    // image requester <user-internal>
+	r.GET("/image", IMAGE_API_GetImageFromCS)                           // Duplicate of /api/getImage <user>
 	r.POST("/api/makeImage", IMAGE_API_PlaceImageIntoCS)                // image creator <api><auth>
 	r.POST("/api/deleteImage", IMAGE_API_RemoveImageFromCS)             // image deleter <api><auth>
 	r.POST("/api/ckeditor/create", IMAGE_API_CKEDITOR_PlaceImageIntoCS) // ckEditor, image creator <api><auth>

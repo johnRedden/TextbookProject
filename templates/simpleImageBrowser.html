@@ -13,7 +13,7 @@
             return
         }
         // console.log("Image selected: "+uri)
-        var urlOut = "/api/getImage?id="+uri
+        var urlOut = "/image?id="+uri
         // console.log("Turned into "+urlOut)
         
         window.opener.CKEDITOR.tools.callFunction(callbackNumb,urlOut);
@@ -46,7 +46,7 @@
 <div class="flexer">
     {{range .Images}}
     <button class="image-button" onclick='verifySelection("{{.}}")'>
-        <img class="thumbnail" src="/api/getImage?id={{.}}" />
+        <img class="thumbnail" src="/image?id={{.}}" />
     </button>
     <br />
     {{end}}
