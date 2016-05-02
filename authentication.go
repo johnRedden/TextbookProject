@@ -185,20 +185,14 @@ func AUTH_Register_POST(res http.ResponseWriter, req *http.Request, params httpr
 	// Make user and add them to the datastore.
 	permU := MakePermissionUser(uName, perms, u)
 	putErr := PutPermissionUserToDatastore(ctx, u.Email, &permU)
-	if putErr != nil {
-		http.Error(res, putErr.Error(), http.StatusInternalServerError)
-		return
-	}
+	HandleError(res, putErr)
 
 	// Now we make that session
 	memValue := func(u *user.User) string {
 		return permU.ToString()
 	}
 	sessErr := CreateSession(res, req, memValue)
-	if sessErr != nil {
-		http.Error(res, sessErr.Error(), http.StatusInternalServerError)
-		return
-	}
+	HandleError(res, sessErr)
 
 	redirectTo := req.FormValue("redirect")
 	if redirectTo == "" {
