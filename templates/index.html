@@ -13,52 +13,71 @@
     <!-- Latest compiled and minified JavaScript -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 
-    <style type="text/css">
+<style type="text/css">
         body{
             font-size:large;
             line-height: 1.5;
             font-family: 'Merriweather', Georgia, 'Times New Roman', Times, serif;
         }
-        .marginTop{
-            margin-top:75px;
-        }
         .navbar { 
              box-shadow: 0px 5px 3px -3px #888;
         }
 
-        .list-group.list-group-root {
-            padding: 0;
-            overflow: hidden;
-        }
+    * {
+        box-sizing: border-box;
+    }
+    #Book-Information {
+        position: fixed;
+        right: 10px;
+        top: 0px;
+        border: 1px solid black;
+        padding-right: 5px;
+        z-index: 1000;
+    }
+    #Book-Chapters {
+        position: relative;
+        border: 1px solid black;
+    }
+    /*
+    a {
+        color: darkblue;
+        text-decoration: none;
+        border-radius: 3px;
+        border: 1px solid darkblue;
+    }
+    */
 
-        .list-group.list-group-root .list-group {
-            margin-bottom: 0;
-        }
 
-        .list-group.list-group-root .list-group-item {
-            border-radius: 0;
-            border-width: 1px 0 0 0;
-        }
+.list-group {
+    padding: 0;
+    overflow: hidden;
+}
 
-        .list-group.list-group-root > .list-group-item:first-child {
-            border-top-width: 0;
-        }
+.list-group .list-group-item {
+    border-radius: 5px;
+    border-width: 1px 0 0 0;
+}
 
-        .list-group.list-group-root > .list-group > .list-group-item {
-            padding-left: 30px;
-        }
+.list-group-root > .list-group-item:first-child {
+    border-top-width: 0;
+}
 
-        .list-group.list-group-root > .list-group > .list-group > .list-group-item {
-            padding-left: 45px;
-        }
+.list-group-root > .list-group > .list-group-item {
+    padding-left: 30px;
+}
 
-        .list-group-item .glyphicon {
-            margin-right: 5px;
-        }
-        .list-group-item-heading{
+.list-group-root > .list-group > .list-group > .list-group-item {
+    padding-left: 45px;
+}
+
+.list-group-item .glyphicon {
+    margin-right: 5px;
+}
+.list-group-item-heading{
             padding:5px;
-        }
-    </style>
+}
+    
+</style>
   </head>
 
   <body>
@@ -82,7 +101,7 @@
 
     <div class="container">
         <p><em>This is a pre-alpha version of our Online Textbook System.</em></p>
-        <div class="list-group  well">
+        <div class="list-group well">
             <div class="list-group-item-heading" id="catHeading">Catalogs Loading... <i class="glyphicon glyphicon-download"> </i> </div>
             <div class="list-group-root"></div>
         </div>

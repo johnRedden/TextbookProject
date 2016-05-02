@@ -13,121 +13,49 @@
     <!-- Latest compiled and minified JavaScript -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 
-
-    <style type="text/css">
-        body{
-                font-size:large;
-                line-height: 1.5;
-                font-family: 'Merriweather', Georgia, 'Times New Roman', Times, serif;
-        }
-        .navbar { 
-                 box-shadow: 0px 5px 3px -3px #888;
-        }
-
-        .list-group {
-            padding: 0;
-            overflow: hidden;
-        }
-
-        .list-group .list-group-item {
-            border-radius: 5px;
-            border-width: 1px 0 0 0;
-        }
-
-        .list-group-root > .list-group-item:first-child {
-            border-top-width: 0;
-        }
-
-        .list-group-root > .list-group > .list-group-item {
-            padding-left: 30px;
-        }
-
-        .list-group-root > .list-group > .list-group > .list-group-item {
-            padding-left: 45px;
-        }
-
-        .list-group-item .glyphicon {
-            margin-right: 5px;
-        }
-        .list-group-item-heading{
-                    padding:5px;
-        }
-    </style>
-</head>
-
-<body>
-   <nav class="navbar navbar-default navbar-static-top">
-      <div class="container-fluid">
-        <div class="navbar-header">
-          <a class="navbar-text" href="/"><img class="pull-left" src="/public/images/eduNetSystems-logo.png"/> 
-            <strong> &nbsp eduNetSystems Textbook System α</strong></a>
-             
-        </div>
-        <ul class="nav navbar-nav">
-          <li><a href="\">Catalogs</a></li>
-          <li><a href="#">About</a></li>
-        </ul>
-        <ul class="nav navbar-nav navbar-right">
-          <li><a href="/login"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
-        </ul>
-      </div>
-    </nav>
-
-    <div class="container">
-        <div id="myBookID"><h2>Book: loading...</h2></div>
-        <p><em>This is a pre-alpha version of our Online Textbook System.</em></p>
-        <div class="list-group  well">
-            <div class="list-group-item-heading" id="catHeading">Chapters Loading... <i class="glyphicon glyphicon-download"> </i> </div>
-            <div class="list-group-root"></div>
-        </div>
-    </div>
-
-
-    <footer class="text-center">
-        <div class="well">
-            <div class="container">
-                <div class="row">
-                    <div class="col-xs-12">
-                        <div><span class="glyphicon glyphicon-copyright-mark"></span> 2015 <a href="http://www.edunetsystems.com/">eduNetSystems.com</a></div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </footer>
-
-
 <script type="text/javascript">
     var incomingID = "{{.}}";
+    var editAPI = "/edit?ID="
+    var readAPI = "/read?ID="
+    var deleteAPI = "/api/deleteObjective?ID="
+    var deleteSectionAPI = "/api/deleteSection?ID="
+    var deleteChapterAPI = "/api/deleteChapter?ID="
+    var deleteBookAPI = "/api/deleteBook?ID="
 
     $(document).ready(function(){
         if (incomingID == "") {return ;}
-        populateBook(incomingID);
 
-    });
-
-    // methods
-    function populateBook(bookID){
-        $.get("/toc?ID="+bookID,function(xml){
+        $.get("/toc?ID="+incomingID,function(xml){
             booktitle = $(xml).find("booktitle").text();
             bookid = $(xml).find("bookid").text();
             catalog = $(xml).find("catalog").text();
 
-            $('#myBookID').html('<h2>Book:'+booktitle+'</h2>');
+            $("#JQ-TOC-Root").append(`<ul id="Book-Information"></ul>`)
+            $("#Book-Information").append(`<li id="Book-Catalog">`+catalog+`</li>`)
+            $("#Book-Information").append(`<li id="Book-Title">`+booktitle+`</li>`)
+            $("#Book-Information").append(`<li id="Book-ID">`+bookid+`</li>`)
+            $("#Book-Information").append(`<a href="`+deleteBookAPI+bookid+`">Delete</a>`)
 
-
+            $("#JQ-TOC-Root").append(`<ul id="Book-Chapters"></ul>`)
             $(xml).find('chapter').each(function(){ // each chapter of book
                 singleChapterID = $(this).find("chapterid").text()
                 singleChapterName = $(this).find("chaptertitle").text();
 
                 //Bootstrap CHAPTER work *******************************
+                $('#myBookID').html('<h2>Book:'+booktitle+'</h2>');
                 var htmlBlock = '<a href="#jr-'+singleChapterID+'" class="list-group-item" data-toggle="collapse">\
-                                <i class="glyphicon glyphicon-chevron-right"></i>'+singleChapterName+'</a>\
+                                <i class="glyphicon glyphicon-chevron-right"></i>'+singleChapterName+'\
+                            </a>\
                             <div class="list-group collapse chapterClass" id="jr-'+singleChapterID+'"></div>';
 
                 $('.list-group-root').append(htmlBlock);
 
                 //*********************************
+
+
+                $("#Book-Chapters").append(`<li id="`+singleChapterID+`" class="Chapter">`+singleChapterName+`<a href="`+deleteChapterAPI+singleChapterID+`">Delete</a></li>`);
+
+                $(`li#`+singleChapterID).append(`<ul id="UL-`+singleChapterID+`"></ul>`)
 
                 $(this).find("section").each(function(){ // sections of each chapter
                     singleSectionID = $(this).find("sectionid").text()
@@ -141,7 +69,12 @@
                             </div>';
 
                     $('#jr-'+singleChapterID).append(htmlBlock2);
+
                     //*****************************************************
+
+                    $(`ul#UL-`+singleChapterID).append(`<li id="`+singleSectionID+`" class="Section">`+singleSectionName+`<a href="`+deleteSectionAPI+singleSectionID+`">Delete</a></li>`);
+
+                    $(`li#`+singleSectionID).append(`<ul id="UL-`+singleSectionID+`"></ul>`)
 
                     $(this).find("objective").each(function(){ // objectives of the section
                         singleObjectiveID = $(this).find("objectiveid").text()
@@ -154,15 +87,24 @@
                                         </div>';
 
                         $('#jr-'+singleSectionID).append(htmlBlock3);
+
                         //*****************************************************
 
+
+                        // console.log(`ul#UL-`+singleSectionID)
+                        $(`ul#UL-`+singleSectionID).append(`<li id="`+singleObjectiveID+`" class="Objective">`+singleObjectiveName+`</li>`);
+                        buttons = `
+                            <a href="`+editAPI+singleObjectiveID+`">Edit</a>
+                            <a href="`+readAPI+singleObjectiveID+`">Read</a>
+                            <a href="`+deleteAPI+singleObjectiveID+`">Delete</a>`
+                        $(`ul#UL-`+singleSectionID).append(buttons);
                     });
 
                     //add objective button at end of level 1 list  *********************
                     var addObjBlock = '<div class="input-group">\
                             <input type="text" class="form-control" placeholder="Add objective."/>\
                             <span class="input-group-btn">\
-                                <button class="btn btn-warning" type="button">Add Objective</button>\
+                                <button class="btn btn-warning" type="button">Add</button>\
                             </span>\
                             </div>';
 
@@ -179,6 +121,7 @@
                         });
                        
                     });
+
                     //*********************************************
 
                 });
@@ -187,7 +130,7 @@
                 var addSectBlock = '<div class="input-group">\
                         <input type="text" class="form-control" placeholder="Add section."/>\
                         <span class="input-group-btn">\
-                            <button class="btn btn-success" type="button">Add Section</button>\
+                            <button class="btn btn-success" type="button">Add</button>\
                         </span>\
                         </div>';
 
@@ -213,7 +156,7 @@
             var addChapBlock = '<div class="input-group">\
                     <input id="newChapInput" type="text" class="form-control" placeholder="Add chapter."/>\
                     <span class="input-group-btn">\
-                        <button class="btn btn-primary" type="button" id="addChapter">Add Chapter</button>\
+                        <button class="btn btn-primary" type="button" id="addChapter">Add</button>\
                     </span>\
                     </div>';
 
@@ -241,18 +184,147 @@
             });
 
 
-        });        
+        });
 
 
 
 
 
-    };
-
-
+    });
 </script>
+<style type="text/css">
+        body{
+            font-size:large;
+            line-height: 1.5;
+            font-family: 'Merriweather', Georgia, 'Times New Roman', Times, serif;
+        }
+        .navbar { 
+             box-shadow: 0px 5px 3px -3px #888;
+        }
+
+    * {
+        box-sizing: border-box;
+    }
+    #Book-Information {
+        position: fixed;
+        right: 10px;
+        top: 0px;
+        border: 1px solid black;
+        padding-right: 5px;
+        z-index: 1000;
+    }
+    #Book-Chapters {
+        position: relative;
+        border: 1px solid black;
+    }
+    /*
+    a {
+        color: darkblue;
+        text-decoration: none;
+        border-radius: 3px;
+        border: 1px solid darkblue;
+    }
+    */
+    li.Chapter {
+        position: relative;
+        right: 40px;
+
+        list-style: none;
+        display: block;
+
+        font-size: 1.12em;
+        padding-bottom: 10px;
+    }
+    li.Chapter + li.Chapter {
+        border-top: 1px solid black;
+    }
+    li.Chapter * {
+        font-size: initial;
+    }
+    li.Chapter > a , li.Section > a{
+        margin-left: 10px;
+    }
+
+    .just-padding {
+    padding: 15px;
+}
+
+.list-group.list-group-root {
+    padding: 0;
+    overflow: hidden;
+}
+
+.list-group.list-group-root .list-group {
+    margin-bottom: 0;
+}
+
+.list-group.list-group-root .list-group-item {
+    border-radius: 0;
+    border-width: 1px 0 0 0;
+}
+
+.list-group.list-group-root > .list-group-item:first-child {
+    border-top-width: 0;
+}
+
+.list-group.list-group-root > .list-group > .list-group-item {
+    padding-left: 30px;
+}
+
+.list-group.list-group-root > .list-group > .list-group > .list-group-item {
+    padding-left: 45px;
+}
+
+.list-group-item .glyphicon {
+    margin-right: 5px;
+}
+.list-group-item-heading{
+            padding:5px;
+}
+    
+</style>
+</head>
+<body>
+   <nav class="navbar navbar-default navbar-static-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <a class="navbar-text" href="/"><img class="pull-left" src="/public/images/eduNetSystems-logo.png"/> 
+            <strong> &nbsp eduNetSystems Textbook System α</strong></a>
+             
+        </div>
+        <ul class="nav navbar-nav">
+          <li><a href="\">Catalogs</a></li>
+          <li><a href="#">About</a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+          <li><a href="/login"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+        </ul>
+      </div>
+    </nav>
 
 
+    <div class="container">
+        <div id="myBookID"><h2>Book: loading...</h2></div>
+        <div class="list-group list-group-root well">
+            <div class="list-group-item-heading"><h4>Chapters</h4></div>
+        </div>
 
+        <!--
+        <section id="JQ-TOC-Root"></section>
+        -->
+    </div>
+
+    <footer class="text-center">
+        <div class="well">
+            <div class="container">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div><span class="glyphicon glyphicon-copyright-mark"></span> 2015 <a href="http://www.edunetsystems.com/">eduNetSystems.com</a></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </footer>
 </body>
 </html>
