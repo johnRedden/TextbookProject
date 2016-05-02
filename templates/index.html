@@ -26,12 +26,6 @@
              box-shadow: 0px 5px 3px -3px #888;
         }
 
-        .dropdown {
-            position: relative;
-            display: inline-block;
-            vertical-align: middle;
-        }
-
         .list-group.list-group-root {
             padding: 0;
             overflow: hidden;
@@ -87,10 +81,10 @@
     </nav>
 
     <div class="container">
-        
         <p><em>This is a pre-alpha version of our Online Textbook System.</em></p>
-        <div class="list-group list-group-root well">
-            <div class="list-group-item-heading">Catalogs</div>
+        <div class="list-group  well">
+            <div class="list-group-item-heading" id="catHeading">Catalogs Loading... <i class="glyphicon glyphicon-download"> </i> </div>
+            <div class="list-group-root"></div>
         </div>
     </div>
 
@@ -99,7 +93,7 @@
             <div class="container">
                 <div class="row">
                     <div class="col-xs-12">
-                        <div><span class="glyphicon glyphicon-copyright-mark"></span> 2015 <a href="http://www.edunetsystems.com/">eduNetSystems.com</a></div>
+                        <div><span class="glyphicon glyphicon-copyright-mark"></span> 2016 <a href="http://www.edunetsystems.com/">eduNetSystems.com</a></div>
                     </div>
                 </div>
 
@@ -111,53 +105,33 @@
 
         $(document).ready(function(){
 
+            populateCatalog();
+
+
+        });
+
+        // methods
+        function populateCatalog(){
             $.get("/api/catalogs.json",function(data, status){
                 j = $.parseJSON(data);
-                console.log(j);
+                //console.log(j);
                 $.each( j.results, function( key, val ){
-                   
-                    var htmlBlock = '<a href="#'+val.ID+'" class="list-group-item" data-toggle="collapse">\
+
+                    var catalogID = val.ID;
+                    var catHTMLid = catalogID.replace(/\s+/g, '-').toLowerCase();
+                    //html id tags cannot have spaces
+                    var htmlBlock = '<a href="#'+catHTMLid+'" class="list-group-item" data-toggle="collapse">\
                                     <i class="glyphicon glyphicon-chevron-right"></i>'+val.Name+'</a>\
-                                    <div class="list-group collapse" id="'+val.ID+'"></div>';
+                                    <div class="list-group collapse" id="'+catHTMLid+'">\
+                                            <a href="#" class="list-group-item" >\
+                                            <i class="glyphicon glyphicon-download"></i>Loading...</a>\
+                                    </div>';
 
                     $('.list-group-root').append(htmlBlock);
 
-                    $.get('/api/books.json?Catalog='+val.ID,function(data, status){
-                        k = $.parseJSON(data);
-                        
-                        $.each( k.results, function( key, arg ){
-                           
-                        var htmlBlock2 = '<a href="/toc.html?ID='+arg.ID+'" class="list-group-item" >\
-                                        <i class="glyphicon glyphicon-new-window"></i>Book: '+arg.Title+'</a>\
-                                        <div class="list-group collapse" id="'+arg.ID+'">\
-                                        </div>';
-
-                            $('#'+val.ID).append(htmlBlock2);
-
-                        });
-                        //append Book button at end of level 2 list  *********************
-                        var addBookBlock = '<div class="input-group">\
-                                    <input type="text" class="form-control" placeholder="Add Book."/>\
-                                    <span class="input-group-btn">\
-                                        <button id="book'+val.ID+'" class="btn btn-warning" type="button">Add Book</button>\
-                                    </span>\
-                                    </div>';
-
-                        $('#'+val.ID).append('<div class="list-group-item">'+addBookBlock+'</div>');
-                        $('#book'+val.ID).on('click',function(){
-                            var newBook =  $(this).closest('div').find('input').val(); //hackery i'll tell you!
-                            //console.log(newBook);
-                            
-                            $.post("/api/makeBook",{CatalogName:val.ID,BookName:newBook},function(data){
-                               g = $.parseJSON(data);
-                               console.log(g.result +":"+ g.reason);
-                               location.reload();
-                            });
-                   
-                        });
-
-                    });
+                    populateBooks(catalogID,catHTMLid);
                     
+                    $('#catHeading').html('Catalogs');
                 });
 
                 //add Catalog button at end of level 1 list  *********************
@@ -170,33 +144,78 @@
 
                 $('.list-group-root').append('<div class="list-group-item">'+addCatBlock+'</div>');
 
-
-                $('#catBtn').on('click',function(){
+                $('#catBtn').one('click',function(){
                     var newCat =  $('#catInput').val(); //hackery i'll tell you!
                     console.log(newCat);
+                    $('#catHeading').html('Catalogs Loading...');
 
                     $.post("/api/makeCatalog",{CatalogName:newCat},function(data){
                        g = $.parseJSON(data);
                        console.log(g.result +":"+ g.reason);
-                       location.reload();
+                       $('.list-group-root').fadeOut(500,function(){
+                            $(this).html('');
+                            populateCatalog();
+                       });
+                       $('.list-group-root').fadeIn(500);
+                       
                     });
-                   
+                    
                 });
-
-                //*********************************************
+                //End add catalog button*********************************************
                 // toggle chevrons
                 $('.list-group-item').on('click', function() {
-                
                         $('.glyphicon', this)
                             .toggleClass('glyphicon-chevron-right')
                             .toggleClass('glyphicon-chevron-down');
                 });
 
-
             });
 
 
-        });
+        };
+
+        function populateBooks(catalogID,catHTMLid){
+
+                    $.get('/api/books.json?Catalog='+catalogID,function(data, status){
+                        k = $.parseJSON(data);
+                        $('#'+catHTMLid).html('');
+
+                        $.each( k.results, function( key, arg ){
+                           
+                        var htmlBlock2 = '<a href="/toc.html?ID='+arg.ID+'" class="list-group-item" >\
+                                        <i class="glyphicon glyphicon-new-window"></i>Book: '+arg.Title+'</a>';
+
+                            $('#'+catHTMLid).append(htmlBlock2);
+
+                        });
+                        
+                        //append Book button at end of level 2 list  *********************
+                        var addBookBlock = '<div class="input-group">\
+                                    <input type="text" class="form-control" placeholder="Add Book."/>\
+                                    <span class="input-group-btn">\
+                                        <button id="book'+catHTMLid+'" class="btn btn-warning" type="button">Add Book</button>\
+                                    </span>\
+                                    </div>';
+
+                        $("#"+catHTMLid).append('<div class="list-group-item">'+addBookBlock+'</div>');
+                        $("#book"+catHTMLid).on('click',function(){
+                            var newBook =  $(this).closest('div').find('input').val(); //hackery i'll tell you!
+                            //console.log(newBook);
+                            
+                            $.post("/api/makeBook",{CatalogName:catalogID,BookName:newBook},function(data){
+                               g = $.parseJSON(data);
+                               console.log(g.result +":"+ g.reason);
+                                $('#'+catHTMLid).trigger('click');
+                                populateBooks(catalogID,catHTMLid);
+                                //$('#'+catHTMLid).collapse('toggle');
+
+                            });
+                   
+                        });
+
+                    });
+
+        };
         
 
     </script>
