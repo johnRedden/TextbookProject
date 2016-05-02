@@ -189,6 +189,15 @@
     });
 </script>
 <style type="text/css">
+        body{
+            font-size:large;
+            line-height: 1.5;
+            font-family: 'Merriweather', Georgia, 'Times New Roman', Times, serif;
+        }
+        .navbar { 
+             box-shadow: 0px 5px 3px -3px #888;
+        }
+
     * {
         box-sizing: border-box;
     }
@@ -265,20 +274,53 @@
 .list-group-item .glyphicon {
     margin-right: 5px;
 }
+.list-group-item-heading{
+            padding:5px;
+}
     
 </style>
 </head>
 <body>
+   <nav class="navbar navbar-default navbar-static-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <a class="navbar-text" href="/"><img class="pull-left" src="/public/images/eduNetSystems-logo.png"/> 
+            <strong> &nbsp eduNetSystems Textbook System α</strong></a>
+             
+        </div>
+        <ul class="nav navbar-nav">
+          <li><a href="\">Catalogs</a></li>
+          <li><a href="#">About</a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+          <li><a href="/login"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+        </ul>
+      </div>
+    </nav>
 
-<div class="container">
-    <div id="myBookID"><h2>Book: loading...</h2></div>
-    <div class="list-group list-group-root well">
-        <div class="list-group-item-heading"><h4>Chapters</h4></div>
+
+    <div class="container">
+        <div id="myBookID"><h2>Book: loading...</h2></div>
+        <div class="list-group list-group-root well">
+            <div class="list-group-item-heading"><h4>Chapters</h4></div>
+        </div>
+
+        <!--
+        <section id="JQ-TOC-Root"></section>
+        -->
     </div>
 
+    <footer class="text-center">
+        <div class="well">
+            <div class="container">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div><span class="glyphicon glyphicon-copyright-mark"></span> 2015 <a href="http://www.edunetsystems.com/">eduNetSystems.com</a></div>
+                    </div>
+                </div>
 
-    <section id="JQ-TOC-Root"></section>
-</div>
-
+            </div>
+        </div>
+    </footer>
 </body>
 </html>

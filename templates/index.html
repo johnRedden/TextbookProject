@@ -6,379 +6,198 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
 
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/css/bootstrap.min.css" integrity="sha384-y3tfxAZXuh4HwSYylfB+J125MxIs6mR5FOHamPBG064zB+AFeWH94NdvaCBm8qnd" crossorigin="anonymous">
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <!-- JQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 
     <style type="text/css">
+        body{
+            font-size:large;
+            line-height: 1.5;
+            font-family: 'Merriweather', Georgia, 'Times New Roman', Times, serif;
+        }
+        .marginTop{
+            margin-top:75px;
+        }
+        .navbar { 
+             box-shadow: 0px 5px 3px -3px #888;
+        }
+
         .dropdown {
             position: relative;
             display: inline-block;
             vertical-align: middle;
         }
+
+        .list-group.list-group-root {
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .list-group.list-group-root .list-group {
+            margin-bottom: 0;
+        }
+
+        .list-group.list-group-root .list-group-item {
+            border-radius: 0;
+            border-width: 1px 0 0 0;
+        }
+
+        .list-group.list-group-root > .list-group-item:first-child {
+            border-top-width: 0;
+        }
+
+        .list-group.list-group-root > .list-group > .list-group-item {
+            padding-left: 30px;
+        }
+
+        .list-group.list-group-root > .list-group > .list-group > .list-group-item {
+            padding-left: 45px;
+        }
+
+        .list-group-item .glyphicon {
+            margin-right: 5px;
+        }
+        .list-group-item-heading{
+            padding:5px;
+        }
     </style>
   </head>
 
   <body>
-    <div class="container">
-        <h2><span><img src="/public/images/eduNetSystems-logo.png"></span>EduNetSystems</h2>
-        <p><em>Objective Selector alpha</em></p>
-    <div class="card text-xs-center">
 
-      <div class="card-block">
-        <h4 class="card-title">EduNetSystems Content Selector</h4>
-        <p class="card-text">In the very distant future there will be much content.</p>
+    <nav class="navbar navbar-default navbar-static-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <a class="navbar-text" href="/"><img class="pull-left" src="/public/images/eduNetSystems-logo.png"/> 
+            <strong> &nbsp eduNetSystems Textbook System α</strong></a>
+             
+        </div>
+        <ul class="nav navbar-nav">
+          <li class="active"><a href="\">Catalogs</a></li>
+          <li><a href="#">About</a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+          <li><a href="/login"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class="container">
         
-        <!-- cat dropdown button starts here -->
-        <div class="dropdown" id="catMenuDropdown">
-            <label>Catalog</label>
-            <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" >Choose a Catalog</button>
-            <div class="dropdown-menu" id="catMenu">
-                <a class="dropdown-item" href="/">Loading...</a>
+        <p><em>This is a pre-alpha version of our Online Textbook System.</em></p>
+        <div class="list-group list-group-root well">
+            <div class="list-group-item-heading">Catalogs</div>
+        </div>
+    </div>
+
+    <footer class="text-center">
+        <div class="well">
+            <div class="container">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div><span class="glyphicon glyphicon-copyright-mark"></span> 2015 <a href="http://www.edunetsystems.com/">eduNetSystems.com</a></div>
+                    </div>
+                </div>
+
             </div>
         </div>
-
-        <br/> <br/>
-
-        <!-- book dropdown button starts here -->        
-        <div class="dropdown invisible" id="bookMenuDropdown">
-          <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown">Choose a Book</button>
-          <div class="dropdown-menu" id="bookMenu">
-            <a class="dropdown-item" href="/">Loading...</a>
-          </div>
-        </div>
-
-        <br/> <br/>
-        
-        <!-- chapter dropdown button starts here -->        
-        <div class="dropdown invisible" id="chapterMenuDropdown">
-          <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenu3" data-toggle="dropdown">Choose a Chapter</button>
-          <div class="dropdown-menu" id="chapMenu">
-            <a class="dropdown-item" href="/">Loading...</a>
-          </div>
-        </div>
-
-        <br/> <br/>
-        
-        <!-- section dropdown button starts here -->        
-        <div class="dropdown invisible" id="sectionMenuDropdown">
-          <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenu4" data-toggle="dropdown">Choose a Section</button>
-          <div class="dropdown-menu" id="sectMenu">
-            <a class="dropdown-item" href="/">Loading...</a>
-          </div>
-        </div>
-
-        <br/> <br/>
-
-        <!-- objective dropdown button starts here -->        
-        <div class="dropdown invisible" id="objectiveMenuDropdown">
-          <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenu5" data-toggle="dropdown">Choose an Objective</button>
-          <div class="dropdown-menu" id="objMenu">
-            <a class="dropdown-item" href="/">Loading...</a>
-          </div>
-        </div>
-
-        <br/> <br/>
-        <!-- end of road buttons -->
-        <div id="actionGroup" class="btn-group btn-group-sm invisible">
-            <button type="button" id="gotoEditor" class="btn btn-success">Edit</button>
-            <button type="button" id="gotoPreview" class="btn btn-success">Preview</button>
-            <button type="button" class="btn btn-success">Delete</button>
-        </div>
-
-
-      </div>
-      <div class="card-footer text-muted" id='catFooter'>
-        loading...
-      </div>
-    </div>
-
-        <!-- **************** Generalized New Entry Modal -->
-        <div id="inputModal" class="modal fade">
-          <div class="modal-dialog" role="document">
-            <div class="modal-content">
-              <div class="modal-header">
-                <button id='cancel' type="button" class="close" data-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">&times;</span>
-                </button>
-                <h4 class="modal-title">New Submission</h4>
-              </div>
-              <div class="modal-body">
-                <div class="input-group">
-                    <span class="input-group-addon" id="basic-addon1">@</span>
-                    <input type="text" id="newEntry" class="form-control" placeholder="New Entry" aria-describedby="basic-addon1" autofocus>
-                </div>
-              </div>
-              <div class="modal-footer">
-                <button id='submit' type="button" class="btn btn-primary" data-dismiss="modal">Submit Entry</button>
-           
-              </div>
-            </div><!-- /.modal-content -->
-          </div><!-- /.modal-dialog -->
-        </div><!-- /.modal -->
-
-    </div>
-
-    <!-- jQuery first, then Bootstrap 4 JS. -->
-    <script src="https://www.atlasestateagents.co.uk/javascript/tether.min.js"></script><!-- Tether for Bootstrap --> 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/js/bootstrap.min.js" integrity="sha384-vZ2WRJMwsjRMW/8U7i6PWi6AlO1L79snBrmgiDpgIWJ82z8eA5lenwvxbMV1PAh7" crossorigin="anonymous"></script>
+    </footer>
 
     <script type="text/JavaScript">
-        // I totally need to refactor this!!
 
         $(document).ready(function(){
 
-            // initiate page by getting list of catalogs *************************************************
-            populateNextDropdown("catalogs");
-            //popCatalogDropdown();
-            // handle catalog click events
+            $.get("/api/catalogs.json",function(data, status){
+                j = $.parseJSON(data);
+                console.log(j);
+                $.each( j.results, function( key, val ){
+                   
+                    var htmlBlock = '<a href="#'+val.ID+'" class="list-group-item" data-toggle="collapse">\
+                                    <i class="glyphicon glyphicon-chevron-right"></i>'+val.Name+'</a>\
+                                    <div class="list-group collapse" id="'+val.ID+'"></div>';
 
-            $('#catMenuDropdown').on('click','a',function(){
-                var cat = $(this).attr('name');
-                $('#dropdownMenu1').html(cat);
+                    $('.list-group-root').append(htmlBlock);
 
-                localStorage.cat = cat;
+                    $.get('/api/books.json?Catalog='+val.ID,function(data, status){
+                        k = $.parseJSON(data);
+                        
+                        $.each( k.results, function( key, arg ){
+                           
+                        var htmlBlock2 = '<a href="/toc.html?ID='+arg.ID+'" class="list-group-item" >\
+                                        <i class="glyphicon glyphicon-new-window"></i>Book: '+arg.Title+'</a>\
+                                        <div class="list-group collapse" id="'+arg.ID+'">\
+                                        </div>';
 
-                if(cat==="newEntry"){
-                    addNewEntry("catalog");
+                            $('#'+val.ID).append(htmlBlock2);
 
-                }else{
-                    populateNextDropdown("books",cat);
-                    $('#bookMenuDropdown').removeClass('invisible');
-                }
+                        });
+                        //append Book button at end of level 2 list  *********************
+                        var addBookBlock = '<div class="input-group">\
+                                    <input type="text" class="form-control" placeholder="Add Book."/>\
+                                    <span class="input-group-btn">\
+                                        <button id="book'+val.ID+'" class="btn btn-warning" type="button">Add Book</button>\
+                                    </span>\
+                                    </div>';
 
-            });
-            //*********************************************************************************
+                        $('#'+val.ID).append('<div class="list-group-item">'+addBookBlock+'</div>');
+                        $('#book'+val.ID).on('click',function(){
+                            var newBook =  $(this).closest('div').find('input').val(); //hackery i'll tell you!
+                            //console.log(newBook);
+                            
+                            $.post("/api/makeBook",{CatalogName:val.ID,BookName:newBook},function(data){
+                               g = $.parseJSON(data);
+                               console.log(g.result +":"+ g.reason);
+                               location.reload();
+                            });
+                   
+                        });
 
-            $('#bookMenuDropdown').on('click','a',function(){
-                var id = $(this).attr('name');
-                var bookTitle = $(this).html();
-
-                console.log(localStorage.cat+" in book");
-
-                localStorage.bookID = id;
-
-                $('#dropdownMenu2').html(bookTitle);
-                
-                if(id==="newEntry"){
-                    addNewEntry("book");
-                }else{
-                    //popChapterDropdown(id);
-                    populateNextDropdown("chapters",id);
-                    $('#chapterMenuDropdown').removeClass('invisible');
-
-                    var url = '/toc.html?ID='+id;
-                    window.open(url,'_blank'); 
-                }
-
-            });
-
-           //*********************************************************************************
-
-            $('#chapterMenuDropdown').on('click','a',function(){
-                var id = $(this).attr('name');
-                var chapterTitle = $(this).html();
-
-                localStorage.chapterID = id;
-                
-                $('#dropdownMenu3').html(chapterTitle);
-                
-                if(id==="newEntry"){
-                    var cat = $('#dropdownMenu1').html();
-                    var bookID = $('#dropdownMenu2:selected').attr('name');
-                    addNewEntry("chapter")
-
-                }else{
-                    populateNextDropdown("sections",id);
-                    $('#sectionMenuDropdown').removeClass('invisible');
-                }
-
-            });
-
-           //*********************************************************************************
-
-            $('#sectionMenuDropdown').on('click','a',function(){
-                var id = $(this).attr('name');
-                var sectionTitle = $(this).html();
-
-                localStorage.sectionID = id;
-
-                $('#dropdownMenu4').html(sectionTitle);
-                
-                if(id==="newEntry"){
-                    addNewEntry("section")
-
-                }else{
-                    populateNextDropdown("objectives",id);
-                    $('#objectiveMenuDropdown').removeClass('invisible');
-                }
-
-            });
-
-           //*********************************************************************************
-
-            $('#objectiveMenuDropdown').on('click','a',function(){
-                var id = $(this).attr('name');
-                var objectiveTitle = $(this).html();
-
-                localStorage.objectiveID = id;
-
-                $('#dropdownMenu5').html(objectiveTitle);
-                
-                if(id==="newEntry"){
-                    addNewEntry("objective")
-
-                }else{
-                    $('#gotoEditor').on('click',function(){
-                        var url = '/edit?ID='+id;
-                        window.open(url,'_blank');                      
                     });
-                    $('#gotoPreview').on('click',function(){
-                        var url = '/preview?ID='+id;
-                        window.open(url,'_blank');
+                    
+                });
+
+                //add Catalog button at end of level 1 list  *********************
+                var addCatBlock = '<div class="input-group">\
+                        <input type="text" id="catInput" class="form-control" placeholder="Add Catalog."/>\
+                        <span class="input-group-btn">\
+                            <button id="catBtn" class="btn btn-success" type="button">Add Catalog</button>\
+                        </span>\
+                        </div>';
+
+                $('.list-group-root').append('<div class="list-group-item">'+addCatBlock+'</div>');
+
+
+                $('#catBtn').on('click',function(){
+                    var newCat =  $('#catInput').val(); //hackery i'll tell you!
+                    console.log(newCat);
+
+                    $.post("/api/makeCatalog",{CatalogName:newCat},function(data){
+                       g = $.parseJSON(data);
+                       console.log(g.result +":"+ g.reason);
+                       location.reload();
                     });
+                   
+                });
 
-                    $('#actionGroup').removeClass('invisible');
-                }
-
-                                    $('#gotoEditor').on('click',function(){
-                        var url = '/edit?ID='+id;
-                        window.open(url,'_blank');                      
-                    });
-                    $('#gotoPreview').on('click',function(){
-                        var url = '/preview?ID='+id;
-                        window.open(url,'_blank');
-                    });
-
-                    $('#actionGroup').removeClass('invisible');
-
+                //*********************************************
+                // toggle chevrons
+                $('.list-group-item').on('click', function() {
+                
+                        $('.glyphicon', this)
+                            .toggleClass('glyphicon-chevron-right')
+                            .toggleClass('glyphicon-chevron-down');
+                });
 
 
             });
-
 
 
         });
-        //utility functions **********************************
-        function addNewEntry(req,cat,bookID){
-            var newName ="";
-
-            $('#inputModal').modal('toggle');
-
-            //make a new entry
-            $('#submit').on('click',function(){
-                        
-                newName = $('#newEntry').val();
-                if(newName){
-                    //var cat = cat = $('#catMenuDropdown').attr('name');
-                    console.log(newName + " - " + localStorage.cat + " - " + bookID);
-                    var url = "";
-                    switch(req){
-                        case "catalog":
-                            url = "/api/makeCatalog";
-                            qStr1 = "#catMenuDropdown";
-                            qStr2 = "#bookMenuDropdown";
-                            nextUp = "books";
-                            jsonArgs = {CatalogName:newName};
-                            localStorage.cat = newName;
-                            break;
-                        case "book":
-                            url = "/api/makeBook"
-                            qStr1 = "#bookMenuDropdown";
-                            qStr2 = "#chapterMenuDropdown";
-                            nextUp = "chapters";
-                            jsonArgs = {CatalogName:localStorage.cat,BookName:newName};
-                            break;
-                        case "chapter":
-                            url = "/api/makeChapter"
-                            qStr1 = "#chapterMenuDropdown";
-                            qStr2 = "#sectionMenuDropdown";
-                            nextUp = "sections";
-                            jsonArgs = {BookID:localStorage.bookID,ChapterName:newName};
-                            break;
-                        case "section":
-                            url = "/api/makeSection"
-                            qStr1 = "#sectionMenuDropdown";
-                            qStr2 = "#objectiveMenuDropdown";
-                            nextUp = "objectives";
-                            jsonArgs = {ChapterID:localStorage.chapterID,SectionName:newName};
-                            break;
-                        case "objective":
-                            url = "/api/makeObjective"
-                            qStr1 = "#objectiveMenuDropdown";
-                            qStr2 = "#endofline";
-                            nextUp = "show";
-                            jsonArgs = {SectionID:localStorage.sectionID,ObjectiveName:newName};
-                            break;
-                        default: 
-                            url = "";
-                    }
-
-                    $.post(url,jsonArgs,function(data){
-                        j = $.parseJSON(data);
-                        console.log(j.result +":"+ j.reason);
-                        location.reload();
-                        //$(qStr1).find('button:first').html(newName);
-                        //$(qStr2).removeClass('invisible');
-                        //repopulate current dropdown
-                        //populateNextDropdown(nextUp);
-
-                    });
-                }else{
-                    //$('#dropdownMenu1').html("Choose a Catalog");
-                }
-            });
-
-            $('#cancel').click(function(){
-                        //$('#inputModal').modal('toggle');
-                        //$('#dropdownMenu1').html("Choose a Catalog");
-            });
-        }
-  
-        function populateNextDropdown(req,argID){
-            var url = "";
-            switch(req){
-                case "catalogs":
-                    url = "/api/catalogs.json";
-                    qStr = "#catMenu";
-                    break;
-                case "books":
-                    url = "/api/books.json?Catalog="+argID;
-                    qStr = "#bookMenu";
-                    break;
-                case "chapters":
-                    url = "/api/chapters.json?BookID="+argID;
-                    qStr = "#chapMenu";
-                    break;
-                case "sections":
-                    url = "/api/sections.json?ChapterID="+argID;
-                    qStr = "#sectMenu";
-                    break;
-                case "objectives":
-                    url = "/api/objectives.json?SectionID="+argID;
-                    qStr = "#objMenu";
-                    break;
-                default: 
-                    url = "";
-            }
-
-            $.get(url,function(data, status){
-                j = $.parseJSON(data);
-                //console.log("in dropdown thing");
-                $("#catFooter").html(j.results.length + " " + req);
-                $(qStr).html('');
-
-                $.each( j.results, function( key, val ){
-                    if(req==="catalogs") val.Title = val.ID;//cat situation is different
-                    $(qStr).append( '<a class="dropdown-item" href="#" name='+val.ID+'>'+val.Title+'</a>');
-                });
-                $(qStr).append( '<div class="dropdown-divider"></div>' )
-                              .append( '<a class="dropdown-item" href="#" name="newEntry">New Entry</a>' );
-
-            });
-
-        }
-
+        
 
     </script>
   </body>
