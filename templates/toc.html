@@ -77,7 +77,7 @@
         <div id="myBookID"><h2>Book: loading...</h2></div>
         <p><em>This is a pre-alpha version of our Online Textbook System.</em></p>
         <div class="list-group  well">
-            <div class="list-group-item-heading" id="catHeading">Chapters Loading... <i class="glyphicon glyphicon-download"> </i> </div>
+            <div class="list-group-item-heading" id="bookHeading">Chapters Loading... <i class="glyphicon glyphicon-download"> </i> </div>
             <div class="list-group-root"></div>
         </div>
     </div>
@@ -121,93 +121,18 @@
                 singleChapterName = $(this).find("chaptertitle").text();
 
                 //Bootstrap CHAPTER work *******************************
-                var htmlBlock = '<a href="#jr-'+singleChapterID+'" class="list-group-item" data-toggle="collapse">\
+                var htmlBlock = '<a href="#'+singleChapterID+'" class="list-group-item" data-toggle="collapse">\
                                 <i class="glyphicon glyphicon-chevron-right"></i>'+singleChapterName+'</a>\
-                            <div class="list-group collapse chapterClass" id="jr-'+singleChapterID+'"></div>';
+                            <div class="list-group collapse chapterClass" id="'+singleChapterID+'"></div>';
 
                 $('.list-group-root').append(htmlBlock);
-
-                //*********************************
-
-                $(this).find("section").each(function(){ // sections of each chapter
-                    singleSectionID = $(this).find("sectionid").text()
-                    singleSectionName = $(this).find("sectiontitle").text()
-
-                    //Bootstrap SECTION work **************************************
-                    var htmlBlock2 = '<a href="#jr-'+singleSectionID+'" class="list-group-item" data-toggle="collapse">\
-                              <i class="glyphicon glyphicon-chevron-right"></i>'+singleSectionName+'\
-                            </a>\
-                            <div class="list-group collapse sectionClass" id="jr-'+singleSectionID+'">\
-                            </div>';
-
-                    $('#jr-'+singleChapterID).append(htmlBlock2);
-                    //*****************************************************
-
-                    $(this).find("objective").each(function(){ // objectives of the section
-                        singleObjectiveID = $(this).find("objectiveid").text()
-                        singleObjectiveName = $(this).find("objectivetitle").text();
-
-                        //Bootstrap OBJECTIVE Work ************************************
-                        var htmlBlock3 = '<div class="list-group-item"> \
-                                            <a href="preview?ID='+singleObjectiveID+'"  id="jr-'+singleObjectiveID+'">'+singleObjectiveName+'</a>\
-                                            <a href="edit?ID='+singleObjectiveID+'"  class="btn btn-xs btn-info" role="button">Edit</a> \
-                                        </div>';
-
-                        $('#jr-'+singleSectionID).append(htmlBlock3);
-                        //*****************************************************
-
-                    });
-
-                    //add objective button at end of level 1 list  *********************
-                    var addObjBlock = '<div class="input-group">\
-                            <input type="text" class="form-control" placeholder="Add objective."/>\
-                            <span class="input-group-btn">\
-                                <button class="btn btn-warning" type="button">Add Objective</button>\
-                            </span>\
-                            </div>';
-
-                    $('#jr-'+singleSectionID).append('<div class="list-group-item">'+addObjBlock+'</div>');
-
-                    $('#jr-'+singleSectionID+' .btn-warning').on('click',function(){
-                        var newObjName =  $(this).closest('div').find('input').val(); //hackery i'll tell you!
-                        var sect = $(this).closest('.sectionClass').attr('id').substring(3);
-
-                        $.post("/api/makeObjective",{SectionID:sect,ObjectiveName:newObjName},function(data){
-                                j = $.parseJSON(data);
-                                console.log(j.result +":"+ j.reason);
-                                location.reload();
-                        });
-                       
-                    });
-                    //*********************************************
-
-                });
-
-                //add section button at end of level 1 list  *********************
-                var addSectBlock = '<div class="input-group">\
-                        <input type="text" class="form-control" placeholder="Add section."/>\
-                        <span class="input-group-btn">\
-                            <button class="btn btn-success" type="button">Add Section</button>\
-                        </span>\
-                        </div>';
-
-                $('#jr-'+singleChapterID).append('<div class="list-group-item">'+addSectBlock+'</div>');
-
-                $('#jr-'+singleChapterID+' .btn-success').on('click',function(){
-                    var newSectName =  $(this).closest('div').find('input').val(); //hackery i'll tell you!
-                    var chap = $(this).closest('.chapterClass').attr('id').substring(3);
-
-                    $.post("/api/makeSection",{ChapterID:chap,SectionName:newSectName},function(data){
-                       j = $.parseJSON(data);
-                       console.log(j.result +":"+ j.reason);
-                       location.reload();
-                    });
-                   
-                });
-
-                //*********************************************
+                //this is xml associated with chapter
+                populateChapters(this);
 
             });
+
+            $('#bookHeading').html('Chapters');
+            
 
             //add chapter button at end of root list  *********************
             var addChapBlock = '<div class="input-group">\
@@ -225,7 +150,13 @@
                 $.post("/api/makeChapter",{BookID:bookid,ChapterName:newChaptName},function(data){
                     j = $.parseJSON(data);
                     console.log(j.result +":"+ j.reason);
-                    location.reload();
+
+                        $('.list-group-root').fadeOut(500,function(){
+                            $(this).html('');
+                            populateBook(bookID);
+                        });
+                        $('.list-group-root').fadeIn(500);
+ 
                 });
 
             });
@@ -244,10 +175,96 @@
         });        
 
 
+    };
 
+    function populateChapters(xml){
+        var sectionXML;
+        $(xml).find("section").each(function(){ // sections of each chapter
+                    singleSectionID = $(this).find("sectionid").text()
+                    singleSectionName = $(this).find("sectiontitle").text()
 
+                    //Bootstrap SECTION work **************************************
+                    var htmlBlock2 = '<a href="#'+singleSectionID+'" class="list-group-item " data-toggle="collapse">\
+                              <i class="glyphicon glyphicon-chevron-right"></i>'+singleSectionName+'\
+                            </a>\
+                            <div class="list-group collapse sectionClass" id="'+singleSectionID+'">\
+                            </div>';
+
+                    $('#'+singleChapterID).append(htmlBlock2);
+                    sectionXML = this;
+                    //this is xml associated with section
+                    populateSections(this);
+
+                });
+
+                //add section button at end of level 1 list  *********************
+                var addSectBlock = '<div class="input-group">\
+                        <input type="text" class="form-control" placeholder="Add section."/>\
+                        <span class="input-group-btn">\
+                            <button class="btn btn-success" type="button">Add Section</button>\
+                        </span>\
+                        </div>';
+
+                $('#'+singleChapterID).append('<div class="list-group-item">'+addSectBlock+'</div>');
+
+                
+                $('#'+singleChapterID+' .btn-success').on('click',function(){
+                    var newSectName =  $(this).closest('div').find('input').val(); //hackery i'll tell you!
+                    var chap = $(this).closest('.chapterClass').attr('id');
+                    //console.log(sectionXML);
+
+                    $.post("/api/makeSection",{ChapterID:chap,SectionName:newSectName},function(data){
+                       j = $.parseJSON(data);
+                       console.log(j.result +":"+ j.reason);
+                       //$('#'+chap).html('Loading...');
+                       populateBook(xml);
+
+                    });
+                    
+                   
+        });
 
     };
+
+    function populateSections(xml){
+        $(xml).find("objective").each(function(){ // objectives of the section
+                        singleObjectiveID = $(this).find("objectiveid").text()
+                        singleObjectiveName = $(this).find("objectivetitle").text();
+
+                        //Bootstrap OBJECTIVE Work ************************************
+                        var htmlBlock3 = '<div class="list-group-item"> \
+                                            <a href="preview?ID='+singleObjectiveID+'"  id="'+singleObjectiveID+'">'+singleObjectiveName+'</a>\
+                                            <a href="edit?ID='+singleObjectiveID+'"  class="btn btn-xs btn-info" role="button">Edit</a> \
+                                        </div>';
+
+                        $('#'+singleSectionID).append(htmlBlock3);
+                        //*****************************************************
+
+                    });
+
+                    //add objective button at end of level 1 list  *********************
+                    var addObjBlock = '<div class="input-group">\
+                            <input type="text" class="form-control" placeholder="Add objective."/>\
+                            <span class="input-group-btn">\
+                                <button class="btn btn-warning" type="button">Add Objective</button>\
+                            </span>\
+                            </div>';
+
+                    $('#'+singleSectionID).append('<div class="list-group-item">'+addObjBlock+'</div>');
+
+                    $('#'+singleSectionID+' .btn-warning').on('click',function(){
+                        var newObjName =  $(this).closest('div').find('input').val(); //hackery i'll tell you!
+                        var sect = $(this).closest('.sectionClass').attr('id');
+
+                        $.post("/api/makeObjective",{SectionID:sect,ObjectiveName:newObjName},function(data){
+                                j = $.parseJSON(data);
+                                console.log(j.result +":"+ j.reason);
+                                location.reload();
+                        });
+                       
+        });        
+    };
+
 
 
 </script>
