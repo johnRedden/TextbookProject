@@ -33,12 +33,11 @@ func API_MakeCatalog(res http.ResponseWriter, req *http.Request, params httprout
 	// 		418 - Failure, Authentication error, likely caused by a user not signed in or not allowed.
 	// 		400 - Failure, Expected data missing
 
-	if sessErr := MaintainSession(res, req); sessErr != nil {
-		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization","code":418}`)
+	if validPerm, permErr := HasPermission(res, req, WritePermissions); !validPerm {
+		// User Must be at least Writer.
+		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization: `+permErr.Error()+`","code":418}`)
 		return
 	}
-
-	// CHECK: Does user x have permissions to preform this action?
 
 	catalogName := req.FormValue("CatalogName")
 	if catalogName == "" {
@@ -83,12 +82,11 @@ func API_MakeBook(res http.ResponseWriter, req *http.Request, params httprouter.
 	// 		418 - Failure, Authentication error, likely caused by a user not signed in or not allowed.
 	// 		400 - Failure, Expected data missing
 
-	if sessErr := MaintainSession(res, req); sessErr != nil {
-		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization","code":418}`)
+	if validPerm, permErr := HasPermission(res, req, WritePermissions); !validPerm {
+		// User Must be at least Writer.
+		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization: `+permErr.Error()+`","code":418}`)
 		return
 	}
-
-	// CHECK: Does user x have permissions to preform this action?
 
 	bookID, _ := strconv.Atoi(req.FormValue("ID"))
 
@@ -143,12 +141,11 @@ func API_MakeChapter(res http.ResponseWriter, req *http.Request, params httprout
 	// 		418 - Failure, Authentication error, likely caused by a user not signed in or not allowed.
 	// 		400 - Failure, Expected data missing
 
-	if sessErr := MaintainSession(res, req); sessErr != nil {
-		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization","code":418}`)
+	if validPerm, permErr := HasPermission(res, req, WritePermissions); !validPerm {
+		// User Must be at least Writer.
+		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization: `+permErr.Error()+`","code":418}`)
 		return
 	}
-
-	// CHECK: Does user x have permissions to preform this action?
 
 	chapterID, _ := strconv.Atoi(req.FormValue("ID"))
 
@@ -196,12 +193,11 @@ func API_MakeSection(res http.ResponseWriter, req *http.Request, params httprout
 	// 		418 - Failure, Authentication error, likely caused by a user not signed in or not allowed.
 	// 		400 - Failure, Expected data missing
 
-	if sessErr := MaintainSession(res, req); sessErr != nil {
-		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization","code":418}`)
+	if validPerm, permErr := HasPermission(res, req, WritePermissions); !validPerm {
+		// User Must be at least Writer.
+		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization: `+permErr.Error()+`","code":418}`)
 		return
 	}
-
-	// CHECK: Does user x have permissions to preform this action?
 
 	sectionID, _ := strconv.Atoi(req.FormValue("ID"))
 
@@ -250,12 +246,11 @@ func API_MakeObjective(res http.ResponseWriter, req *http.Request, params httpro
 	// 		400 - Failure, Expected data missing
 	ctx := appengine.NewContext(req)
 
-	if sessErr := MaintainSession(res, req); sessErr != nil {
-		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization","code":418}`)
+	if validPerm, permErr := HasPermission(res, req, WritePermissions); !validPerm {
+		// User Must be at least Writer.
+		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization: `+permErr.Error()+`","code":418}`)
 		return
 	}
-
-	// CHECK: Does user x have permissions to preform this action?
 
 	ObjectiveID, _ := strconv.Atoi(req.FormValue("ID"))
 
@@ -669,12 +664,11 @@ func API_DeleteCatalog(res http.ResponseWriter, req *http.Request, params httpro
 	// 		400	- Failure, Expected data Missing
 	// 		500	- Failure, Internal Services Error. Thrown when removal from Datastore cannot be completed.
 
-	if sessErr := MaintainSession(res, req); sessErr != nil {
-		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization","code":418}`)
+	if validPerm, permErr := HasPermission(res, req, AdminPermissions); !validPerm {
+		// User Must be at least Admin.
+		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization: `+permErr.Error()+`","code":418}`)
 		return
 	}
-
-	// CHECK: Does user x have permissions to preform this action?
 
 	catalogKey := req.FormValue("ID")
 	if catalogKey == "" {
@@ -718,12 +712,11 @@ func API_DeleteBook(res http.ResponseWriter, req *http.Request, params httproute
 	// 		400	- Failure, Expected data Missing
 	// 		500	- Failure, Internal Services Error. Thrown when removal from Datastore cannot be completed.
 
-	if sessErr := MaintainSession(res, req); sessErr != nil {
-		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization","code":418}`)
+	if validPerm, permErr := HasPermission(res, req, AdminPermissions); !validPerm {
+		// User Must be at least Admin.
+		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization: `+permErr.Error()+`","code":418}`)
 		return
 	}
-
-	// CHECK: Does user x have permissions to preform this action?
 
 	bookKey, convErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
 	if convErr != nil {
@@ -763,12 +756,11 @@ func API_DeleteChapter(res http.ResponseWriter, req *http.Request, params httpro
 	// 		400	- Failure, Expected data Missing
 	// 		500	- Failure, Internal Services Error. Thrown when removal from Datastore cannot be completed.
 
-	if sessErr := MaintainSession(res, req); sessErr != nil {
-		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization","code":418}`)
+	if validPerm, permErr := HasPermission(res, req, AdminPermissions); !validPerm {
+		// User Must be at least Admin.
+		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization: `+permErr.Error()+`","code":418}`)
 		return
 	}
-
-	// CHECK: Does user x have permissions to preform this action?
 
 	chaptKey, convErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
 	if convErr != nil {
@@ -807,12 +799,12 @@ func API_DeleteSection(res http.ResponseWriter, req *http.Request, params httpro
 	// 		400	- Failure, Expected data Missing
 	// 		500	- Failure, Internal Services Error. Thrown when removal from Datastore cannot be completed.
 
-	if sessErr := MaintainSession(res, req); sessErr != nil {
-		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization","code":418}`)
+	if validPerm, permErr := HasPermission(res, req, AdminPermissions); !validPerm {
+		// User Must be at least Admin.
+		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization: `+permErr.Error()+`","code":418}`)
 		return
 	}
 
-	// CHECK: Does user x have permissions to preform this action?
 	sectKey, convErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
 	if convErr != nil {
 		fmt.Fprint(res, `{"result":"failure","reason":"Invalid ID","code":400}`)
@@ -845,12 +837,12 @@ func API_DeleteObjective(res http.ResponseWriter, req *http.Request, params http
 	// 		400	- Failure, Expected data Missing
 	// 		500	- Failure, Internal Services Error. Thrown when removal from Datastore cannot be completed.
 
-	if sessErr := MaintainSession(res, req); sessErr != nil {
-		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization","code":418}`)
+	if validPerm, permErr := HasPermission(res, req, AdminPermissions); !validPerm {
+		// User Must be at least Admin.
+		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization: `+permErr.Error()+`","code":418}`)
 		return
 	}
 
-	// CHECK: Does user x have permissions to preform this action?
 	objKey, convErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
 	if convErr != nil {
 		fmt.Fprint(res, `{"result":"failure","reason":"Invalid ID","code":400}`)

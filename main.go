@@ -25,13 +25,14 @@ func init() {
 	//  * <user>: A page the user can interact with
 	//  * <user-internal>: A page that the user does not directly interact with but depends on.
 	//  * <api>: A request that preforms background actions.
-	//  * <auth>: (Modifier) This request requires user authentication. **Not Entrirely Rolled Out**
+	//  * <auth>: (Modifier) This request requires user authentication.
+	// 	* <DEBUG>: (Modifier) This handler is to be treated as temporary, used in development only.
 	//////
 
 	// Images.go
 	r.GET("/image", IMAGE_API_GetImageFromCS)                           // image requester /api/getImage <user>
 	r.GET("/api/getImage", IMAGE_API_GetImageFromCS)                    // Duplicate of /image, *outdated* <user-internal>
-	r.GET("/image/browser", IMAGE_BrowserForm)                          // image browser <user><auth>
+	r.GET("/image/browser", IMAGE_BrowserForm)                          // image browser <user>
 	r.GET("/image/uploader", IMAGE_PostUploadForm)                      // image uploader <user-internal><auth>
 	r.POST("/api/makeImage", IMAGE_API_PlaceImageIntoCS)                // image creator <api><auth>
 	r.POST("/api/deleteImage", IMAGE_API_RemoveImageFromCS)             // image deleter <api><auth>
@@ -70,22 +71,22 @@ func init() {
 	r.GET("/select", selectBookFromForm)     // select objective based on information <user>
 	r.GET("/edit", getSimpleObjectiveEditor) // edit objective given id <user><auth>
 	r.GET("/read", getSimpleObjectiveReader) // read objective given id <user>
-	r.GET("/preview", getObjectivePreview)
-	r.GET("/favicon.ico", favIcon) // favicon <user>
+	r.GET("/preview", getObjectivePreview)   // preview objective given id <user>
+	r.GET("/favicon.ico", favIcon)           // favicon <user>
 
 	// main.go/API.go, Table of Contents
 	r.GET("/toc", API_getTOC)        // xml toc for a book <api>
 	r.GET("/toc.html", getSimpleTOC) // user viewable toc for a book <user>
 
 	// authentication.go, Basic User Auth
-	r.GET("/login", AUTH_Login_GET)
-	r.GET("/register", AUTH_Register_GET)
-	r.POST("/register", AUTH_Register_POST)
-	r.GET("/user", AUTH_UserInfo)
+	r.GET("/login", AUTH_Login_GET)         // User Login <user>
+	r.GET("/register", AUTH_Register_GET)   // Register New Users/Modify existing users <user>
+	r.POST("/register", AUTH_Register_POST) // Post to make the new user <user><auth>
+	r.GET("/user", AUTH_UserInfo)           // DEBUG user info <user><auth><DEBUG>
 
-	r.GET("/admin", ADMIN_AdministrationConsole)
-	r.POST("/admin/changeUsrPerm", ADMIN_POST_ELEVATEUSER)
-	r.GET("/admin/getUsrPerm", ADMIN_GET_USERPERM)
+	r.GET("/admin", ADMIN_AdministrationConsole)           // Admin Console <user><auth>
+	r.POST("/admin/changeUsrPerm", ADMIN_POST_ELEVATEUSER) // Admin: Change User Permissions <api><auth>
+	r.GET("/admin/getUsrPerm", ADMIN_GET_USERPERM)         // Admin: Retrive User Permissions <api><auth>
 
 	http.Handle("/public/", http.StripPrefix("/public", http.FileServer(http.Dir("public/"))))
 
@@ -137,13 +138,11 @@ func selectBookFromForm(res http.ResponseWriter, req *http.Request, params httpr
 
 func getSimpleObjectiveEditor(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	// GET: /edit?ID=<Objective ID Number>
-	if sessErr := MaintainSession(res, req); sessErr != nil {
-		http.Error(res, sessErr.Error(), http.StatusUnauthorized)
-		// http.Redirect(res, req, "/?Error="+sessErr.Error(), http.StatusSeeOther)
+	if validPerm, permErr := HasPermission(res, req, WritePermissions); !validPerm {
+		// User Must be at least Writer.
+		http.Error(res, permErr.Error(), http.StatusUnauthorized)
 		return
 	}
-
-	// CHECK: Does user x have permissions to preform this action?
 
 	ObjectiveID, numErr := strconv.Atoi(req.FormValue("ID"))
 	if numErr != nil || ObjectiveID == 0 {

@@ -27,8 +27,11 @@ import (
 func IMAGE_PostUploadForm(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	// GET: /image/uploader
 
-	// TODO: Authentication/Authorization here.
-	// CHECK: Does user x have permissions to preform this action?
+	if validPerm, permErr := HasPermission(res, req, WritePermissions); !validPerm {
+		// User Must be at least Writer.
+		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization: `+permErr.Error()+`","code":418}`)
+		return
+	}
 	// ACTION: Give the user an internal permisions key?
 
 	ServeTemplateWithParams(res, req, "simpleImageUploader.html", req.FormValue("oid"))
@@ -38,8 +41,6 @@ func IMAGE_BrowserForm(res http.ResponseWriter, req *http.Request, params httpro
 	// GET: /image/browser
 	ctx := appengine.NewContext(req)
 
-	// TODO: Authentication/Authorization here.
-	// CHECK: Does user x have permissions to preform this action?
 	// ACTION: Give the user an internal permisions key?
 
 	prefixQuery := storage.Query{}
@@ -73,8 +74,11 @@ func IMAGE_API_CKEDITOR_PlaceImageIntoCS(res http.ResponseWriter, req *http.Requ
 	// POST: url/api/ckeditor/create
 	// Settings: if oid is set, will create image with bucket of oid, otherwise default to global
 
-	// TODO: Authentication/Authorization here.
-	// CHECK: Does user x have permissions to preform this action?
+	if validPerm, permErr := HasPermission(res, req, WritePermissions); !validPerm {
+		// User Must be at least Writer.
+		fmt.Fprint(res, `<!DOCTYPE html><html><body><script type="text/javascript">window.parent.CKEDITOR.tools.callFunction('`+req.FormValue("CKEditorFuncNum")+`',"","`+permErr.Error()+`");//window.close();</script></body></html>`)
+		return
+	}
 
 	multipartFile, multipartHeader, fileError := req.FormFile("upload") // pull the uploaded image out of the request
 	if fileError != nil {                                               // if there was an issue with the request, exit and note that to ckeditor
@@ -108,8 +112,11 @@ func IMAGE_API_PlaceImageIntoCS(res http.ResponseWriter, req *http.Request, para
 	// Settings: if oid is set, will create image with bucket of oid, otherwise default to global
 	// this is the normal part of the image upload. --not tied to ckeditor
 
-	// TODO: Authentication/Authorization here.
-	// CHECK: Does user x have permissions to preform this action?
+	if validPerm, permErr := HasPermission(res, req, WritePermissions); !validPerm {
+		// User Must be at least Writer.
+		http.Redirect(res, req, "/image/uploader?status=failure&message=invalid_login", http.StatusSeeOther)
+		return
+	}
 
 	multipartFile, multipartHeader, fileError := req.FormFile("upload") // pull uploaded image.
 	if fileError != nil {                                               // handle error in a stable way, this will be a part of another page.
@@ -162,8 +169,11 @@ func IMAGE_API_RemoveImageFromCS(res http.ResponseWriter, req *http.Request, par
 		return
 	}
 
-	// TODO: Authentication/Authorization here.
-	// CHECK: Does user x have permissions to preform this action?
+	if validPerm, permErr := HasPermission(res, req, AdminPermissions); !validPerm {
+		// User Must be at least Admin.
+		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization: `+permErr.Error()+`","code":418}`)
+		return
+	}
 
 	ctx := appengine.NewContext(req)
 	csRemoveErr := removeFileFromGCS(ctx, id)
