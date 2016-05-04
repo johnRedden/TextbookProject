@@ -112,7 +112,7 @@ func IMAGE_API_PlaceImageIntoCS(res http.ResponseWriter, req *http.Request, para
 	// Settings: if oid is set, will create image with bucket of oid, otherwise default to global
 	// this is the normal part of the image upload. --not tied to ckeditor
 
-	if validPerm, permErr := HasPermission(res, req, WritePermissions); !validPerm {
+	if validPerm, _ := HasPermission(res, req, WritePermissions); !validPerm {
 		// User Must be at least Writer.
 		http.Redirect(res, req, "/image/uploader?status=failure&message=invalid_login", http.StatusSeeOther)
 		return
