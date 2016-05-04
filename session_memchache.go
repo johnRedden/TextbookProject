@@ -38,3 +38,7 @@ func UpdateMemcache(ctx context.Context, key string, expiration time.Duration) e
 	item.Expiration = expiration // Update the memcache expiration.
 	return memcache.Set(ctx, item)
 }
+
+func DeleteMemchache(ctx context.Context, key string) error {
+	return memcache.Delete(ctx, key)
+}

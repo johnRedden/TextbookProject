@@ -87,6 +87,8 @@ func init() {
 	r.GET("/admin", ADMIN_AdministrationConsole)           // Admin Console <user><auth>
 	r.POST("/admin/changeUsrPerm", ADMIN_POST_ELEVATEUSER) // Admin: Change User Permissions <api><auth>
 	r.GET("/admin/getUsrPerm", ADMIN_GET_USERPERM)         // Admin: Retrive User Permissions <api><auth>
+	r.POST("/admin/forceUsrLogout", ADMIN_POST_ForceUserLogout)
+	r.POST("/admin/deleteUsr", ADMIN_POST_DELETEUSER)
 
 	http.Handle("/public/", http.StripPrefix("/public", http.FileServer(http.Dir("public/"))))
 

@@ -68,6 +68,13 @@ func ADMIN_POST_ELEVATEUSER(res http.ResponseWriter, req *http.Request, params h
 		}
 	}
 
+	if pustring, getErr := FromMemcache(ctx, uEmail); getErr == nil {
+		// Try to update the current user.
+		pu, _ := MarshallPermissionUser(pustring)
+		pu.Permission = actualPermLevel
+		ToMemcache(ctx, uEmail, pu.ToString(), StorageDuration)
+	}
+
 	fmt.Fprint(res, `{"Status":"Success","Reason":"","Code":0}`)
 }
 
@@ -87,4 +94,42 @@ func ADMIN_GET_USERPERM(res http.ResponseWriter, req *http.Request, params httpr
 		return
 	}
 	fmt.Fprint(res, `{"Status":"Success","Reason":"","Code":0,"Response":"`, pl, `"}`)
+}
+
+func ADMIN_POST_DELETEUSER(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	if validPerm, permErr := HasPermission(res, req, AdminPermissions); !validPerm {
+		// User Must be at least Admin.
+		http.Error(res, permErr.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	uEmail := req.FormValue("UEmail")
+
+	ctx := appengine.NewContext(req)
+
+	DeleteMemchache(ctx, uEmail)
+	RemovePermissionUserFromDatastore(ctx, uEmail)
+	RemovePermissionLevelFromDatastore(ctx, uEmail)
+
+	fmt.Fprint(res, `{"Status":"Success","Reason":"","Code":0}`)
+}
+
+func ADMIN_POST_ForceUserLogout(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	if validPerm, permErr := HasPermission(res, req, AdminPermissions); !validPerm {
+		// User Must be at least Admin.
+		http.Error(res, permErr.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	uEmail := req.FormValue("UEmail")
+
+	ctx := appengine.NewContext(req)
+
+	memErr := DeleteMemchache(ctx, uEmail)
+	if memErr != nil {
+		fmt.Fprint(res, `{"Status":"Failure","Reason":"`+memErr.Error()+`","Code":500}`)
+		return
+	}
+
+	fmt.Fprint(res, `{"Status":"Success","Reason":"","Code":0}`)
 }

@@ -51,6 +51,58 @@
                 $.wait(function(){form2message.val("")},3);
             });
 
+            $("#JQ-Form4_Button").click(function(){
+                form4email = $("#JQ-Form4_Input")
+                form4message = $("#JQ-Form4_Message")
+
+                console.log("Form4 Called, Information gathered")
+                if (form4email.val()==""){
+                    form4message.val("Email Required!")
+                    $.wait(function(){form4message.val("")},3);
+                    return
+                }
+                console.log("Form4 Posting")
+                $.post("/admin/forceUsrLogout",{UEmail:form4email.val()},function(data){
+                    j = $.parseJSON(data);
+                    console.log("Form4 Parsed")
+                    
+                    if (j.Status == "Success") {
+                        form4message.val(form4email.val() + " : " + j.Response)
+                    } else {
+                        form4message.val(j.Status +"   "+j.Reason)
+                    }
+                    form4email.val("")
+                });
+
+                $.wait(function(){form4message.val("")},3);
+            });
+
+            $("#JQ-Form5_Button").click(function(){
+                form5email = $("#JQ-Form5_Input")
+                form5message = $("#JQ-Form5_Message")
+
+                console.log("Form5 Called, Information gathered")
+                if (form5email.val()==""){
+                    form5message.val("Email Required!")
+                    $.wait(function(){form5message.val("")},3);
+                    return
+                }
+                console.log("Form5 Posting")
+                $.post("/admin/deleteUsr",{UEmail:form5email.val()},function(data){
+                    j = $.parseJSON(data);
+                    console.log("Form5 Parsed")
+                    
+                    if (j.Status == "Success") {
+                        form5message.val(form5email.val() + " : " + j.Response)
+                    } else {
+                        form5message.val(j.Status +"   "+j.Reason)
+                    }
+                    form5email.val("")
+                });
+
+                $.wait(function(){form5message.val("")},3);
+            });
+
             $.wait = function( callback, seconds){
                 return window.setTimeout( callback, seconds * 1000 );
             }
@@ -89,7 +141,7 @@
         <input id="JQ-Form2_Message" clearAfter readonly></input>
     </div>
 
-    <div id="JQ-FormNil" formbox>
+    <div id="JQ-Form3" formbox>
         <div label>Email Lookup</div>
         <div centered>
             <input id="JQ-FormNil_Input" placeholder="Username" type="text"></input>
@@ -98,16 +150,25 @@
         <input id="JQ-FormNil_Message" clearAfter readonly></input>
     </div>
 
-    <div id="JQ-FormNil" formbox>
+    <div id="JQ-Form4" formbox>
         <div label>Force Logout</div>
         <div centered>
-            <input id="JQ-FormNil_Input" placeholder="Username" type="text"></input>
-            <button id="JQ-FormNil_Button" disabled>Submit</button>
+            <input id="JQ-Form4_Input" placeholder="Username" type="text"></input>
+            <button id="JQ-Form4_Button">Submit</button>
         </div>
-        <input id="JQ-FormNil_Message" clearAfter readonly></input>
+        <input id="JQ-Form4_Message" clearAfter readonly></input>
     </div>
 
-    <div id="JQ-FormNil" formbox>
+    <div id="JQ-Form5" formbox>
+        <div label>Delete User</div>
+        <div centered>
+            <input id="JQ-Form5_Input" placeholder="Username" type="text"></input>
+            <button id="JQ-Form5_Button">Submit</button>
+        </div>
+        <input id="JQ-Form5_Message" clearAfter readonly></input>
+    </div>
+
+    <div id="JQ-Form6" formbox>
         <div label>Memory Console</div>
         <button class="centerbutton" id="JQ-FormNil_Button" disabled>Goto</button>
     </div>
