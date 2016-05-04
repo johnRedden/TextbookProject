@@ -16,7 +16,21 @@ import (
 	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/user"
 	"net/http"
+	"strconv"
 	"strings"
+)
+
+var (
+	ErrPermissionUserMarshall = errors.New("MarshallPermissionUser: Cannot Marshall String, Too Few Values")
+	ErrInvalidPermission      = errors.New("Permission Error: User Does Not Have Required Permission Level!")
+)
+
+const (
+	// Permission Levels.
+	// These are const integers. Please refer to them always by name, never number.
+	ReadPermissions  = iota
+	WritePermissions = iota
+	AdminPermissions = iota
 )
 
 //// --------------------------
@@ -25,19 +39,15 @@ import (
 // Has a true name.
 ////
 
-var (
-	ErrPermissionUserMarshall = errors.New("MarshallPermissionUser: Cannot Marshall String, Too Few Values")
-)
-
 type PermissionUser struct {
 	Name       string
-	Permission string
+	Permission int
 	ID         string
 	Email      string
 }
 
 func (u PermissionUser) ToString() string {
-	return fmt.Sprintf("%s�%s�%s�%s", u.Name, u.Email, u.Permission, u.ID)
+	return fmt.Sprintf("%s�%s�%d�%s", u.Name, u.Email, u.Permission, u.ID)
 }
 
 func MarshallPermissionUser(p string) (PermissionUser, error) {
@@ -45,15 +55,19 @@ func MarshallPermissionUser(p string) (PermissionUser, error) {
 	if len(data) < 4 {
 		return PermissionUser{}, ErrPermissionUserMarshall
 	}
+	permLevel, convErr := strconv.Atoi(data[2])
+	if convErr != nil {
+		return PermissionUser{}, convErr
+	}
 	return PermissionUser{
 		Name:       data[0],
 		Email:      data[1],
-		Permission: data[2],
+		Permission: permLevel,
 		ID:         data[3],
 	}, nil
 }
 
-func MakePermissionUser(name, permission string, u *user.User) PermissionUser {
+func MakePermissionUser(name string, permission int, u *user.User) PermissionUser {
 	return PermissionUser{
 		Name:       name,
 		Permission: permission,
@@ -96,6 +110,43 @@ func GetPermissionUserFromDatastore(ctx context.Context, keyname string) (Permis
 func RemovePermissionUserFromDatastore(ctx context.Context, keyname string) error {
 	userkey := datastore.NewKey(ctx, "Users", keyname, 0, nil)
 	return datastore.Delete(ctx, userkey)
+}
+
+//// --------------------------
+// Permission Levels
+////
+
+func HasPermission(res http.ResponseWriter, req *http.Request, minimumRequiredPermission int) (bool, error) {
+	if sessErr := MaintainSession(res, req); sessErr != nil { // Must have a session
+		return false, sessErr
+	} else {
+		ctx := appengine.NewContext(req)
+		if u, permissionErr := GetPermissionUserFromSession(ctx); permissionErr != nil { // Must have a valid permission user.
+			return false, permissionErr
+		} else {
+			if u.Permission < minimumRequiredPermission { // That permission user must be at least the minimum.
+				return false, ErrInvalidPermission
+			}
+		}
+	}
+	return true, nil
+}
+
+func PutPermissionLevelToDatastore(ctx context.Context, keyname string, permLevel int) error {
+	permkey := datastore.NewKey(ctx, "Permissions", keyname, 0, nil)
+	toDatastore := &struct{ PL int }{permLevel}
+	_, putErr := datastore.Put(ctx, permkey, toDatastore)
+	return putErr
+}
+func GetPermissionLevelFromDatastore(ctx context.Context, keyname string) (int, error) {
+	permkey := datastore.NewKey(ctx, "Permissions", keyname, 0, nil)
+	pl := struct{ PL int }{}
+	getErr := datastore.Get(ctx, permkey, &pl)
+	return pl.PL, getErr
+}
+func RemovePermissionLevelFromDatastore(ctx context.Context, keyname string) error {
+	permkey := datastore.NewKey(ctx, "Permissions", keyname, 0, nil)
+	return datastore.Delete(ctx, permkey)
 }
 
 //// --------------------------
@@ -175,12 +226,20 @@ func AUTH_Register_POST(res http.ResponseWriter, req *http.Request, params httpr
 	}
 
 	// Now that we're all satisfied. Lets grab that info.
-	// TODO: Replace permission with something significant.
 	uName := req.FormValue("Name")
-	perms := "none"
-	if u.Admin {
-		perms = "admin"
+
+	// Permissions Module
+	perms := ReadPermissions // Default Permissions.
+	if pl, getErr := GetPermissionLevelFromDatastore(ctx, u.Email); getErr == nil {
+		perms = pl // use the already determined permission level.
+	} else {
+		// Ensure that user is not a new administrator.
+		if u.Admin {
+			perms = AdminPermissions
+		}
 	}
+	putLErr := PutPermissionLevelToDatastore(ctx, u.Email, perms)
+	HandleError(res, putLErr)
 
 	// Make user and add them to the datastore.
 	permU := MakePermissionUser(uName, perms, u)

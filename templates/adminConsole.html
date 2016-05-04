@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ADMIN CONSOLE</title>
+    <!-- JQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $("#JQ-Form1_Button").click(function(){
+                form1email = $("#JQ-Form1_Input")
+                form1select = $("#JQ-Form1_Select")
+                form1message = $("#JQ-Form1_Message")
+
+                console.log("Form1 Called, Information gathered")
+                if (form1email.val()==""){
+                    form1message.val("Email Required!")
+                    return
+                }
+                console.log("Form1 Posting")
+                $.post("/admin/changeUsrPerm",{UEmail:form1email.val(),NewPermLevel:form1select.val()},function(data){
+                    j = $.parseJSON(data);
+                    console.log("Form1 Parsed")
+                    form1select.val("NONE")
+                    form1email.val("")
+                    form1message.val(j.Status +"   "+j.Reason)
+                });
+                $.wait(function(){form1message.val("")},3);
+            });
+
+            $("#JQ-Form2_Button").click(function(){
+                form2email = $("#JQ-Form2_Input")
+                form2message = $("#JQ-Form2_Message")
+
+                console.log("Form2 Called, Information gathered")
+                if (form2email.val()==""){
+                    form2message.val("Email Required!")
+                    return
+                }
+                console.log("Form2 Posting")
+                $.get("/admin/getUsrPerm?UEmail="+form2email.val(),function(data){
+                    j = $.parseJSON(data);
+                    console.log("Form2 Parsed")
+                    
+                    if (j.Status == "Success") {
+                        form2message.val(form2email.val() + " : " + j.Response)
+                    } else {
+                        form2message.val(j.Status +"   "+j.Reason)
+                    }
+                    form2email.val("")
+                });
+
+                $.wait(function(){form2message.val("")},3);
+            });
+
+            $.wait = function( callback, seconds){
+                return window.setTimeout( callback, seconds * 1000 );
+            }
+        });
+    </script>
+
+    <style type="text/css">
+        * {
+            box-sizing: border-box;
+        }
+        *[formbox] {
+            margin: 10px;
+            border: 1px solid black;
+        }
+        *[formbox] input[readonly] {
+            border-color: transparent;
+            color: red;
+            position: relative;
+            width: 100%;
+        }
+        div[label] {
+            font-size: 1.2em;
+        }
+        label {
+            color: gray;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Administration Console</h1>
+<h3>Welcome, {{.}}</h3>
+
+<div id="JQ-Form1" formbox>
+    <div label>Check User's Permission</div>
+    <label for="JQ-Form1_Input">Email: </label>
+    <input id="JQ-Form1_Input" placeholder="Email Address" type="text"></input>
+    <select id="JQ-Form1_Select">
+        <option value="Admin">Administrator</option>
+        <option value="Write">Writer</option>
+        <option value="Read">Reader</option>
+        <option value="NONE" selected>SELECT ONE</option>
+    </select>
+    <button id="JQ-Form1_Button">Submit</button><br>
+    <input id="JQ-Form1_Message" clearAfter readonly></input>
+</div>
+
+<div id="JQ-Form2" formbox>
+    <div label>Change User's Permission</div>
+    <label for="JQ-Form2_Input">Email: </label>
+    <input id="JQ-Form2_Input" placeholder="Email Address" type="text"></input>
+    <button id="JQ-Form2_Button">Submit</button><br>
+    <input id="JQ-Form2_Message" clearAfter readonly></input>
+</div>
+
+</body>
+</html>

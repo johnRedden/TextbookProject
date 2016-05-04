@@ -83,6 +83,10 @@ func init() {
 	r.POST("/register", AUTH_Register_POST)
 	r.GET("/user", AUTH_UserInfo)
 
+	r.GET("/admin", ADMIN_AdministrationConsole)
+	r.POST("/admin/changeUsrPerm", ADMIN_POST_ELEVATEUSER)
+	r.GET("/admin/getUsrPerm", ADMIN_GET_USERPERM)
+
 	http.Handle("/public/", http.StripPrefix("/public", http.FileServer(http.Dir("public/"))))
 
 	pages = template.Must(pages.ParseGlob("templates/*.*"))
