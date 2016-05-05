@@ -20,6 +20,12 @@ import (
 	"strings"
 )
 
+var (
+	// Permission Requirements for Image
+	image_Make_Permission   = WritePermissions
+	image_Delete_Permission = AdminPermissions
+)
+
 // ------------------------------------
 // Form/Frame Handlers
 /////
@@ -27,7 +33,7 @@ import (
 func IMAGE_PostUploadForm(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	// GET: /image/uploader
 
-	if validPerm, permErr := HasPermission(res, req, WritePermissions); !validPerm {
+	if validPerm, permErr := HasPermission(res, req, image_Make_Permission); !validPerm {
 		// User Must be at least Writer.
 		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization: `+permErr.Error()+`","code":418}`)
 		return
@@ -74,7 +80,7 @@ func IMAGE_API_CKEDITOR_PlaceImageIntoCS(res http.ResponseWriter, req *http.Requ
 	// POST: url/api/ckeditor/create
 	// Settings: if oid is set, will create image with bucket of oid, otherwise default to global
 
-	if validPerm, permErr := HasPermission(res, req, WritePermissions); !validPerm {
+	if validPerm, permErr := HasPermission(res, req, image_Make_Permission); !validPerm {
 		// User Must be at least Writer.
 		fmt.Fprint(res, `<!DOCTYPE html><html><body><script type="text/javascript">window.parent.CKEDITOR.tools.callFunction('`+req.FormValue("CKEditorFuncNum")+`',"","`+permErr.Error()+`");//window.close();</script></body></html>`)
 		return
@@ -112,7 +118,7 @@ func IMAGE_API_PlaceImageIntoCS(res http.ResponseWriter, req *http.Request, para
 	// Settings: if oid is set, will create image with bucket of oid, otherwise default to global
 	// this is the normal part of the image upload. --not tied to ckeditor
 
-	if validPerm, _ := HasPermission(res, req, WritePermissions); !validPerm {
+	if validPerm, _ := HasPermission(res, req, image_Make_Permission); !validPerm {
 		// User Must be at least Writer.
 		http.Redirect(res, req, "/image/uploader?status=failure&message=invalid_login", http.StatusSeeOther)
 		return
@@ -169,7 +175,7 @@ func IMAGE_API_RemoveImageFromCS(res http.ResponseWriter, req *http.Request, par
 		return
 	}
 
-	if validPerm, permErr := HasPermission(res, req, AdminPermissions); !validPerm {
+	if validPerm, permErr := HasPermission(res, req, image_Delete_Permission); !validPerm {
 		// User Must be at least Admin.
 		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization: `+permErr.Error()+`","code":418}`)
 		return

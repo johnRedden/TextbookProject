@@ -37,3 +37,13 @@ func UpdateCookie(res http.ResponseWriter, req *http.Request, key string, expira
 	http.SetCookie(res, cookie)
 	return nil
 }
+
+func DeleteCookie(res http.ResponseWriter, key string) {
+	cookie := &http.Cookie{
+		Name:    key,
+		Value:   "",
+		MaxAge:  int(0),
+		Expires: time.Now(),
+	}
+	http.SetCookie(res, cookie)
+}

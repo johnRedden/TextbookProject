@@ -17,6 +17,12 @@ import (
 	"strconv"
 )
 
+var (
+	// Local Variables to set module permission levels.
+	api_Make_Permission   = WritePermissions
+	api_Delete_Permission = AdminPermissions
+)
+
 // -------------------------------------------------------------------
 // Creation Data calls
 // API calls for singular objects.
@@ -33,7 +39,7 @@ func API_MakeCatalog(res http.ResponseWriter, req *http.Request, params httprout
 	// 		418 - Failure, Authentication error, likely caused by a user not signed in or not allowed.
 	// 		400 - Failure, Expected data missing
 
-	if validPerm, permErr := HasPermission(res, req, WritePermissions); !validPerm {
+	if validPerm, permErr := HasPermission(res, req, api_Make_Permission); !validPerm {
 		// User Must be at least Writer.
 		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization: `+permErr.Error()+`","code":418}`)
 		return
@@ -82,7 +88,7 @@ func API_MakeBook(res http.ResponseWriter, req *http.Request, params httprouter.
 	// 		418 - Failure, Authentication error, likely caused by a user not signed in or not allowed.
 	// 		400 - Failure, Expected data missing
 
-	if validPerm, permErr := HasPermission(res, req, WritePermissions); !validPerm {
+	if validPerm, permErr := HasPermission(res, req, api_Make_Permission); !validPerm {
 		// User Must be at least Writer.
 		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization: `+permErr.Error()+`","code":418}`)
 		return
@@ -141,7 +147,7 @@ func API_MakeChapter(res http.ResponseWriter, req *http.Request, params httprout
 	// 		418 - Failure, Authentication error, likely caused by a user not signed in or not allowed.
 	// 		400 - Failure, Expected data missing
 
-	if validPerm, permErr := HasPermission(res, req, WritePermissions); !validPerm {
+	if validPerm, permErr := HasPermission(res, req, api_Make_Permission); !validPerm {
 		// User Must be at least Writer.
 		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization: `+permErr.Error()+`","code":418}`)
 		return
@@ -193,7 +199,7 @@ func API_MakeSection(res http.ResponseWriter, req *http.Request, params httprout
 	// 		418 - Failure, Authentication error, likely caused by a user not signed in or not allowed.
 	// 		400 - Failure, Expected data missing
 
-	if validPerm, permErr := HasPermission(res, req, WritePermissions); !validPerm {
+	if validPerm, permErr := HasPermission(res, req, api_Make_Permission); !validPerm {
 		// User Must be at least Writer.
 		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization: `+permErr.Error()+`","code":418}`)
 		return
@@ -246,7 +252,7 @@ func API_MakeObjective(res http.ResponseWriter, req *http.Request, params httpro
 	// 		400 - Failure, Expected data missing
 	ctx := appengine.NewContext(req)
 
-	if validPerm, permErr := HasPermission(res, req, WritePermissions); !validPerm {
+	if validPerm, permErr := HasPermission(res, req, api_Make_Permission); !validPerm {
 		// User Must be at least Writer.
 		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization: `+permErr.Error()+`","code":418}`)
 		return
@@ -664,7 +670,7 @@ func API_DeleteCatalog(res http.ResponseWriter, req *http.Request, params httpro
 	// 		400	- Failure, Expected data Missing
 	// 		500	- Failure, Internal Services Error. Thrown when removal from Datastore cannot be completed.
 
-	if validPerm, permErr := HasPermission(res, req, AdminPermissions); !validPerm {
+	if validPerm, permErr := HasPermission(res, req, api_Delete_Permission); !validPerm {
 		// User Must be at least Admin.
 		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization: `+permErr.Error()+`","code":418}`)
 		return
@@ -712,7 +718,7 @@ func API_DeleteBook(res http.ResponseWriter, req *http.Request, params httproute
 	// 		400	- Failure, Expected data Missing
 	// 		500	- Failure, Internal Services Error. Thrown when removal from Datastore cannot be completed.
 
-	if validPerm, permErr := HasPermission(res, req, AdminPermissions); !validPerm {
+	if validPerm, permErr := HasPermission(res, req, api_Delete_Permission); !validPerm {
 		// User Must be at least Admin.
 		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization: `+permErr.Error()+`","code":418}`)
 		return
@@ -756,7 +762,7 @@ func API_DeleteChapter(res http.ResponseWriter, req *http.Request, params httpro
 	// 		400	- Failure, Expected data Missing
 	// 		500	- Failure, Internal Services Error. Thrown when removal from Datastore cannot be completed.
 
-	if validPerm, permErr := HasPermission(res, req, AdminPermissions); !validPerm {
+	if validPerm, permErr := HasPermission(res, req, api_Delete_Permission); !validPerm {
 		// User Must be at least Admin.
 		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization: `+permErr.Error()+`","code":418}`)
 		return
@@ -799,7 +805,7 @@ func API_DeleteSection(res http.ResponseWriter, req *http.Request, params httpro
 	// 		400	- Failure, Expected data Missing
 	// 		500	- Failure, Internal Services Error. Thrown when removal from Datastore cannot be completed.
 
-	if validPerm, permErr := HasPermission(res, req, AdminPermissions); !validPerm {
+	if validPerm, permErr := HasPermission(res, req, api_Delete_Permission); !validPerm {
 		// User Must be at least Admin.
 		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization: `+permErr.Error()+`","code":418}`)
 		return
@@ -837,7 +843,7 @@ func API_DeleteObjective(res http.ResponseWriter, req *http.Request, params http
 	// 		400	- Failure, Expected data Missing
 	// 		500	- Failure, Internal Services Error. Thrown when removal from Datastore cannot be completed.
 
-	if validPerm, permErr := HasPermission(res, req, AdminPermissions); !validPerm {
+	if validPerm, permErr := HasPermission(res, req, api_Delete_Permission); !validPerm {
 		// User Must be at least Admin.
 		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization: `+permErr.Error()+`","code":418}`)
 		return

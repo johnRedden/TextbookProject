@@ -29,6 +29,7 @@ const (
 	// Permission Levels.
 	// These are const integers. Please refer to them always by name, never number.
 	ReadPermissions  = iota
+	EditPermissions  = iota
 	WritePermissions = iota
 	AdminPermissions = iota
 )
@@ -79,7 +80,7 @@ func MakePermissionUser(name string, permission int, u *user.User) PermissionUse
 func GetPermissionUserFromSession(ctx context.Context) (PermissionUser, error) {
 	u := user.Current(ctx)
 	if u != nil {
-		if mVal, err := FromMemcache(ctx, MemcacheKey(u)); err == nil {
+		if mVal, err := FromMemcache(ctx, u.Email); err == nil {
 			if pVal, mErr := MarshallPermissionUser(mVal); mErr == nil {
 				return pVal, nil
 			} else {
@@ -160,13 +161,11 @@ func AUTH_Login_GET(res http.ResponseWriter, req *http.Request, params httproute
 	if req.FormValue("redirect") != "" {
 		redirectBack = "?redirect=" + req.FormValue("redirect")
 	}
+
 	ctx := appengine.NewContext(req)
 	if sessErr := MaintainSession(res, req); sessErr == ErrNotLoggedIn || req.FormValue("changeuser") == "yes" {
 		// User is not logged in.
 		// Force them to the google login page before coming back here.
-
-		// TODO: Somewhere in this process, double logins are occuring. Find this please!
-		// We've traced it down to somewhere here.
 
 		http.Redirect(res, req, GetLoginURL(ctx, "/login"+redirectBack), http.StatusTemporaryRedirect)
 		return
@@ -182,7 +181,7 @@ func AUTH_Login_GET(res http.ResponseWriter, req *http.Request, params httproute
 			return
 		}
 		// we now have their user information.
-		sessErr := CreateSession(res, req, func(u *user.User) string { return pu.ToString() })
+		sessErr := CreateSession(res, req, pu.ToString())
 		if sessErr != nil {
 			http.Error(res, sessErr.Error(), http.StatusInternalServerError)
 			return
@@ -247,10 +246,7 @@ func AUTH_Register_POST(res http.ResponseWriter, req *http.Request, params httpr
 	HandleError(res, putErr)
 
 	// Now we make that session
-	memValue := func(u *user.User) string {
-		return permU.ToString()
-	}
-	sessErr := CreateSession(res, req, memValue)
+	sessErr := CreateSession(res, req, permU.ToString())
 	HandleError(res, sessErr)
 
 	redirectTo := req.FormValue("redirect")

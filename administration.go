@@ -43,6 +43,8 @@ func ADMIN_POST_ELEVATEUSER(res http.ResponseWriter, req *http.Request, params h
 			return AdminPermissions
 		case "Write":
 			return WritePermissions
+		case "Edit":
+			return EditPermissions
 		case "Read":
 			return ReadPermissions
 		}
