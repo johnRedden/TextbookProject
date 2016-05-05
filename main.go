@@ -75,11 +75,12 @@ func init() {
 	r.GET("/favicon.ico", favIcon)           // favicon <user>
 
 	// main.go/API.go, Table of Contents
-	r.GET("/toc", API_getTOC)        // xml toc for a book <api>
-	r.GET("/toc.html", getSimpleTOC) // user viewable toc for a book <user>
+	r.GET("/toc", API_getTOC)            // xml toc for a book <api>
+	r.GET("/toc.html/:ID", getSimpleTOC) // user viewable toc for a book <user>
 
 	// authentication.go, Basic User Auth
 	r.GET("/login", AUTH_Login_GET)         // User Login <user>
+	r.GET("/logout", AUTH_Logout_GET)       // User Logout <user>
 	r.GET("/register", AUTH_Register_GET)   // Register New Users/Modify existing users <user>
 	r.POST("/register", AUTH_Register_POST) // Post to make the new user <user><auth>
 	r.GET("/user", AUTH_UserInfo)           // DEBUG user info <user><auth><DEBUG>
@@ -130,7 +131,8 @@ func favIcon(res http.ResponseWriter, req *http.Request, params httprouter.Param
 }
 
 func home(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	ServeTemplateWithParams(res, req, "index.html", nil)
+	pu, _ := GetPermissionUserFromSession(appengine.NewContext(req))
+	ServeTemplateWithParams(res, req, "index.html", pu)
 }
 
 func selectBookFromForm(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
@@ -195,8 +197,23 @@ func getSimpleObjectiveReader(res http.ResponseWriter, req *http.Request, params
 }
 
 func getSimpleTOC(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// GET: /toc.html?ID=<Book ID Number>
-	ServeTemplateWithParams(res, req, "toc.html", req.FormValue("ID"))
+	// GET: /toc.html/<Book ID Number>
+
+	pu, _ := GetPermissionUserFromSession(appengine.NewContext(req))
+
+	screenOutput := struct {
+		Name       string
+		Email      string
+		Permission int
+		ID         string
+	}{
+		pu.Name,
+		pu.Email,
+		pu.Permission,
+		params.ByName("ID"),
+	}
+
+	ServeTemplateWithParams(res, req, "toc.html", screenOutput)
 }
 
 func getObjectivePreview(res http.ResponseWriter, req *http.Request, params httprouter.Params) {

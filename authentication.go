@@ -157,17 +157,13 @@ func RemovePermissionLevelFromDatastore(ctx context.Context, keyname string) err
 func AUTH_Login_GET(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	// User has requested a login procedure.
 	// Attempt to gather user info.
-	redirectBack := ""
-	if req.FormValue("redirect") != "" {
-		redirectBack = "?redirect=" + req.FormValue("redirect")
-	}
 
 	ctx := appengine.NewContext(req)
 	if sessErr := MaintainSession(res, req); sessErr == ErrNotLoggedIn || req.FormValue("changeuser") == "yes" {
 		// User is not logged in.
 		// Force them to the google login page before coming back here.
 
-		http.Redirect(res, req, GetLoginURL(ctx, "/login"+redirectBack), http.StatusTemporaryRedirect)
+		http.Redirect(res, req, GetLoginURL(ctx, "/login?redirect="+req.FormValue("redirect")), http.StatusTemporaryRedirect)
 		return
 	} else if sessErr == ErrTimedOut {
 		// User has an oauth key.
@@ -177,7 +173,7 @@ func AUTH_Login_GET(res http.ResponseWriter, req *http.Request, params httproute
 		if getErr != nil {
 			// They do not have a registered permission user.
 			// Kick them over to register.
-			http.Redirect(res, req, "/register"+redirectBack, http.StatusTemporaryRedirect)
+			http.Redirect(res, req, "/register?redirect="+req.FormValue("redirect"), http.StatusTemporaryRedirect)
 			return
 		}
 		// we now have their user information.
@@ -188,11 +184,13 @@ func AUTH_Login_GET(res http.ResponseWriter, req *http.Request, params httproute
 		}
 	}
 	// Session is live.
-	redirectTo := req.FormValue("redirect")
-	if redirectTo == "" {
-		redirectTo = "/"
-	}
-	http.Redirect(res, req, redirectTo, http.StatusSeeOther)
+	http.Redirect(res, req, "/"+req.FormValue("redirect"), http.StatusSeeOther)
+}
+
+func AUTH_Logout_GET(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	DeleteCookie(res, CookieKey) // Have the user invalidate their local login token.
+	DeleteCookie(res, "ACSID")   // To be nice, we'll also delete the oauth token from google.
+	http.Redirect(res, req, "/"+req.FormValue("redirect"), http.StatusSeeOther)
 }
 
 func AUTH_Register_GET(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
@@ -204,14 +202,7 @@ func AUTH_Register_GET(res http.ResponseWriter, req *http.Request, params httpro
 		http.Redirect(res, req, GetLoginURL(ctx, "/register?redirect="+req.FormValue("redirect")), http.StatusTemporaryRedirect)
 		return
 	}
-	// TODO: Create an actual login page and serve that.
-	page := `<!DOCTYPE html><html><body>
-<form method="POST">
-    <p>Name: <input name="Name" autofocus></input></p>
-    <input type="submit">
-</form>
-</body></html>`
-	fmt.Fprint(res, page)
+	ServeTemplateWithParams(res, req, "registerUser.html", u.Email)
 }
 
 func AUTH_Register_POST(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
@@ -226,6 +217,8 @@ func AUTH_Register_POST(res http.ResponseWriter, req *http.Request, params httpr
 
 	// Now that we're all satisfied. Lets grab that info.
 	uName := req.FormValue("Name")
+
+	// TODO: Require that a name is more than empty?
 
 	// Permissions Module
 	perms := ReadPermissions // Default Permissions.
@@ -249,11 +242,7 @@ func AUTH_Register_POST(res http.ResponseWriter, req *http.Request, params httpr
 	sessErr := CreateSession(res, req, permU.ToString())
 	HandleError(res, sessErr)
 
-	redirectTo := req.FormValue("redirect")
-	if redirectTo == "" {
-		redirectTo = "/"
-	}
-	http.Redirect(res, req, redirectTo, http.StatusSeeOther)
+	http.Redirect(res, req, "/"+req.FormValue("redirect"), http.StatusSeeOther)
 }
 
 func AUTH_UserInfo(res http.ResponseWriter, req *http.Request, params httprouter.Params) {

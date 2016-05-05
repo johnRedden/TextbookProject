@@ -68,7 +68,12 @@
           <li><a href="#">About</a></li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
-          <li><a href="/login"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+          {{if .Email}}
+            <li><a href="/login?changeuser=yes&redirect=toc.html/{{.ID}}"><span class="glyphicon glyphicon-log-in"></span> Not {{.Name}}?</a></li>
+            <li><a href="/logout?redirect=toc.html/{{.ID}}"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
+          {{else}}
+            <li><a href="/login?changeuser=yes&redirect=toc.html/{{.ID}}"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+          {{end}}
         </ul>
       </div>
     </nav>
@@ -98,7 +103,7 @@
 
 
 <script type="text/javascript">
-    var incomingID = "{{.}}";
+    var incomingID = "{{.ID}}";
 
     $(document).ready(function(){
         if (incomingID == "") {return ;}
@@ -233,8 +238,8 @@
 
                         //Bootstrap OBJECTIVE Work ************************************
                         var htmlBlock3 = '<div class="list-group-item"> \
-                                            <a href="preview?ID='+singleObjectiveID+'"  id="'+singleObjectiveID+'">'+singleObjectiveName+'</a>\
-                                            <a href="edit?ID='+singleObjectiveID+'"  class="btn btn-xs btn-info" role="button">Edit</a> \
+                                            <a href="/preview?ID='+singleObjectiveID+'"  id="'+singleObjectiveID+'">'+singleObjectiveName+'</a>\
+                                            <a href="/edit?ID='+singleObjectiveID+'"  class="btn btn-xs btn-info" role="button">Edit</a> \
                                         </div>';
 
                         $('#'+singleSectionID).append(htmlBlock3);

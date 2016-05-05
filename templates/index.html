@@ -78,14 +78,18 @@
         <div class="navbar-header">
           <a class="navbar-text" href="/"><img class="pull-left" src="/public/images/eduNetSystems-logo.png"/> 
             <strong> &nbsp eduNetSystems Textbook System α</strong></a>
-             
         </div>
         <ul class="nav navbar-nav">
           <li class="active"><a href="\">Catalogs</a></li>
           <li><a href="#">About</a></li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
-          <li><a href="/login"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+        {{if .Email}}
+            <li><a href="/login?changeuser=yes"><span class="glyphicon glyphicon-log-in"></span> Not {{.Name}}?</a></li>
+            <li><a href="/logout"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
+        {{else}}
+            <li><a href="/login"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+        {{end}}
         </ul>
       </div>
     </nav>
@@ -194,7 +198,7 @@
 
                         $.each( k.results, function( key, arg ){
                            
-                        var htmlBlock2 = '<a href="/toc.html?ID='+arg.ID+'" class="list-group-item" >\
+                        var htmlBlock2 = '<a href="/toc.html/'+arg.ID+'" class="list-group-item" >\
                                         <i class="glyphicon glyphicon-new-window"></i>Book: '+arg.Title+'</a>';
 
                             $('#'+catHTMLid).append(htmlBlock2);

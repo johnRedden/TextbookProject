@@ -23,6 +23,9 @@ var (
 	CookieKey       = "Session"
 )
 
+// GetLoginURL
+// Internal, Outbound Service
+// This will create a google login url to have a user login using their gmail. It will then redirect back to an internal url of our choosing.
 func GetLoginURL(ctx context.Context, redirect string) string {
 	login, _ := user.LoginURLFederated(ctx, redirect, "")
 	return login
