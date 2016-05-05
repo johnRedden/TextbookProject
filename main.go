@@ -85,6 +85,7 @@ func init() {
 	r.POST("/register", AUTH_Register_POST) // Post to make the new user <user><auth>
 	r.GET("/user", AUTH_UserInfo)           // DEBUG user info <user><auth><DEBUG>
 
+	// Admin Console
 	r.GET("/admin", ADMIN_AdministrationConsole)           // Admin Console <user><auth>
 	r.POST("/admin/changeUsrPerm", ADMIN_POST_ELEVATEUSER) // Admin: Change User Permissions <api><auth>
 	r.GET("/admin/getUsrPerm", ADMIN_GET_USERPERM)         // Admin: Retrive User Permissions <api><auth>
