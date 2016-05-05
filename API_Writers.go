@@ -1,15 +1,16 @@
-// API_Writers
+// # API_Writers
+//
 // Source Project: https://github.com/johnRedden/TextbookProject
+//
 // This package holds all api handlers with regards to structure that preform write operations.
 // Permission requirement for these api calls: Writer
 // For more information, please visit: https://github.com/johnRedden/TextbookProject/wiki
 //
 // This module shares a collective set of error codes described below:
-// Code:	Message
-// ------||-----------------
-//     0 || Success: All actions completed.
-//   400 || Failure: Mandatory parameter missing; check reason for missing/invalid parameter.
-//   418 || Failure: Authentication Error; check login status and permission level.
+//    Code:	Message
+//      0 - Success: All actions completed.
+//    400 - Failure: Mandatory parameter missing; check reason for missing/invalid parameter.
+//    418 - Failure: Authentication Error; check login status and permission level.
 //
 package main
 

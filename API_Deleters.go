@@ -1,16 +1,17 @@
-// API_Deleters
+// # API_Deleters
+//
 // Source Project: https://github.com/johnRedden/TextbookProject
+//
 // This package holds all api handlers with regards to structure that preform deletion operations.
 // Permission requirement for these api calls: Admin
 // For more information, please visit: https://github.com/johnRedden/TextbookProject/wiki
 //
 // This module shares a collective set of error codes described below:
-// Code:	Message
-// ------||-----------------
-//     0 || Success: All actions completed.
-//   400 || Failure: Mandatory parameter missing; check reason for missing/invalid parameter.
-//   418 || Failure: Authentication Error; check login status and permission level.
-//   500 || Failure: Internal Services Error; check reason for more information.
+//    Code:	Message
+//      0 - Success: All actions completed.
+//    400 - Failure: Mandatory parameter missing; check reason for missing/invalid parameter.
+//    418 - Failure: Authentication Error; check login status and permission level.
+//    500 - Failure: Internal Services Error; check reason for more information.
 //
 package main
 
