@@ -5,6 +5,7 @@
 // This package holds all api handlers with regards to structure that preform read operations.
 // No requirement currently exists in respect to permissions.
 // For more information, please visit: https://github.com/johnRedden/TextbookProject/wiki
+//
 package main
 
 /*

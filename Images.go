@@ -30,9 +30,19 @@ var (
 // Form/Frame Handlers
 /////
 
+// Call: /image/uploader
+// Description:
+// This handler will serve an html form to upload an
+// image if you have at minimum make permissions for this module.
+// Will pass along an objective id through oid.
+//
+// Method: GET
+// Results: HTML/JSON
+// Mandatory Options:
+// Optional Options: oid
+// Codes:
+// 		418 : Invalid Authorization; Check your login status and permission level.
 func IMAGE_PostUploadForm(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// GET: /image/uploader
-
 	if validPerm, permErr := HasPermission(res, req, image_Make_Permission); !validPerm {
 		// User Must be at least Writer.
 		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization: `+permErr.Error()+`","code":418}`)
@@ -43,8 +53,21 @@ func IMAGE_PostUploadForm(res http.ResponseWriter, req *http.Request, params htt
 	ServeTemplateWithParams(res, req, "simpleImageUploader.html", req.FormValue("oid"))
 }
 
+// Call: /image/browser
+// Description:
+// This handler will serve an html file browser
+// to allow a user to browser images uploaded to the server.
+// Option:oid will limit the returned images to only those
+// with the objective id.
+// Option:CKEditorFuncNum will alert the browser that it is a child
+// of a CKEditor instance and should attempt to let the editor know of
+// any selection the user makes.
+//
+// Method: GET
+// Results: HTML
+// Mandatory Options:
+// Optional Options: oid, CKEditorFuncNum
 func IMAGE_BrowserForm(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// GET: /image/browser
 	ctx := appengine.NewContext(req)
 
 	// ACTION: Give the user an internal permisions key?
@@ -76,10 +99,20 @@ func IMAGE_BrowserForm(res http.ResponseWriter, req *http.Request, params httpro
 /////
 
 // Call: /api/ckeditor/create
+// Description:
+// This handler will take in an image in
+// Mandatory:upload and send it to cloud storage.
+//
+// Option:oid tie the uploaded image to an objective id.
+// Option:CKEditorFuncNum will alert the browser that it is a child
+// of a CKEditor instance and should attempt to let the editor know of
+// any selection the user makes.
+//
+// Method: POST
+// Results: HTML
+// Mandatory Options: upload
+// Optional Options: oid, CKEditorFuncNum
 func IMAGE_API_CKEDITOR_PlaceImageIntoCS(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// POST: url/api/ckeditor/create
-	// Settings: if oid is set, will create image with bucket of oid, otherwise default to global
-
 	if validPerm, permErr := HasPermission(res, req, image_Make_Permission); !validPerm {
 		// User Must be at least Writer.
 		fmt.Fprint(res, `<!DOCTYPE html><html><body><script type="text/javascript">window.parent.CKEDITOR.tools.callFunction('`+req.FormValue("CKEditorFuncNum")+`',"","`+permErr.Error()+`");//window.close();</script></body></html>`)
@@ -113,11 +146,21 @@ func IMAGE_API_CKEDITOR_PlaceImageIntoCS(res http.ResponseWriter, req *http.Requ
 // API - Post/Return/Delete Image to Cloud Storage
 /////
 
+// Call: /api/makeImage
+// Description:
+// This handler will take in an image in
+// Mandatory:upload and send it to cloud storage.
+//
+// Option:oid tie the uploaded image to an objective id..
+//
+// Method: POST
+// Results: HTTP Redirect
+// Mandatory Options: upload
+// Optional Options: oid
+// Codes:
+// 		Success, redirect to image/uploader with status of success
+// 		Failure, redirect to image/uploader with status of failure
 func IMAGE_API_PlaceImageIntoCS(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// POST: /api/makeImage
-	// Settings: if oid is set, will create image with bucket of oid, otherwise default to global
-	// this is the normal part of the image upload. --not tied to ckeditor
-
 	if validPerm, _ := HasPermission(res, req, image_Make_Permission); !validPerm {
 		// User Must be at least Writer.
 		http.Redirect(res, req, "/image/uploader?status=failure&message=invalid_login", http.StatusSeeOther)
@@ -145,9 +188,18 @@ func IMAGE_API_PlaceImageIntoCS(res http.ResponseWriter, req *http.Request, para
 	http.Redirect(res, req, "/image/uploader?status=success", http.StatusSeeOther)
 }
 
+// Call: /image
+// Description:
+// This handler will retrive an image from cloud storage
+//
+// Method: GET
+// Results: Image Binary/JSON
+// Mandatory Options: id
+// Optional Options:
+// Codes:
+// 		Success, Image in response
+//		400 - Missing Parameter
 func IMAGE_API_GetImageFromCS(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// GET: /api/getImage
-	// GET: /image
 	id := req.FormValue("id") // this is an id request only.
 	if id == "" {             // if no id, exit with failure.
 		fmt.Fprint(res, `{"result":"failure","reason":"missing image id","code":400}`)
@@ -167,8 +219,21 @@ func IMAGE_API_GetImageFromCS(res http.ResponseWriter, req *http.Request, params
 	io.Copy(res, rdr)
 }
 
+// Call: /api/removeImage
+// Description:
+// This handler will delete an image from cloud storages
+//
+// Method: POST
+// Results: JSON
+// Mandatory Options: id
+// Optional Options:
+// Codes:
+//		  0 - Success, All actions completeds
+//		400 - Failure, Missing Parameter
+// 		418 - Failure, Invalid Authorization
+//		500 - Failure, Internal Services Error
+//
 func IMAGE_API_RemoveImageFromCS(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// GET: /api/removeImage
 	id := req.FormValue("id") // this is an id request only.
 	if id == "" {             // if no id, exit with failure.
 		fmt.Fprint(res, `{"result":"failure","reason":"missing image id","code":400}`)
@@ -195,6 +260,13 @@ func IMAGE_API_RemoveImageFromCS(res http.ResponseWriter, req *http.Request, par
 // API - Parse/Prepare Image
 /////
 
+// Internal Function
+// Description:
+// This function will prepare and send file to GCS then return the key.
+//
+// Returns:
+// 		key(string) - name of GCS key. Item is now in GCS
+//		failure?(error) - If any errors occur they exist here.
 func IMAGE_API_SendToCloudStorage(req *http.Request, mpf multipart.File, hdr *multipart.FileHeader, prefix string) (string, error) {
 	ext, extErr := filterExtension(req, hdr) // ensure that file's extention is an image
 	if extErr != nil {                       // if it is not, exit, returning error
@@ -208,12 +280,27 @@ func IMAGE_API_SendToCloudStorage(req *http.Request, mpf multipart.File, hdr *mu
 	return uploadName, addFileToGCS(ctx, uploadName, mpf) // upload the file and name. if there is an error, our parent will catch it.}
 }
 
-func makeSHA(src multipart.File) string { // make a sha of the contents of the file. we do not want duplicate files.
+// Internal Function
+// Description:
+// This function will create a SHA name of a file's contents.
+// This will ensure that duplicate items have the same key.
+//
+// Returns:
+// 		key(string) - SHA of contents.
+func makeSHA(src multipart.File) string {
 	h := sha1.New()
 	io.Copy(h, src)
 	return fmt.Sprintf("%x", h.Sum(nil))
 }
 
+// Internal Function
+// Description:
+// This function will ensure that the extention of an incoming filename
+// is allowed by this server. Will return the isolated extention if yes.
+//
+// Returns:
+// 		extention(string) - Extension of file.
+//		failure?(error) - Error if filetype is not allowed.
 func filterExtension(req *http.Request, hdr *multipart.FileHeader) (string, error) {
 	ext := hdr.Filename[strings.LastIndex(hdr.Filename, ".")+1:] // parse through the fileheader for it's extention.
 	ext = strings.ToLower(ext)                                   // uppercase, lowercase. all the same here.
@@ -232,6 +319,12 @@ func filterExtension(req *http.Request, hdr *multipart.FileHeader) (string, erro
 // Local Only!
 /////
 
+// Internal Function
+// Description:
+// This function will add a file to GCS at filename.
+//
+// Returns:
+//		failure?(error) - Error if storage fails.
 func addFileToGCS(ctx context.Context, filename string, freader io.Reader) error {
 	client, clientErr := storage.NewClient(ctx)
 	if clientErr != nil {
@@ -251,6 +344,12 @@ func addFileToGCS(ctx context.Context, filename string, freader io.Reader) error
 	return csWriter.Close()
 }
 
+// Internal Function
+// Description:
+// This function will remove a file to GCS at filename.
+//
+// Returns:
+//		failure?(error) - Error if deletion fails.
 func removeFileFromGCS(ctx context.Context, filename string) error {
 	client, clientErr := storage.NewClient(ctx)
 	if clientErr != nil {
@@ -260,6 +359,13 @@ func removeFileFromGCS(ctx context.Context, filename string) error {
 	return client.Bucket(GCS_BucketID).Object(filename).Delete(ctx)
 }
 
+// Internal Function
+// Description:
+// This function will retrive filenames from GCS per a storage Query
+//
+// Returns:
+//		files []string - list of filenames.
+//		failure?(error) - Error if storage fails.
 func getFileFromGCS(ctx context.Context, q *storage.Query) ([]string, error) {
 	results := make([]string, 0)
 
