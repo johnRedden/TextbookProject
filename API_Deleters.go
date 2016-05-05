@@ -1,7 +1,21 @@
+// API_Deleters
+// Source Project: https://github.com/johnRedden/TextbookProject
+// This package holds all api handlers with regards to structure that preform deletion operations.
+// Permission requirement for these api calls: Admin
+// For more information, please visit: https://github.com/johnRedden/TextbookProject/wiki
+//
+// This module shares a collective set of error codes described below:
+// Code:	Message
+// ------||-----------------
+//     0 || Success: All actions completed.
+//   400 || Failure: Mandatory parameter missing; check reason for missing/invalid parameter.
+//   418 || Failure: Authentication Error; check login status and permission level.
+//   500 || Failure: Internal Services Error; check reason for more information.
+//
 package main
 
 /*
-filename.go by Allen J. Mills
+API_Deleters.go by Allen J. Mills
     mm.d.yy
 
     Description
@@ -12,13 +26,13 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
-	"html/template"
 	"net/http"
 	"strconv"
 )
 
 var (
-	// Local Variables to set module permission levels.
+	// Local Permission Variable: delete
+	// This variable holds the minimum required permission level to use this module.
 	api_Delete_Permission = AdminPermissions
 )
 
@@ -28,17 +42,17 @@ var (
 // Please read each section for expected input/output
 /////////////
 
+// Call: /api/deleteCatalog
+// Description:
+// This call will delete a catalog and all child structures.
+// ID should be a well-formed non-nil string of an existing catalog name.
+//
+// Method: POST
+// Results: JSON
+// Mandatory Options: ID
+// Optional Options:
+// Codes: See Above.
 func API_DeleteCatalog(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// Call for deletion of a Catalog
-	//  Will also delete all data pointing to it.
-	// Mandatory Options: ID
-	// Optional Options:
-	// Codes:
-	//      0   - Success, All completed
-	//      418 - Failure, Authentication error, likely caused by a user not signed in or not allowed.
-	//      400 - Failure, Expected data Missing
-	//      500 - Failure, Internal Services Error. Thrown when removal from Datastore cannot be completed.
-
 	if validPerm, permErr := HasPermission(res, req, api_Delete_Permission); !validPerm {
 		// User Must be at least Admin.
 		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization: `+permErr.Error()+`","code":418}`)
@@ -76,17 +90,18 @@ func API_DeleteCatalog(res http.ResponseWriter, req *http.Request, params httpro
 
 	fmt.Fprint(res, `{"result":"success","reason":","code":0}`)
 }
-func API_DeleteBook(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// Call for deletion of a Book
-	//  Will also delete all data pointing to it.
-	// Mandatory Options: ID
-	// Optional Options:
-	// Codes:
-	//      0   - Success, All completed
-	//      418 - Failure, Authentication error, likely caused by a user not signed in or not allowed.
-	//      400 - Failure, Expected data Missing
-	//      500 - Failure, Internal Services Error. Thrown when removal from Datastore cannot be completed.
 
+// Call: /api/deleteBook
+// Description:
+// This call will delete a book and all child structures.
+// ID should be a well-formmated integer of an existing book id.
+//
+// Method: POST
+// Results: JSON
+// Mandatory Options: ID
+// Optional Options:
+// Codes: See Above.
+func API_DeleteBook(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	if validPerm, permErr := HasPermission(res, req, api_Delete_Permission); !validPerm {
 		// User Must be at least Admin.
 		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization: `+permErr.Error()+`","code":418}`)
@@ -120,17 +135,18 @@ func API_DeleteBook(res http.ResponseWriter, req *http.Request, params httproute
 
 	fmt.Fprint(res, `{"result":"success","reason":","code":0}`)
 }
-func API_DeleteChapter(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// Call for deletion of a Chapter
-	//  Will also delete all data pointing to it.
-	// Mandatory Options: ID
-	// Optional Options:
-	// Codes:
-	//      0   - Success, All completed
-	//      418 - Failure, Authentication error, likely caused by a user not signed in or not allowed.
-	//      400 - Failure, Expected data Missing
-	//      500 - Failure, Internal Services Error. Thrown when removal from Datastore cannot be completed.
 
+// Call: /api/deleteChapter
+// Description:
+// This call will delete a chapter and all child structures.
+// ID should be a well-formmated integer of an existing chapter id.
+//
+// Method: POST
+// Results: JSON
+// Mandatory Options: ID
+// Optional Options:
+// Codes: See Above.
+func API_DeleteChapter(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	if validPerm, permErr := HasPermission(res, req, api_Delete_Permission); !validPerm {
 		// User Must be at least Admin.
 		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization: `+permErr.Error()+`","code":418}`)
@@ -163,17 +179,18 @@ func API_DeleteChapter(res http.ResponseWriter, req *http.Request, params httpro
 
 	fmt.Fprint(res, `{"result":"success","reason":","code":0}`)
 }
-func API_DeleteSection(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// Call for deletion of a Section
-	//  Will also delete all data pointing to it.
-	// Mandatory Options: ID
-	// Optional Options:
-	// Codes:
-	//      0   - Success, All completed
-	//      418 - Failure, Authentication error, likely caused by a user not signed in or not allowed.
-	//      400 - Failure, Expected data Missing
-	//      500 - Failure, Internal Services Error. Thrown when removal from Datastore cannot be completed.
 
+// Call: /api/deleteSection
+// Description:
+// This call will delete a section and all child structures.
+// ID should be a well-formmated integer of an existing section id.
+//
+// Method: POST
+// Results: JSON
+// Mandatory Options: ID
+// Optional Options:
+// Codes: See Above.
+func API_DeleteSection(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	if validPerm, permErr := HasPermission(res, req, api_Delete_Permission); !validPerm {
 		// User Must be at least Admin.
 		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization: `+permErr.Error()+`","code":418}`)
@@ -202,16 +219,18 @@ func API_DeleteSection(res http.ResponseWriter, req *http.Request, params httpro
 
 	fmt.Fprint(res, `{"result":"success","reason":","code":0}`)
 }
-func API_DeleteObjective(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// Call for deletion of an objective
-	// Mandatory Options: ID
-	// Optional Options:
-	// Codes:
-	//      0   - Success, All completed
-	//      418 - Failure, Authentication error, likely caused by a user not signed in or not allowed.
-	//      400 - Failure, Expected data Missing
-	//      500 - Failure, Internal Services Error. Thrown when removal from Datastore cannot be completed.
 
+// Call: /api/deleteObjective
+// Description:
+// This call will delete an objective and all child structures.
+// ID should be a well-formmated integer of an existing objective id.
+//
+// Method: POST
+// Results: JSON
+// Mandatory Options: ID
+// Optional Options:
+// Codes: See Above.
+func API_DeleteObjective(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	if validPerm, permErr := HasPermission(res, req, api_Delete_Permission); !validPerm {
 		// User Must be at least Admin.
 		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization: `+permErr.Error()+`","code":418}`)

@@ -1,7 +1,20 @@
+// API_Writers
+// Source Project: https://github.com/johnRedden/TextbookProject
+// This package holds all api handlers with regards to structure that preform write operations.
+// Permission requirement for these api calls: Writer
+// For more information, please visit: https://github.com/johnRedden/TextbookProject/wiki
+//
+// This module shares a collective set of error codes described below:
+// Code:	Message
+// ------||-----------------
+//     0 || Success: All actions completed.
+//   400 || Failure: Mandatory parameter missing; check reason for missing/invalid parameter.
+//   418 || Failure: Authentication Error; check login status and permission level.
+//
 package main
 
 /*
-filename.go by Allen J. Mills
+API_Writers.go by Allen J. Mills
     mm.d.yy
 
     Description
@@ -11,14 +24,14 @@ import (
 	"fmt"
 	"github.com/julienschmidt/httprouter"
 	"google.golang.org/appengine"
-	"google.golang.org/appengine/datastore"
 	"html/template"
 	"net/http"
 	"strconv"
 )
 
 var (
-	// Local Variables to set module permission levels.
+	// Local Permission Variable: make
+	// This variable holds the minimum required permission level to use this module.
 	api_Make_Permission = WritePermissions
 )
 
@@ -28,16 +41,16 @@ var (
 // Please read each call for expected input/output
 ////////
 
+// Call: /api/makeCatalog
+// Description:
+// This call is for the creation or update of a catalog. If Mandatory:CatalogName already exists, this call will update the existing information. Mandatory:CatalogName must be a well-formed non-nil string. Option:Version should be a well-formmated float value.
+//
+// Method: POST
+// Results: JSON
+// Mandatory Options: CatalogName
+// Optional Options: Company, Version, Description
+// Codes: See Above.
 func API_MakeCatalog(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// Post call for making a catalog, we would check for a signed in user here.
-	// Mandatory Options: CatalogName
-	// Optional Options: Company, Version, Description
-	// Version should be a well formed stringed float
-	// Codes:
-	//      0 - Success, All completed
-	//      418 - Failure, Authentication error, likely caused by a user not signed in or not allowed.
-	//      400 - Failure, Expected data missing
-
 	if validPerm, permErr := HasPermission(res, req, api_Make_Permission); !validPerm {
 		// User Must be at least Writer.
 		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization: `+permErr.Error()+`","code":418}`)
@@ -75,18 +88,16 @@ func API_MakeCatalog(res http.ResponseWriter, req *http.Request, params httprout
 	fmt.Fprint(res, `{"result":"success","reason":"","code":0}`)
 }
 
+// Call: /api/makeBook
+// Description:
+// This call will create or update book information. If Mandatory:ID is given, all parameters are set as update mode, otherwise Mandatory:CatalogName, Mandatory:BookName must be given. Option:Version should be a well-formmated float.
+//
+// Method: POST
+// Results: JSON
+// Mandatory Options: {CatalogName, BookName} OR {ID}
+// Optional Options: Author, Version, Tags, Description
+// Codes: See Above.
 func API_MakeBook(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// Here is where we get a bit more complicated.
-	// One stop shop for everything related to making a book
-	// If you feed in an ID it will update that specific id
-	// If no id is given, will make a new one.
-	// Mandatory Options: CatalogName, BookName OR ID
-	// Optional Options: Author, Version, Tags, Description
-	// Codes:
-	//      0 - Success, All completed
-	//      418 - Failure, Authentication error, likely caused by a user not signed in or not allowed.
-	//      400 - Failure, Expected data missing
-
 	if validPerm, permErr := HasPermission(res, req, api_Make_Permission); !validPerm {
 		// User Must be at least Writer.
 		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization: `+permErr.Error()+`","code":418}`)
@@ -137,15 +148,16 @@ func API_MakeBook(res http.ResponseWriter, req *http.Request, params httprouter.
 	fmt.Fprint(res, `{"result":"success","reason":"","code":0}`)
 }
 
+// Call: /api/makeChapter
+// Description:
+// This call will create or update chapter information. If Mandatory:ID is given, all parameters are set as update mode, otherwise Mandatory:BookID, Mandatory:ChapterName must be given. Option:Version should be a well-formmated float. Mandatory:BookID should be a well-formmated integer.
+//
+// Method: POST
+// Results: JSON
+// Mandatory Options: {BookID, ChapterName} OR {ID}
+// Optional Options: Version, Description
+// Codes: See Above.
 func API_MakeChapter(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// Post call  for chapter creation, same structure as above.
-	// Mandatory Options: BookID, ChapterName OR ID
-	// Optional Options: Version, Description
-	// Codes:
-	//      0 - Success, All completed
-	//      418 - Failure, Authentication error, likely caused by a user not signed in or not allowed.
-	//      400 - Failure, Expected data missing
-
 	if validPerm, permErr := HasPermission(res, req, api_Make_Permission); !validPerm {
 		// User Must be at least Writer.
 		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization: `+permErr.Error()+`","code":418}`)
@@ -189,15 +201,16 @@ func API_MakeChapter(res http.ResponseWriter, req *http.Request, params httprout
 	fmt.Fprint(res, `{"result":"success","reason":"","code":0}`)
 }
 
+// Call: /api/makeSection
+// Description:
+// This call will create or update section information. If Mandatory:ID is given, all parameters are set as update mode, otherwise Mandatory:ChapterID, Mandatory:SectionName must be given. Option:Version should be a well-formmated float. Mandatory:ChapterID should be a well-formmated integer.
+//
+// Method: POST
+// Results: JSON
+// Mandatory Options: {ChapterID, SectionName} OR {ID}
+// Optional Options: Version, Description
+// Codes: See Above.
 func API_MakeSection(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// Post call  for Section creation, same structure as above.
-	// Mandatory Options: ChapterID, SectionName OR ID
-	// Optional Options:  Version, Description
-	// Codes:
-	//      0 - Success, All completed
-	//      418 - Failure, Authentication error, likely caused by a user not signed in or not allowed.
-	//      400 - Failure, Expected data missing
-
 	if validPerm, permErr := HasPermission(res, req, api_Make_Permission); !validPerm {
 		// User Must be at least Writer.
 		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization: `+permErr.Error()+`","code":418}`)
@@ -241,14 +254,16 @@ func API_MakeSection(res http.ResponseWriter, req *http.Request, params httprout
 	fmt.Fprint(res, `{"result":"success","reason":"","code":0}`)
 }
 
+// Call: /api/makeObjective
+// Description:
+// This call will create or update objective information. If Mandatory:ID is given, all parameters are set as update mode, otherwise Mandatory:SectionID, Mandatory:ObjectiveName must be given. Option:Version should be a well-formmated float. Mandatory:SectionID should be a well-formmated integer.
+//
+// Method: POST
+// Results: JSON
+// Mandatory Options: {SectionID, ObjectiveName} OR {ID}
+// Optional Options: Version, Content, KeyTakeaways, Author
+// Codes: See Above.
 func API_MakeObjective(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// Post call  for Objective creation, same structure as above.
-	// Mandatory Options: ObjectiveName, SectionID OR ID
-	// Optional Options: Version, Content, KeyTakeaways, Author
-	// Codes:
-	//      0 - Success, All completed
-	//      418 - Failure, Authentication error, likely caused by a user not signed in or not allowed.
-	//      400 - Failure, Expected data missing
 	ctx := appengine.NewContext(req)
 
 	if validPerm, permErr := HasPermission(res, req, api_Make_Permission); !validPerm {

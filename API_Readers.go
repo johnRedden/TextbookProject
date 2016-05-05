@@ -1,7 +1,13 @@
+// API_Readers
+// Source Project: https://github.com/johnRedden/TextbookProject
+// This package holds all api handlers with regards to structure that preform read operations.
+// No requirement currently exists in respect to permissions.
+// For more information, please visit: https://github.com/johnRedden/TextbookProject/wiki
+
 package main
 
 /*
-filename.go by Allen J. Mills
+API_Readers.go by Allen J. Mills
     mm.d.yy
 
     Description
@@ -12,7 +18,6 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
-	"html/template"
 	"net/http"
 	"strconv"
 )
@@ -22,12 +27,17 @@ import (
 // API calls for multiple objects.
 ///////
 
+// Call: /api/catalogs.json
+// Description:
+// This call will return a complete list of catalogs. There are no options to limit results.
+//
+// Method: GET
+// Results: JSON
+// Mandatory Options:
+// Optional Options:
+// Codes:
+//      None, Data is either served or an http.Error is returned.
 func API_GetCatalogs(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// Call for a json list of catalogs
-	// Mandatory Options:
-	// Optional Options:
-	// Codes:
-	//      None, Data is either served or an http.Error is returned.
 	ctx := appengine.NewContext(req)
 	q := datastore.NewQuery("Catalogs")
 	cataloglist := make([]Catalog, 0)
@@ -42,16 +52,20 @@ func API_GetCatalogs(res http.ResponseWriter, req *http.Request, params httprout
 		x.ID = k.StringID()
 		cataloglist = append(cataloglist, x)
 	}
-
 	ServeTemplateWithParams(res, req, "Catalogs.json", cataloglist)
 }
 
+// Call: /api/books.json
+// Description:
+// This call will return a list of currently available books. Results may be limited by parent catalog title. Option:Catalog must be a well-formed non-nil string.
+//
+// Method: GET
+// Results: JSON
+// Mandatory Options:
+// Optional Options: Catalog
+// Codes:
+//      None, Data is either served or an http.Error is returned.
 func API_GetBooks(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// Call for a json list of books, can limit on originating catalog.
-	// Mandatory Options:
-	// Optional Options: Catalog
-	// Codes:
-	//      None, Data is either served or an http.Error is returned.
 	ctx := appengine.NewContext(req)
 	q := datastore.NewQuery("Books")
 
@@ -72,16 +86,20 @@ func API_GetBooks(res http.ResponseWriter, req *http.Request, params httprouter.
 		x.ID = k.IntID()
 		booklist = append(booklist, x)
 	}
-
 	ServeTemplateWithParams(res, req, "Books.json", booklist)
 }
 
+// Call: /api/chapters.json
+// Description:
+// This call will return a list of currently available chapters. May limit results based on parent book id. Option:BookID must be a well-formmated integer number.
+//
+// Method: GET
+// Results: JSON
+// Mandatory Options:
+// Optional Options: BookID
+// Codes:
+//      None, Data is either served or an http.Error is returned.
 func API_GetChapters(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// Call for a json list of chapters, can limit on originating book.
-	// Mandatory Options:
-	// Optional Options: BookID
-	// Codes:
-	//      None, Data is either served or an http.Error is returned.
 	ctx := appengine.NewContext(req)
 	q := datastore.NewQuery("Chapters")
 
@@ -108,18 +126,23 @@ func API_GetChapters(res http.ResponseWriter, req *http.Request, params httprout
 	ServeTemplateWithParams(res, req, "Chapters.json", chapterList)
 }
 
+// Call: /api/sections.json
+// Description:
+// This call will return a list of currently available sections. May limit results based on parent chapter id. Option:ChapterID must be a well-formmated integer number.
+//
+// Method: GET
+// Results: JSON
+// Mandatory Options:
+// Optional Options: ChapterID
+// Codes:
+//      None, Data is either served or an http.Error is returned.
 func API_GetSections(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// Call for a json list of sections, can limit on originating chapter.
-	// Mandatory Options:
-	// Optional Options: ChapterID
-	// Codes:
-	//      None, Data is either served or an http.Error is returned.
 	ctx := appengine.NewContext(req)
 	q := datastore.NewQuery("Sections")
 
 	queryChapterID := req.FormValue("ChapterID")
-	if queryChapterID != "" { // Ensure that a BookID was indeed sent.
-		i, numErr := strconv.Atoi(queryChapterID) // does that BookID contain a number?
+	if queryChapterID != "" { // Ensure that a ChapterID was indeed sent.
+		i, numErr := strconv.Atoi(queryChapterID) // does that ChapterID contain a number?
 		HandleError(res, numErr)
 		q = q.Filter("Parent =", int64(i))
 	}
@@ -140,12 +163,17 @@ func API_GetSections(res http.ResponseWriter, req *http.Request, params httprout
 	ServeTemplateWithParams(res, req, "Sections.json", sectionList)
 }
 
+// Call: /api/sections.json
+// Description:
+// This call will return a list of currently available objectives. May limit results based on parent section id. Option:SectionID must be a well-formmated integer number.
+//
+// Method: GET
+// Results: JSON
+// Mandatory Options:
+// Optional Options: SectionID
+// Codes:
+//      None, Data is either served or an http.Error is returned.
 func API_GetObjectives(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// Call for a json list of objectives, can limit on originating section.
-	// Mandatory Options:
-	// Optional Options: SectionID
-	// Codes:
-	//      None, Data is either served or an http.Error is returned.
 	ctx := appengine.NewContext(req)
 	q := datastore.NewQuery("Objectives")
 
@@ -172,14 +200,18 @@ func API_GetObjectives(res http.ResponseWriter, req *http.Request, params httpro
 	ServeTemplateWithParams(res, req, "Objectives.json", objectiveList)
 }
 
+// Call: /toc
+// Description:
+// This call will return an xml formmated view of an entire book by ID. ID must be a well-formmated integer id of an existing book.
+//
+// Method: GET
+// Results: XML
+// Mandatory Options: ID
+// Optional Options:
+// Codes:
+//      XML<status> Failure - read <message> of error for more information
+//      Success will return the well formed xml.
 func API_getTOC(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// GET: /toc?ID=<Book ID Number>
-	// Generates a well formed xml document detailing all the identifing information of a book.
-	// Mandatory Options: ID
-	// Optional Options:
-	// Codes:
-	//      XML<status> Failure - read <message> of error for more information
-	//      Success will return the well formed xml.
 
 	/// - - - -
 	// Initial Check, Ensure information is trivially good
@@ -251,11 +283,18 @@ func API_getTOC(res http.ResponseWriter, req *http.Request, params httprouter.Pa
 // Please read each section for expected input/output
 /////////////
 
+// Call: /api/catalog.xml
+// Description:
+// Call will return an xml view on a singular catalog. ID is a well-formed string of an existing catalog.
+//
+// Method: GET
+// Results: XML
+// Mandatory Options: ID
+// Optional Options:
+// Codes:
+//      XML<status> Failure - read <message> of error for more information
+//      Success will return the well formed xml.
 func API_GetCatalog(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// Get call for reciving an xml view on Catalog
-	// Mandatory Option: ID
-	// Optional Options:
-
 	CatalogID := req.FormValue("ID")
 	if CatalogID == "" {
 		fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8" ?><error><status>Failure</status><message>Invalid ID</message></error>`)
@@ -274,11 +313,18 @@ func API_GetCatalog(res http.ResponseWriter, req *http.Request, params httproute
 	fmt.Fprint(res, `</catalog>`)
 }
 
+// Call: /api/book.xml
+// Description:
+// Call will return an xml view on a singular book. ID is a well-formmated integer of an existing book id.
+//
+// Method: GET
+// Results: XML
+// Mandatory Options: ID
+// Optional Options:
+// Codes:
+//      XML<status> Failure - read <message> of error for more information
+//      Success will return the well formed xml.
 func API_GetBook(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// Get call for reciving an xml view on Book
-	// Mandatory Option: ID
-	// Optional Options:
-
 	BookID, convErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
 	if convErr != nil {
 		fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8" ?><error><status>Failure</status><message>Invalid ID</message></error>`)
@@ -299,11 +345,19 @@ func API_GetBook(res http.ResponseWriter, req *http.Request, params httprouter.P
 	fmt.Fprint(res, `<description>`+Book_to_Output.Description+`</description>`)
 	fmt.Fprint(res, `</book>`)
 }
-func API_GetChapter(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// Get call for reciving an xml view on Chapter
-	// Mandatory Option: ID
-	// Optional Options:
 
+// Call: /api/chapter.xml
+// Description:
+// Call will return an xml view on a singular chapter. ID is a well-formmated integer of an existing chapter id.
+//
+// Method: GET
+// Results: XML
+// Mandatory Options: ID
+// Optional Options:
+// Codes:
+//      XML<status> Failure - read <message> of error for more information
+//      Success will return the well formed xml.
+func API_GetChapter(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	ChapterID, convErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
 	if convErr != nil {
 		fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8" ?><error><status>Failure</status><message>Invalid ID</message></error>`)
@@ -322,11 +376,19 @@ func API_GetChapter(res http.ResponseWriter, req *http.Request, params httproute
 	fmt.Fprint(res, `<description>`+Chapter_to_Output.Description+`</description>`)
 	fmt.Fprint(res, `</chapter>`)
 }
-func API_GetSection(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// Get call for reciving an xml view on Section
-	// Mandatory Option: ID
-	// Optional Options:
 
+// Call: /api/section.xml
+// Description:
+// Call will return an xml view on a singular section. ID is a well-formmated integer of an existing section id.
+//
+// Method: GET
+// Results: XML
+// Mandatory Options: ID
+// Optional Options:
+// Codes:
+//      XML<status> Failure - read <message> of error for more information
+//      Success will return the well formed xml.
+func API_GetSection(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	SectionID, convErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
 	if convErr != nil {
 		fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8" ?><error><status>Failure</status><message>Invalid ID</message></error>`)
@@ -346,11 +408,18 @@ func API_GetSection(res http.ResponseWriter, req *http.Request, params httproute
 	fmt.Fprint(res, `</section>`)
 }
 
+// Call: /api/objective.html
+// Description:
+// Call will return an xml view on a singular objective. ID is a well-formmated integer of an existing objective id.
+//
+// Method: GET
+// Results: HTML Snippet
+// Mandatory Options: ID
+// Optional Options:
+// Codes:
+//		Failure: HTML<section> that describes the error.
+// 		Success: HTML<section> of objective information.
 func API_GetObjectiveHTML(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// Get call for reciving a <section> view on Objective
-	// Mandatory Option: ID
-	// Optional Options:
-
 	ObjectiveID, numErr := strconv.Atoi(req.FormValue("ID"))
 	if numErr != nil {
 		fmt.Fprint(res, `<section><p>Request has failed: Invalid ID.</p></section>`)
