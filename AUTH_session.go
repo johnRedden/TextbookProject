@@ -1,7 +1,9 @@
+// Session
+// This package handles all basic Authentication/Session Management.
 package main
 
 /*
-filename.go by Allen J. Mills
+AUTH_session.go by Allen J. Mills
     mm.d.yy
 
     Description
@@ -17,20 +19,36 @@ import (
 )
 
 var (
-	ErrNotLoggedIn  = errors.New("Session: Cannot Maintain Session, No Logged In User")
-	ErrTimedOut     = errors.New("Session: User has timed out.")
+	// ErrNotLoggedIn is thrown when a session cannot find user OAuth information.
+	ErrNotLoggedIn = errors.New("Session: Cannot Maintain Session, No Logged In User")
+
+	// ErrTimedOut is thrown when a session is missing a validation cookie or memchache
+	ErrTimedOut = errors.New("Session: User has timed out.")
+
+	// Common duration time for session storage
 	StorageDuration = time.Hour
-	CookieKey       = "Session"
+
+	// Common key for a session validation cookie
+	CookieKey = "Session"
 )
 
-// GetLoginURL
-// Internal, Outbound Service
+// Internal Function, Outbound Service
+// Description:
 // This will create a google login url to have a user login using their gmail. It will then redirect back to an internal url of our choosing.
+//
+// Returns:
+//		url(string) - Google login url with redirect.
 func GetLoginURL(ctx context.Context, redirect string) string {
 	login, _ := user.LoginURLFederated(ctx, redirect, "")
 	return login
 }
 
+// Internal Function
+// Description:
+// If a session exists, this function will refresh all timers back to StorageDuration.
+//
+// Returns:
+//		failure?(error) - Any errors are stored here if exists.
 func MaintainSession(res http.ResponseWriter, req *http.Request) error {
 	ctx := appengine.NewContext(req)
 
@@ -58,8 +76,12 @@ func MaintainSession(res http.ResponseWriter, req *http.Request) error {
 	}
 }
 
-// Create Session:
-// Requires a logged in user.
+// Internal Function
+// Description:
+// If a user has a valid OAuth token, this function will create a new session.
+//
+// Returns:
+//		failure?(error) - Any errors are stored here if exists.
 func CreateSession(res http.ResponseWriter, req *http.Request, dataToMemchache string) error {
 	ctx := appengine.NewContext(req)
 	if u := user.Current(ctx); u != nil {

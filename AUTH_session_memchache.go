@@ -1,7 +1,7 @@
 package main
 
 /*
-filename.go by Allen J. Mills
+AUTH_session_memchache.go by Allen J. Mills
     mm.d.yy
 
     Description
@@ -13,6 +13,12 @@ import (
 	"time"
 )
 
+// Internal Function
+// Description:
+// This function will add a key:value pair into memchache with a life of time.Duration.
+//
+// Returns:
+//		failure?(error) - If any errors occur they exist here.
 func ToMemcache(ctx context.Context, key string, value string, expiration time.Duration) error {
 	mI := &memcache.Item{
 		Key:        key,
@@ -22,6 +28,13 @@ func ToMemcache(ctx context.Context, key string, value string, expiration time.D
 	return memcache.Set(ctx, mI)
 }
 
+// Internal Function
+// Description:
+// This function will retrive a value that may exist in key from memchache.
+//
+// Returns:
+//		value(string) - Value of key
+//		failure?(error) - If any errors occur they exist here.
 func FromMemcache(ctx context.Context, key string) (string, error) {
 	item, err := memcache.Get(ctx, key)
 	if err != nil {
@@ -30,6 +43,12 @@ func FromMemcache(ctx context.Context, key string) (string, error) {
 	return string(item.Value), nil
 }
 
+// Internal Function
+// Description:
+// This function will update a value with new time.Duration
+//
+// Returns:
+//		failure?(error) - If any errors occur they exist here.
 func UpdateMemcache(ctx context.Context, key string, expiration time.Duration) error {
 	item, err := memcache.Get(ctx, key)
 	if err != nil {
@@ -39,6 +58,12 @@ func UpdateMemcache(ctx context.Context, key string, expiration time.Duration) e
 	return memcache.Set(ctx, item)
 }
 
+// Internal Function
+// Description:
+// This function will delete key from memchache
+//
+// Returns:
+//		failure?(error) - If any errors occur they exist here.
 func DeleteMemchache(ctx context.Context, key string) error {
 	return memcache.Delete(ctx, key)
 }

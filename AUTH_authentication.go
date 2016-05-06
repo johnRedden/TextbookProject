@@ -1,7 +1,9 @@
+// Authentication
+// This package handles all advanced Authentication/Session Management.
 package main
 
 /*
-filename.go by Allen J. Mills
+AUTH_authentication.go by Allen J. Mills
     mm.d.yy
 
     Description
@@ -21,17 +23,11 @@ import (
 )
 
 var (
+	// ErrPermissionUserMarshall, this error is thrown when there is an incorrect number of values to unmarchall into a Permission User
 	ErrPermissionUserMarshall = errors.New("MarshallPermissionUser: Cannot Marshall String, Too Few Values")
-	ErrInvalidPermission      = errors.New("Permission Error: User Does Not Have Required Permission Level!")
-)
 
-const (
-	// Permission Levels.
-	// These are const integers. Please refer to them always by name, never number.
-	ReadPermissions  = iota
-	EditPermissions  = iota
-	WritePermissions = iota
-	AdminPermissions = iota
+	// ErrInvalidPermission, this error is thrown when a user fails a minimum permission level check.
+	ErrInvalidPermission = errors.New("Permission Error: User Does Not Have Required Permission Level!")
 )
 
 //// --------------------------
@@ -40,6 +36,8 @@ const (
 // Has a true name.
 ////
 
+// Type: PermissionUser
+// An appengine/user.User with Name and Permission
 type PermissionUser struct {
 	Name       string
 	Permission int
@@ -47,10 +45,19 @@ type PermissionUser struct {
 	Email      string
 }
 
+// Method: ToString
+// Converts a permission user into a marshalled string
 func (u PermissionUser) ToString() string {
 	return fmt.Sprintf("%s�%s�%d�%s", u.Name, u.Email, u.Permission, u.ID)
 }
 
+// Internal Function
+// Description:
+// Function takes a stringed permission user and unmarshalls the values back into their original struct.
+//
+// Returns:
+// 		user(PermissionUser) - Unpacked PermissionUser
+//		failure?(error) - Any errors are stored here if exists.
 func MarshallPermissionUser(p string) (PermissionUser, error) {
 	data := strings.Split(p, "�")
 	if len(data) < 4 {
@@ -68,6 +75,12 @@ func MarshallPermissionUser(p string) (PermissionUser, error) {
 	}, nil
 }
 
+// Internal Function
+// Description:
+// Given an appengine/user.User, a name, and a permission level, will create a valid permission user.
+//
+// Returns:
+//		user(PermissionUser) - Prepared PermissionUser
 func MakePermissionUser(name string, permission int, u *user.User) PermissionUser {
 	return PermissionUser{
 		Name:       name,
@@ -77,6 +90,13 @@ func MakePermissionUser(name string, permission int, u *user.User) PermissionUse
 	}
 }
 
+// Internal Function
+// Description:
+// Given a session context, this will retrive the current user's PermissionUser.
+//
+// Returns:
+//		user(PermissionUser) - Prepared PermissionUser
+//		failure?(error) - Any errors are stored here if exists.
 func GetPermissionUserFromSession(ctx context.Context) (PermissionUser, error) {
 	u := user.Current(ctx)
 	if u != nil {
@@ -95,6 +115,10 @@ func GetPermissionUserFromSession(ctx context.Context) (PermissionUser, error) {
 
 //// --------------------------
 // Permisison User, Datastore
+// This collection of functions handle the insertion,
+// retrivial, and deletion of PermissionUsers from
+// datastore.
+// All PermissionUsers exist on table Users
 ////
 
 func PutPermissionUserToDatastore(ctx context.Context, keyname string, pu *PermissionUser) error {
@@ -115,8 +139,32 @@ func RemovePermissionUserFromDatastore(ctx context.Context, keyname string) erro
 
 //// --------------------------
 // Permission Levels
+// This collection details the different levels
+// of permissions a user can hold, verificaiton
+// that a user meets a minimum permission requirement
+// and insertion, retrivial, and deletion of permission
+// levels into datastore.
+// Permission Levels in datastore are on table Permissions
 ////
 
+const (
+	// Permission Levels.
+	// These are const integers. Please refer to them always by name, never number.
+	ReadPermissions  = iota
+	EditPermissions  = iota
+	WritePermissions = iota
+	AdminPermissions = iota
+)
+
+// Internal Function
+// Description:
+// Given a response, request, and minimum permission level.
+// This function will return a boolean if the current user
+// does or does not meet the requirement.
+//
+// Returns:
+//		valid?(bool) - True/False if user meets requirement
+//		failure?(error) - Any errors are stored here if exists.
 func HasPermission(res http.ResponseWriter, req *http.Request, minimumRequiredPermission int) (bool, error) {
 	if sessErr := MaintainSession(res, req); sessErr != nil { // Must have a session
 		return false, sessErr
@@ -152,8 +200,26 @@ func RemovePermissionLevelFromDatastore(ctx context.Context, keyname string) err
 
 //// --------------------------
 // Login Process,
+// Login, Logout, and registration handlers.
 ////
 
+// Call: /login
+// Description:
+// This is a login request from a user. This handles
+// all requirements for login and will even redirect
+// to a registration page if user is attempting a
+// first time login.
+//
+// If a value is given to option:redirect, this call will
+// attempt to redirect the user to said page.
+//
+// If option:changeuser is set to the string 'yes'
+// then this function will force the user to reauthenticate.
+//
+// Method: GET
+// Results: HTTP.Redirect
+// Mandatory Options:
+// Optional Options: redirect, changeuser
 func AUTH_Login_GET(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	// User has requested a login procedure.
 	// Attempt to gather user info.
@@ -187,12 +253,32 @@ func AUTH_Login_GET(res http.ResponseWriter, req *http.Request, params httproute
 	http.Redirect(res, req, "/"+req.FormValue("redirect"), http.StatusSeeOther)
 }
 
+// Call: /logout
+// Description:
+// Deletes the user's local session data.
+// Will attempt to redirect the user to page at option:redirect if exists.
+//
+// Method: GET
+// Results: HTTP.Redirect
+// Mandatory Options:
+// Optional Options: redirect
 func AUTH_Logout_GET(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	DeleteCookie(res, CookieKey) // Have the user invalidate their local login token.
 	DeleteCookie(res, "ACSID")   // To be nice, we'll also delete the oauth token from google.
 	http.Redirect(res, req, "/"+req.FormValue("redirect"), http.StatusSeeOther)
 }
 
+// Call: /register
+// Description:
+// After user gains an OAuth token, will ask the user
+// for additional information to create the user's
+// PermissionUser.
+// Will forward value of option:redirect.
+//
+// Method: GET
+// Results: HTML
+// Mandatory Options:
+// Optional Options: redirect
 func AUTH_Register_GET(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	ctx := appengine.NewContext(req)
 	u := user.Current(ctx)
@@ -205,6 +291,16 @@ func AUTH_Register_GET(res http.ResponseWriter, req *http.Request, params httpro
 	ServeTemplateWithParams(res, req, "registerUser.html", u.Email)
 }
 
+// Call: /register
+// Description:
+// After user submits the additional information required.
+// This call will make the permission user and issue a new session.
+// Will redirect to option:redirect if exists.
+//
+// Method: POST
+// Results: HTTP.Redirect
+// Mandatory Options:
+// Optional Options: redirect
 func AUTH_Register_POST(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	ctx := appengine.NewContext(req)
 	u := user.Current(ctx)
@@ -245,6 +341,14 @@ func AUTH_Register_POST(res http.ResponseWriter, req *http.Request, params httpr
 	http.Redirect(res, req, "/"+req.FormValue("redirect"), http.StatusSeeOther)
 }
 
+// Call: /user
+// TEMPORARY CALL
+// For debug uses only.
+//
+// Method: GET
+// Results: HTML
+// Mandatory Options:
+// Optional Options:
 func AUTH_UserInfo(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	// Temporary GET
 	// This is an excellent way to see just what session info we have and to verify login.
