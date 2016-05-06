@@ -22,7 +22,7 @@ var (
 	// ErrNotLoggedIn is thrown when a session cannot find user OAuth information.
 	ErrNotLoggedIn = errors.New("Session: Cannot Maintain Session, No Logged In User")
 
-	// ErrTimedOut is thrown when a session is missing a validation cookie or memchache
+	// ErrTimedOut is thrown when a session is missing a validation cookie or memcache
 	ErrTimedOut = errors.New("Session: User has timed out.")
 
 	// Common duration time for session storage

@@ -15,7 +15,7 @@ import (
 
 // Internal Function
 // Description:
-// This function will add a key:value pair into memchache with a life of time.Duration.
+// This function will add a key:value pair into memcache with a life of time.Duration.
 //
 // Returns:
 //		failure?(error) - If any errors occur they exist here.
@@ -30,7 +30,7 @@ func ToMemcache(ctx context.Context, key string, value string, expiration time.D
 
 // Internal Function
 // Description:
-// This function will retrive a value that may exist in key from memchache.
+// This function will retrieve a value that may exist in key from memcache.
 //
 // Returns:
 //		value(string) - Value of key
@@ -60,10 +60,10 @@ func UpdateMemcache(ctx context.Context, key string, expiration time.Duration) e
 
 // Internal Function
 // Description:
-// This function will delete key from memchache
+// This function will delete key from memcache
 //
 // Returns:
 //		failure?(error) - If any errors occur they exist here.
-func DeleteMemchache(ctx context.Context, key string) error {
+func DeleteMemcache(ctx context.Context, key string) error {
 	return memcache.Delete(ctx, key)
 }

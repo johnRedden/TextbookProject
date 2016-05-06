@@ -14,7 +14,7 @@ import (
 
 // Internal Function
 // Description:
-// This function will add a key:value pair into http:responce with a life of time.Duration.
+// This function will add a key:value pair into http:response with a life of time.Duration.
 func ToCookie(res http.ResponseWriter, key string, value string, expiration time.Duration) {
 	cookie := &http.Cookie{
 		Name:   key,
@@ -26,7 +26,7 @@ func ToCookie(res http.ResponseWriter, key string, value string, expiration time
 
 // Internal Function
 // Description:
-// This function will retrive a value that may exist in key from request:cookie.
+// This function will retrieve a value that may exist in key from request:cookie.
 //
 // Returns:
 //		value(string) - Value of key

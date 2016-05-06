@@ -2,7 +2,7 @@
 //
 // Source Project: https://github.com/johnRedden/TextbookProject
 //
-// This package holds all api handlers with regards to structure that preform write operations.
+// This package holds all api handlers with regards to structure that perform write operations.
 // Permission requirement for these api calls: Writer
 // For more information, please visit: https://github.com/johnRedden/TextbookProject/wiki
 //
@@ -44,7 +44,7 @@ var (
 
 // Call: /api/makeCatalog
 // Description:
-// This call is for the creation or update of a catalog. If Mandatory:CatalogName already exists, this call will update the existing information. Mandatory:CatalogName must be a well-formed non-nil string. Option:Version should be a well-formmated float value.
+// This call is for the creation or update of a catalog. If Mandatory:CatalogName already exists, this call will update the existing information. Mandatory:CatalogName must be a well-formed non-nil string. Option:Version should be a well-formatted float value.
 //
 // Method: POST
 // Results: JSON
@@ -91,7 +91,7 @@ func API_MakeCatalog(res http.ResponseWriter, req *http.Request, params httprout
 
 // Call: /api/makeBook
 // Description:
-// This call will create or update book information. If Mandatory:ID is given, all parameters are set as update mode, otherwise Mandatory:CatalogName, Mandatory:BookName must be given. Option:Version should be a well-formmated float.
+// This call will create or update book information. If Mandatory:ID is given, all parameters are set as update mode, otherwise Mandatory:CatalogName, Mandatory:BookName must be given. Option:Version should be a well-formatted float.
 //
 // Method: POST
 // Results: JSON
@@ -110,14 +110,14 @@ func API_MakeBook(res http.ResponseWriter, req *http.Request, params httprouter.
 	bookForDatastore, getErr := GetBookFromDatastore(req, int64(bookID))
 	HandleError(res, getErr)
 
-	if req.FormValue("CatalogName") != "" { // if your giving me a catalog, we're good
+	if req.FormValue("CatalogName") != "" { // if you're giving me a catalog, we're good
 		bookForDatastore.Parent = req.FormValue("CatalogName")
 	} else if bookID == 0 { // new books must have a catalog
 		fmt.Fprint(res, `{"result":"failure","reason":"Empty Catalog Name","code":400}`)
 		return
 	}
 
-	if req.FormValue("BookName") != "" { // if your giving me a title, we're good
+	if req.FormValue("BookName") != "" { // if you're giving me a title, we're good
 		bookForDatastore.Title = req.FormValue("BookName")
 	} else if bookID == 0 { // new books must have a title
 		fmt.Fprint(res, `{"result":"failure","reason":"Empty Book Name","code":400}`)
@@ -151,7 +151,7 @@ func API_MakeBook(res http.ResponseWriter, req *http.Request, params httprouter.
 
 // Call: /api/makeChapter
 // Description:
-// This call will create or update chapter information. If Mandatory:ID is given, all parameters are set as update mode, otherwise Mandatory:BookID, Mandatory:ChapterName must be given. Option:Version should be a well-formmated float. Mandatory:BookID should be a well-formmated integer.
+// This call will create or update chapter information. If Mandatory:ID is given, all parameters are set as update mode, otherwise Mandatory:BookID, Mandatory:ChapterName must be given. Option:Version should be a well-formatted float. Mandatory:BookID should be a well-formatted integer.
 //
 // Method: POST
 // Results: JSON
@@ -171,7 +171,7 @@ func API_MakeChapter(res http.ResponseWriter, req *http.Request, params httprout
 	HandleError(res, getErr)
 
 	bookID, numErr2 := strconv.Atoi(req.FormValue("BookID"))
-	if numErr2 == nil { // if your giving me a catalog, we're good
+	if numErr2 == nil { // if you're giving me a catalog, we're good
 		chapterForDatastore.Parent = int64(bookID)
 	} else if chapterID == 0 { // new books must have a catalog
 		fmt.Fprint(res, `{"result":"failure","reason":"Empty BookID","code":400}`)
@@ -204,7 +204,7 @@ func API_MakeChapter(res http.ResponseWriter, req *http.Request, params httprout
 
 // Call: /api/makeSection
 // Description:
-// This call will create or update section information. If Mandatory:ID is given, all parameters are set as update mode, otherwise Mandatory:ChapterID, Mandatory:SectionName must be given. Option:Version should be a well-formmated float. Mandatory:ChapterID should be a well-formmated integer.
+// This call will create or update section information. If Mandatory:ID is given, all parameters are set as update mode, otherwise Mandatory:ChapterID, Mandatory:SectionName must be given. Option:Version should be a well-formatted float. Mandatory:ChapterID should be a well-formatted integer.
 //
 // Method: POST
 // Results: JSON
@@ -231,7 +231,7 @@ func API_MakeSection(res http.ResponseWriter, req *http.Request, params httprout
 		return
 	}
 
-	if req.FormValue("SectionName") != "" { // if your giving me a title, we're good
+	if req.FormValue("SectionName") != "" { // if you're giving me a title, we're good
 		sectionForDatastore.Title = req.FormValue("SectionName")
 	} else if sectionID == 0 { // new books must have a title
 		fmt.Fprint(res, `{"result":"failure","reason":"Empty section Name","code":400}`)
@@ -257,7 +257,7 @@ func API_MakeSection(res http.ResponseWriter, req *http.Request, params httprout
 
 // Call: /api/makeObjective
 // Description:
-// This call will create or update objective information. If Mandatory:ID is given, all parameters are set as update mode, otherwise Mandatory:SectionID, Mandatory:ObjectiveName must be given. Option:Version should be a well-formmated float. Mandatory:SectionID should be a well-formmated integer.
+// This call will create or update objective information. If Mandatory:ID is given, all parameters are set as update mode, otherwise Mandatory:SectionID, Mandatory:ObjectiveName must be given. Option:Version should be a well-formatted float. Mandatory:SectionID should be a well-formatted integer.
 //
 // Method: POST
 // Results: JSON
@@ -279,14 +279,14 @@ func API_MakeObjective(res http.ResponseWriter, req *http.Request, params httpro
 	HandleErrorWithLog(res, getErr, "api/makeObjective Error: (GET) ", ctx)
 
 	sectionID, numErr2 := strconv.Atoi(req.FormValue("SectionID"))
-	if numErr2 == nil { // if your giving me a catalog, we're good
+	if numErr2 == nil { // if you're giving me a section, we're good
 		objectiveForDatastore.Parent = int64(sectionID)
 	} else if ObjectiveID == 0 { // new books must have a catalog
 		fmt.Fprint(res, `{"result":"failure","reason":"Empty SectionID","code":400}`)
 		return
 	}
 
-	if req.FormValue("ObjectiveName") != "" { // if your giving me a title, we're good
+	if req.FormValue("ObjectiveName") != "" { // if you're giving me a title, we're good
 		objectiveForDatastore.Title = req.FormValue("ObjectiveName")
 	} else if ObjectiveID == 0 { // new books must have a title
 		fmt.Fprint(res, `{"result":"failure","reason":"Empty Objective Name","code":400}`)

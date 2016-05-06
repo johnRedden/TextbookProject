@@ -2,7 +2,7 @@
 //
 // Source Project: https://github.com/johnRedden/TextbookProject
 //
-// This package holds all api handlers with regards to structure that preform read operations.
+// This package holds all api handlers with regards to structure that perform read operations.
 // No requirement currently exists in respect to permissions.
 // For more information, please visit: https://github.com/johnRedden/TextbookProject/wiki
 //
@@ -93,7 +93,7 @@ func API_GetBooks(res http.ResponseWriter, req *http.Request, params httprouter.
 
 // Call: /api/chapters.json
 // Description:
-// This call will return a list of currently available chapters. May limit results based on parent book id. Option:BookID must be a well-formmated integer number.
+// This call will return a list of currently available chapters. May limit results based on parent book id. Option:BookID must be a well-formatted integer number.
 //
 // Method: GET
 // Results: JSON
@@ -130,7 +130,7 @@ func API_GetChapters(res http.ResponseWriter, req *http.Request, params httprout
 
 // Call: /api/sections.json
 // Description:
-// This call will return a list of currently available sections. May limit results based on parent chapter id. Option:ChapterID must be a well-formmated integer number.
+// This call will return a list of currently available sections. May limit results based on parent chapter id. Option:ChapterID must be a well-formatted integer number.
 //
 // Method: GET
 // Results: JSON
@@ -167,7 +167,7 @@ func API_GetSections(res http.ResponseWriter, req *http.Request, params httprout
 
 // Call: /api/sections.json
 // Description:
-// This call will return a list of currently available objectives. May limit results based on parent section id. Option:SectionID must be a well-formmated integer number.
+// This call will return a list of currently available objectives. May limit results based on parent section id. Option:SectionID must be a well-formatted integer number.
 //
 // Method: GET
 // Results: JSON
@@ -204,7 +204,7 @@ func API_GetObjectives(res http.ResponseWriter, req *http.Request, params httpro
 
 // Call: /toc
 // Description:
-// This call will return an xml formmated view of an entire book by ID. ID must be a well-formmated integer id of an existing book.
+// This call will return an xml formatted view of an entire book by ID. ID must be a well-formatted integer id of an existing book.
 //
 // Method: GET
 // Results: XML
@@ -317,7 +317,7 @@ func API_GetCatalog(res http.ResponseWriter, req *http.Request, params httproute
 
 // Call: /api/book.xml
 // Description:
-// Call will return an xml view on a singular book. ID is a well-formmated integer of an existing book id.
+// Call will return an xml view on a singular book. ID is a well-formatted integer of an existing book id.
 //
 // Method: GET
 // Results: XML
@@ -350,7 +350,7 @@ func API_GetBook(res http.ResponseWriter, req *http.Request, params httprouter.P
 
 // Call: /api/chapter.xml
 // Description:
-// Call will return an xml view on a singular chapter. ID is a well-formmated integer of an existing chapter id.
+// Call will return an xml view on a singular chapter. ID is a well-formatted integer of an existing chapter id.
 //
 // Method: GET
 // Results: XML
@@ -381,7 +381,7 @@ func API_GetChapter(res http.ResponseWriter, req *http.Request, params httproute
 
 // Call: /api/section.xml
 // Description:
-// Call will return an xml view on a singular section. ID is a well-formmated integer of an existing section id.
+// Call will return an xml view on a singular section. ID is a well-formatted integer of an existing section id.
 //
 // Method: GET
 // Results: XML
@@ -412,7 +412,7 @@ func API_GetSection(res http.ResponseWriter, req *http.Request, params httproute
 
 // Call: /api/objective.html
 // Description:
-// Call will return an xml view on a singular objective. ID is a well-formmated integer of an existing objective id.
+// Call will return an xml view on a singular objective. ID is a well-formatted integer of an existing objective id.
 //
 // Method: GET
 // Results: HTML Snippet

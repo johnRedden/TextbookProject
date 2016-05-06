@@ -109,7 +109,7 @@ func ADMIN_POST_DELETEUSER(res http.ResponseWriter, req *http.Request, params ht
 
 	ctx := appengine.NewContext(req)
 
-	DeleteMemchache(ctx, uEmail)
+	DeleteMemcache(ctx, uEmail)
 	RemovePermissionUserFromDatastore(ctx, uEmail)
 	RemovePermissionLevelFromDatastore(ctx, uEmail)
 
@@ -127,7 +127,7 @@ func ADMIN_POST_ForceUserLogout(res http.ResponseWriter, req *http.Request, para
 
 	ctx := appengine.NewContext(req)
 
-	memErr := DeleteMemchache(ctx, uEmail)
+	memErr := DeleteMemcache(ctx, uEmail)
 	if memErr != nil {
 		fmt.Fprint(res, `{"Status":"Failure","Reason":"`+memErr.Error()+`","Code":500}`)
 		return

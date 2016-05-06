@@ -48,7 +48,7 @@ func IMAGE_PostUploadForm(res http.ResponseWriter, req *http.Request, params htt
 		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization: `+permErr.Error()+`","code":418}`)
 		return
 	}
-	// ACTION: Give the user an internal permisions key?
+	// ACTION: Give the user an internal permissions key?
 
 	ServeTemplateWithParams(res, req, "simpleImageUploader.html", req.FormValue("oid"))
 }
@@ -56,7 +56,7 @@ func IMAGE_PostUploadForm(res http.ResponseWriter, req *http.Request, params htt
 // Call: /image/browser
 // Description:
 // This handler will serve an html file browser
-// to allow a user to browser images uploaded to the server.
+// to allow a user to browse images uploaded to the server.
 // Option:oid will limit the returned images to only those
 // with the objective id.
 // Option:CKEditorFuncNum will alert the browser that it is a child
@@ -70,7 +70,7 @@ func IMAGE_PostUploadForm(res http.ResponseWriter, req *http.Request, params htt
 func IMAGE_BrowserForm(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	ctx := appengine.NewContext(req)
 
-	// ACTION: Give the user an internal permisions key?
+	// ACTION: Give the user an internal permissions key?
 
 	prefixQuery := storage.Query{}
 	if req.FormValue("oid") == "" {
@@ -81,7 +81,7 @@ func IMAGE_BrowserForm(res http.ResponseWriter, req *http.Request, params httpro
 
 	imgl, _ := getFileFromGCS(ctx, &prefixQuery) // get a list of files out of the CS
 
-	imageBrowser := struct { // make a stuct on the fly for the page
+	imageBrowser := struct { // make a struct on the fly for the page
 		CKEditorFuncNum string
 		Images          []string
 		ID              string
@@ -137,7 +137,7 @@ func IMAGE_API_CKEDITOR_PlaceImageIntoCS(res http.ResponseWriter, req *http.Requ
 		return
 	}
 
-	// image successfuly sent, let CK know the final url.
+	// image successfully sent, let CK know the final url.
 	fmt.Fprint(res, `<!DOCTYPE html><html><body><script type="text/javascript">window.parent.CKEDITOR.tools.callFunction('`+req.FormValue("CKEditorFuncNum")+`', "`+"/image?id="+fileName+`","");//window.close();</script></body></html>`)
 	return
 }
@@ -190,7 +190,7 @@ func IMAGE_API_PlaceImageIntoCS(res http.ResponseWriter, req *http.Request, para
 
 // Call: /image
 // Description:
-// This handler will retrive an image from cloud storage
+// This handler will retrieve an image from cloud storage
 //
 // Method: GET
 // Results: Image Binary/JSON
@@ -228,7 +228,7 @@ func IMAGE_API_GetImageFromCS(res http.ResponseWriter, req *http.Request, params
 // Mandatory Options: id
 // Optional Options:
 // Codes:
-//		  0 - Success, All actions completeds
+//		  0 - Success, All actions completed
 //		400 - Failure, Missing Parameter
 // 		418 - Failure, Invalid Authorization
 //		500 - Failure, Internal Services Error
@@ -268,7 +268,7 @@ func IMAGE_API_RemoveImageFromCS(res http.ResponseWriter, req *http.Request, par
 // 		key(string) - name of GCS key. Item is now in GCS
 //		failure?(error) - If any errors occur they exist here.
 func IMAGE_API_SendToCloudStorage(req *http.Request, mpf multipart.File, hdr *multipart.FileHeader, prefix string) (string, error) {
-	ext, extErr := filterExtension(req, hdr) // ensure that file's extention is an image
+	ext, extErr := filterExtension(req, hdr) // ensure that file's extension is an image
 	if extErr != nil {                       // if it is not, exit, returning error
 		return "", extErr
 	}
@@ -295,14 +295,14 @@ func makeSHA(src multipart.File) string {
 
 // Internal Function
 // Description:
-// This function will ensure that the extention of an incoming filename
-// is allowed by this server. Will return the isolated extention if yes.
+// This function will ensure that the extension of an incoming filename
+// is allowed by this server. Will return the isolated extension if yes.
 //
 // Returns:
-// 		extention(string) - Extension of file.
+// 		extension(string) - Extension of file.
 //		failure?(error) - Error if filetype is not allowed.
 func filterExtension(req *http.Request, hdr *multipart.FileHeader) (string, error) {
-	ext := hdr.Filename[strings.LastIndex(hdr.Filename, ".")+1:] // parse through the fileheader for it's extention.
+	ext := hdr.Filename[strings.LastIndex(hdr.Filename, ".")+1:] // parse through the fileheader for its extension.
 	ext = strings.ToLower(ext)                                   // uppercase, lowercase. all the same here.
 
 	for _, allowedExt := range Allowed_Filetypes { // for all allowed filetypes
@@ -310,7 +310,7 @@ func filterExtension(req *http.Request, hdr *multipart.FileHeader) (string, erro
 			return ext, nil
 		}
 	}
-	// It was not a part of the allowed extentions, return an error.
+	// It was not a part of the allowed extensions, return an error.
 	return ext, fmt.Errorf("Filetype %s is not allowed by server.", ext)
 }
 

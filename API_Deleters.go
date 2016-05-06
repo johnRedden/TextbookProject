@@ -2,7 +2,7 @@
 //
 // Source Project: https://github.com/johnRedden/TextbookProject
 //
-// This package holds all api handlers with regards to structure that preform deletion operations.
+// This package holds all api handlers with regards to structure that perform deletion operations.
 // Permission requirement for these api calls: Admin
 // For more information, please visit: https://github.com/johnRedden/TextbookProject/wiki
 //
@@ -95,7 +95,7 @@ func API_DeleteCatalog(res http.ResponseWriter, req *http.Request, params httpro
 // Call: /api/deleteBook
 // Description:
 // This call will delete a book and all child structures.
-// ID should be a well-formmated integer of an existing book id.
+// ID should be a well-formatted integer of an existing book id.
 //
 // Method: POST
 // Results: JSON
@@ -140,7 +140,7 @@ func API_DeleteBook(res http.ResponseWriter, req *http.Request, params httproute
 // Call: /api/deleteChapter
 // Description:
 // This call will delete a chapter and all child structures.
-// ID should be a well-formmated integer of an existing chapter id.
+// ID should be a well-formatted integer of an existing chapter id.
 //
 // Method: POST
 // Results: JSON
@@ -184,7 +184,7 @@ func API_DeleteChapter(res http.ResponseWriter, req *http.Request, params httpro
 // Call: /api/deleteSection
 // Description:
 // This call will delete a section and all child structures.
-// ID should be a well-formmated integer of an existing section id.
+// ID should be a well-formatted integer of an existing section id.
 //
 // Method: POST
 // Results: JSON
@@ -224,7 +224,7 @@ func API_DeleteSection(res http.ResponseWriter, req *http.Request, params httpro
 // Call: /api/deleteObjective
 // Description:
 // This call will delete an objective and all child structures.
-// ID should be a well-formmated integer of an existing objective id.
+// ID should be a well-formatted integer of an existing objective id.
 //
 // Method: POST
 // Results: JSON

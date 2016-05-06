@@ -23,8 +23,8 @@ import (
 )
 
 var (
-	// ErrPermissionUserMarshall, this error is thrown when there is an incorrect number of values to unmarchall into a Permission User
-	ErrPermissionUserMarshall = errors.New("MarshallPermissionUser: Cannot Marshall String, Too Few Values")
+	// ErrPermissionUserMarshall, this error is thrown when there is an incorrect number of values to unmarshal into a Permission User
+	ErrPermissionUserMarshall = errors.New("MarshallPermissionUser: Cannot Unmarshal String, Too Few Values")
 
 	// ErrInvalidPermission, this error is thrown when a user fails a minimum permission level check.
 	ErrInvalidPermission = errors.New("Permission Error: User Does Not Have Required Permission Level!")
@@ -92,7 +92,7 @@ func MakePermissionUser(name string, permission int, u *user.User) PermissionUse
 
 // Internal Function
 // Description:
-// Given a session context, this will retrive the current user's PermissionUser.
+// Given a session context, this will retrieve the current user's PermissionUser.
 //
 // Returns:
 //		user(PermissionUser) - Prepared PermissionUser
@@ -114,9 +114,9 @@ func GetPermissionUserFromSession(ctx context.Context) (PermissionUser, error) {
 }
 
 //// --------------------------
-// Permisison User, Datastore
+// Permission User, Datastore
 // This collection of functions handle the insertion,
-// retrivial, and deletion of PermissionUsers from
+// retrieval, and deletion of PermissionUsers from
 // datastore.
 // All PermissionUsers exist on table Users
 ////
@@ -140,9 +140,9 @@ func RemovePermissionUserFromDatastore(ctx context.Context, keyname string) erro
 //// --------------------------
 // Permission Levels
 // This collection details the different levels
-// of permissions a user can hold, verificaiton
+// of permissions a user can hold, verification
 // that a user meets a minimum permission requirement
-// and insertion, retrivial, and deletion of permission
+// and insertion, retrieval, and deletion of permission
 // levels into datastore.
 // Permission Levels in datastore are on table Permissions
 ////
