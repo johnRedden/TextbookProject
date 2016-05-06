@@ -18,7 +18,7 @@ import (
 // This function will add a key:value pair into memcache with a life of time.Duration.
 //
 // Returns:
-//		failure?(error) - If any errors occur they exist here.
+//      failure?(error) - If any errors occur they exist here.
 func ToMemcache(ctx context.Context, key string, value string, expiration time.Duration) error {
 	mI := &memcache.Item{
 		Key:        key,
@@ -33,8 +33,8 @@ func ToMemcache(ctx context.Context, key string, value string, expiration time.D
 // This function will retrieve a value that may exist in key from memcache.
 //
 // Returns:
-//		value(string) - Value of key
-//		failure?(error) - If any errors occur they exist here.
+//      value(string) - Value of key
+//      failure?(error) - If any errors occur they exist here.
 func FromMemcache(ctx context.Context, key string) (string, error) {
 	item, err := memcache.Get(ctx, key)
 	if err != nil {
@@ -48,7 +48,7 @@ func FromMemcache(ctx context.Context, key string) (string, error) {
 // This function will update a value with new time.Duration
 //
 // Returns:
-//		failure?(error) - If any errors occur they exist here.
+//      failure?(error) - If any errors occur they exist here.
 func UpdateMemcache(ctx context.Context, key string, expiration time.Duration) error {
 	item, err := memcache.Get(ctx, key)
 	if err != nil {
@@ -63,7 +63,7 @@ func UpdateMemcache(ctx context.Context, key string, expiration time.Duration) e
 // This function will delete key from memcache
 //
 // Returns:
-//		failure?(error) - If any errors occur they exist here.
+//      failure?(error) - If any errors occur they exist here.
 func DeleteMemcache(ctx context.Context, key string) error {
 	return memcache.Delete(ctx, key)
 }

@@ -419,8 +419,8 @@ func API_GetSection(res http.ResponseWriter, req *http.Request, params httproute
 // Mandatory Options: ID
 // Optional Options:
 // Codes:
-//		Failure: HTML<section> that describes the error.
-// 		Success: HTML<section> of objective information.
+//      Failure: HTML<section> that describes the error.
+//      Success: HTML<section> of objective information.
 func API_GetObjectiveHTML(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	ObjectiveID, numErr := strconv.Atoi(req.FormValue("ID"))
 	if numErr != nil {

@@ -14,6 +14,14 @@ import (
 	"net/http"
 )
 
+// Call: /admin
+// Description:
+// This is the root page of the Admin Console. Must be an Administrator to access.
+//
+// Method: GET
+// Results: HTML
+// Mandatory Options:
+// Optional Options:
 func ADMIN_AdministrationConsole(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	if validPerm, permErr := HasPermission(res, req, AdminPermissions); !validPerm {
 		// User Must be at least Admin.
@@ -26,6 +34,18 @@ func ADMIN_AdministrationConsole(res http.ResponseWriter, req *http.Request, par
 	ServeTemplateWithParams(res, req, "adminConsole.html", pu.Name)
 }
 
+// Call: /admin/changeUsrPerm
+// Description:
+// This call will change the permission level of a user.
+//
+// Method: POST
+// Results: JSON
+// Mandatory Options: UEmail, NewPermLevel
+// Optional Options:
+// Codes:
+//      0 - Success, All actions completed
+//    401 - Failure, Invalid Parameter
+//    500 - Failure, Internal Services Error
 func ADMIN_POST_ELEVATEUSER(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	if validPerm, permErr := HasPermission(res, req, AdminPermissions); !validPerm {
 		// User Must be at least Admin.
@@ -80,6 +100,17 @@ func ADMIN_POST_ELEVATEUSER(res http.ResponseWriter, req *http.Request, params h
 	fmt.Fprint(res, `{"Status":"Success","Reason":"","Code":0}`)
 }
 
+// Call: /admin/getUsrPerm
+// Description:
+// This call will show the permission level of a user.
+//
+// Method: POST
+// Results: JSON
+// Mandatory Options: UEmail
+// Optional Options:
+// Codes:
+//      0 - Success, All actions completed
+//    500 - Failure, Internal Services Error
 func ADMIN_GET_USERPERM(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	if validPerm, permErr := HasPermission(res, req, AdminPermissions); !validPerm {
 		// User Must be at least Admin.
@@ -98,6 +129,16 @@ func ADMIN_GET_USERPERM(res http.ResponseWriter, req *http.Request, params httpr
 	fmt.Fprint(res, `{"Status":"Success","Reason":"","Code":0,"Response":"`, pl, `"}`)
 }
 
+// Call: /admin/deleteUsr
+// Description:
+// This call will delete a user.
+//
+// Method: POST
+// Results: JSON
+// Mandatory Options: UEmail
+// Optional Options:
+// Codes:
+//      0 - Success, All actions completed
 func ADMIN_POST_DELETEUSER(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	if validPerm, permErr := HasPermission(res, req, AdminPermissions); !validPerm {
 		// User Must be at least Admin.
@@ -116,6 +157,17 @@ func ADMIN_POST_DELETEUSER(res http.ResponseWriter, req *http.Request, params ht
 	fmt.Fprint(res, `{"Status":"Success","Reason":"","Code":0}`)
 }
 
+// Call: /admin/forceUsrLogout
+// Description:
+// This call will force a user to logout.
+//
+// Method: POST
+// Results: JSON
+// Mandatory Options: UEmail
+// Optional Options:
+// Codes:
+//      0 - Success, All actions completed
+//    500 - Failure, Internal Services Error
 func ADMIN_POST_ForceUserLogout(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	if validPerm, permErr := HasPermission(res, req, AdminPermissions); !validPerm {
 		// User Must be at least Admin.

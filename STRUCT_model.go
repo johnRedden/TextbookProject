@@ -11,7 +11,6 @@ import (
 	"html/template"
 )
 
-// Catalog is the root structure, Everything below this will inherit from a Catalog.
 type Catalog struct {
 	Name        string
 	Version     float64 `datastore:",noindex"`
@@ -20,6 +19,7 @@ type Catalog struct {
 
 	ID string `datastore:"-"`
 }
+
 type Book struct { // Book has an ancestor in catalog, searchable based on catalog that it was a part of.
 	Title       string
 	Version     float64       `datastore:",noindex"` // we will not query on versions. Do not need to store in a searchable way.
@@ -61,14 +61,14 @@ type Objective struct {
 	ID     int64 `datastore:"-"`
 }
 
+// This is the key; the editor page for the book.
+// This struct technically contains Objective but for the sake of verbosity
+//  all included datapoints are spelled out here.
+// This struct will be the data submitted to the editor so a template for the editor
+// should access this information through {{.DataPoint}}
+// Any form that will have submission should include hidden fields for any ID.
+// Please submit all form data with the same name as the datapoint.
 type VIEW_Editor struct {
-	// This is the key; the editor page for the book.
-	// This struct technically contains Objective but for the sake of verbosity
-	//  all included datapoints are spelled out here.
-	// This struct will be the data submitted to the editor so a template for the editor
-	// should access this information through {{.DataPoint}}
-	// Any form that will have submission should include hidden fields for any ID.
-	// Please submit all form data with the same name as the datapoint.
 	BookID      int64
 	ChapterID   int64
 	SectionID   int64

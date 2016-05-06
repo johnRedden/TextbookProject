@@ -11,89 +11,109 @@ import (
 	"strconv"
 )
 
-var pages *template.Template // This is the storage location for all of our html files
+// pages is a local storage variable for all of our executable templates.
+// These templates should be called using ServeTemplateWithParams()
+var pages *template.Template
 
 func init() {
-
 	r := httprouter.New()
 	http.Handle("/", r)
 
-	//// -------------------------------------------
+	//// ---------------------------------------------------------- //
 	// Handlers
 	//
-	// On Tags:
+	// This segment below is the master list of all url handlers this
+	// website accepts. If it is not here, it is internal.
+	//
+	// Tags:
 	//  * <user>: A page the user can interact with
 	//  * <user-internal>: A page that the user does not directly interact with but depends on.
 	//  * <api>: A request that preforms background actions.
 	//  * <auth>: (Modifier) This request requires user authentication.
-	// 	* <DEBUG>: (Modifier) This handler is to be treated as temporary, used in development only.
-	//////
+	//  * <DEBUG>: (Modifier) This handler is to be treated as temporary, used in development only.
+	//// ---------------------------------------------------------- //
 
-	// Images.go
-	r.GET("/image", IMAGE_API_GetImageFromCS)                           // image requester /api/getImage <user>
-	r.GET("/api/getImage", IMAGE_API_GetImageFromCS)                    // Duplicate of /image, *outdated* <user-internal>
-	r.GET("/image/browser", IMAGE_BrowserForm)                          // image browser <user>
-	r.GET("/image/uploader", IMAGE_PostUploadForm)                      // image uploader <user-internal><auth>
-	r.POST("/api/makeImage", IMAGE_API_PlaceImageIntoCS)                // image creator <api><auth>
-	r.POST("/api/deleteImage", IMAGE_API_RemoveImageFromCS)             // image deleter <api><auth>
-	r.POST("/api/ckeditor/create", IMAGE_API_CKEDITOR_PlaceImageIntoCS) // ckEditor, image creator <api><auth>
+	// Module: Images
+	// Files: Images.go
+	/********************************************************************/
+	r.GET("/image", IMAGE_API_GetImageFromCS)                           // <user> image requester /api/getImage
+	r.GET("/api/getImage", IMAGE_API_GetImageFromCS)                    // <DEBUG> Duplicate of /image, *outdated*
+	r.GET("/image/browser", IMAGE_BrowserForm)                          // <user> image browser
+	r.GET("/image/uploader", IMAGE_PostUploadForm)                      // <user-internal><auth> image uploader
+	r.POST("/api/makeImage", IMAGE_API_PlaceImageIntoCS)                // <api><auth> image creator
+	r.POST("/api/deleteImage", IMAGE_API_RemoveImageFromCS)             // <api><auth> image deleter
+	r.POST("/api/ckeditor/create", IMAGE_API_CKEDITOR_PlaceImageIntoCS) // <api><auth> ckEditor, image creator
 
-	// API.go, readers - Collection
-	r.GET("/api/catalogs.json", API_GetCatalogs)     // read datastore, catalogs <api>
-	r.GET("/api/books.json", API_GetBooks)           // read datastore, books <api>
-	r.GET("/api/chapters.json", API_GetChapters)     // read datastore, chapters <api>
-	r.GET("/api/sections.json", API_GetSections)     // read datastore, sections <api>
-	r.GET("/api/objectives.json", API_GetObjectives) // read datastore, objectives <api>
+	// Module: API-Readers, Collection
+	// Files: API_Readers.go
+	/*************************************************/
+	r.GET("/api/catalogs.json", API_GetCatalogs)     // <api> read datastore, catalogs
+	r.GET("/api/books.json", API_GetBooks)           // <api> read datastore, books
+	r.GET("/api/chapters.json", API_GetChapters)     // <api> read datastore, chapters
+	r.GET("/api/sections.json", API_GetSections)     // <api> read datastore, sections
+	r.GET("/api/objectives.json", API_GetObjectives) // <api> read datastore, objectives
+	r.GET("/toc", API_getTOC)                        // <api> xml toc for a book
 
-	// API.go, readers - Singular
-	r.GET("/api/catalog.xml", API_GetCatalog)          // read datastore, catalog as xml <api>
-	r.GET("/api/book.xml", API_GetBook)                // read datastore, book as xml <api>
-	r.GET("/api/chapter.xml", API_GetChapter)          // read datastore, chapter as xml <api>
-	r.GET("/api/section.xml", API_GetSection)          // read datastore, section as xml <api>
-	r.GET("/api/objective.html", API_GetObjectiveHTML) // read datastore, objective as html <api>
+	// Module: API-Readers, Singular
+	// Files: API_Readers.go
+	/***************************************************/
+	r.GET("/api/catalog.xml", API_GetCatalog)          // <api> read datastore, catalog as xml
+	r.GET("/api/book.xml", API_GetBook)                // <api> read datastore, book as xml
+	r.GET("/api/chapter.xml", API_GetChapter)          // <api> read datastore, chapter as xml
+	r.GET("/api/section.xml", API_GetSection)          // <api> read datastore, section as xml
+	r.GET("/api/objective.html", API_GetObjectiveHTML) // <api> read datastore, objective as html
 
-	// API.go, writers
-	r.POST("/api/makeCatalog", API_MakeCatalog)     // create datastore, catalog <api><auth>
-	r.POST("/api/makeBook", API_MakeBook)           // create datastore, book <api><auth>
-	r.POST("/api/makeChapter", API_MakeChapter)     // create datastore, chapter <api><auth>
-	r.POST("/api/makeSection", API_MakeSection)     // create datastore, section <api><auth>
-	r.POST("/api/makeObjective", API_MakeObjective) // create datastore, objective <api><auth>
+	// Module: API-Writers
+	// Files: API_Writers.go
+	/************************************************/
+	r.POST("/api/makeCatalog", API_MakeCatalog)     // <api><auth> create datastore, catalog
+	r.POST("/api/makeBook", API_MakeBook)           // <api><auth> create datastore, book
+	r.POST("/api/makeChapter", API_MakeChapter)     // <api><auth> create datastore, chapter
+	r.POST("/api/makeSection", API_MakeSection)     // <api><auth> create datastore, section
+	r.POST("/api/makeObjective", API_MakeObjective) // <api><auth> create datastore, objective
 
-	// API.go, deleters
-	r.POST("/api/deleteCatalog", API_DeleteCatalog)     // delete datastore, catalog <api><auth>
-	r.POST("/api/deleteBook", API_DeleteBook)           // delete datastore, book <api><auth>
-	r.POST("/api/deleteChapter", API_DeleteChapter)     // delete datastore, chapter <api><auth>
-	r.POST("/api/deleteSection", API_DeleteSection)     // delete datastore, section <api><auth>
-	r.POST("/api/deleteObjective", API_DeleteObjective) // delete datastore, objective <api><auth>
+	// Module: API-Deleters
+	// Files: API_Deleters.go
+	/****************************************************/
+	r.POST("/api/deleteCatalog", API_DeleteCatalog)     // <api><auth> delete datastore, catalog
+	r.POST("/api/deleteBook", API_DeleteBook)           // <api><auth> delete datastore, book
+	r.POST("/api/deleteChapter", API_DeleteChapter)     // <api><auth> delete datastore, chapter
+	r.POST("/api/deleteSection", API_DeleteSection)     // <api><auth> delete datastore, section
+	r.POST("/api/deleteObjective", API_DeleteObjective) // <api><auth> delete datastore, objective
 
-	// main.go, Site Structure
-	r.GET("/", home)                         // Root page <user>
-	r.GET("/select", selectBookFromForm)     // select objective based on information <user>
-	r.GET("/edit", getSimpleObjectiveEditor) // edit objective given id <user><auth>
-	r.GET("/read", getSimpleObjectiveReader) // read objective given id <user>
-	r.GET("/preview", getObjectivePreview)   // preview objective given id <user>
-	r.GET("/favicon.ico", favIcon)           // favicon <user>
+	// Module: Core Structure
+	// Files: main.go
+	/*****************************************/
+	r.GET("/", home)                         // <user> Root page
+	r.GET("/select", selectBookFromForm)     // <user> select objective based on information
+	r.GET("/edit", getSimpleObjectiveEditor) // <user><auth> edit objective given id
+	r.GET("/read", getSimpleObjectiveReader) // <user> read objective given id
+	r.GET("/preview", getObjectivePreview)   // <user> preview objective given id
+	r.GET("/toc.html/:ID", getSimpleTOC)     // <user> user viewable toc for a book
+	r.GET("/favicon.ico", favIcon)           // <user> favicon
 
-	// main.go/API.go, Table of Contents
-	r.GET("/toc", API_getTOC)            // xml toc for a book <api>
-	r.GET("/toc.html/:ID", getSimpleTOC) // user viewable toc for a book <user>
+	// Module: Authentication/Session
+	// Files: AUTH_authentication.go
+	/****************************************/
+	r.GET("/login", AUTH_Login_GET)         // <user> User Login
+	r.GET("/logout", AUTH_Logout_GET)       // <user> User Logout
+	r.GET("/register", AUTH_Register_GET)   // <user> Register New Users/Modify existing users
+	r.POST("/register", AUTH_Register_POST) // <user><auth> Post to make the new user
+	r.GET("/user", AUTH_UserInfo)           // <user><auth><DEBUG> DEBUG user info
 
-	// authentication.go, Basic User Auth
-	r.GET("/login", AUTH_Login_GET)         // User Login <user>
-	r.GET("/logout", AUTH_Logout_GET)       // User Logout <user>
-	r.GET("/register", AUTH_Register_GET)   // Register New Users/Modify existing users <user>
-	r.POST("/register", AUTH_Register_POST) // Post to make the new user <user><auth>
-	r.GET("/user", AUTH_UserInfo)           // DEBUG user info <user><auth><DEBUG>
+	// Module: Administration, Console and Commands
+	// Files: ADMIN_administration.go
+	/************************************************************/
+	r.GET("/admin", ADMIN_AdministrationConsole)                // <user><auth> Admin Console
+	r.POST("/admin/changeUsrPerm", ADMIN_POST_ELEVATEUSER)      // <api><auth> Admin: Change User Permissions
+	r.GET("/admin/getUsrPerm", ADMIN_GET_USERPERM)              // <api><auth> Admin: Retrive User Permissions
+	r.POST("/admin/forceUsrLogout", ADMIN_POST_ForceUserLogout) // <api><auth> Admin: Force a user to log out.
+	r.POST("/admin/deleteUsr", ADMIN_POST_DELETEUSER)           // <api><auth> Admin: Delete a user. Will require said user to re-register.
 
-	// Admin Console
-	r.GET("/admin", ADMIN_AdministrationConsole)           // Admin Console <user><auth>
-	r.POST("/admin/changeUsrPerm", ADMIN_POST_ELEVATEUSER) // Admin: Change User Permissions <api><auth>
-	r.GET("/admin/getUsrPerm", ADMIN_GET_USERPERM)         // Admin: Retrive User Permissions <api><auth>
-	r.POST("/admin/forceUsrLogout", ADMIN_POST_ForceUserLogout)
-	r.POST("/admin/deleteUsr", ADMIN_POST_DELETEUSER)
-
+	// Public file handling.
 	http.Handle("/public/", http.StripPrefix("/public", http.FileServer(http.Dir("public/"))))
 
+	// Prepare templates.
 	pages = template.Must(pages.ParseGlob("templates/*.*"))
 }
 
@@ -101,48 +121,83 @@ func init() {
 // Helper Functions
 /////
 
+// Internal Function
+// generic error handling for any error we encounter.
 func HandleError(res http.ResponseWriter, e error) {
-	// generic error handling for any error we encounter.
 	if e != nil {
 		http.Error(res, e.Error(), http.StatusInternalServerError)
 	}
 }
 
+// Internal Function
+// generic error handling for any error we encounter plus a message we've defined.
+// This sends a log out to appengine.
 func HandleErrorWithLog(res http.ResponseWriter, e error, tag string, ctx context.Context) {
-	// generic error handling for any error we encounter plus a message we've defined.
 	if e != nil {
 		log.Criticalf(ctx, "%s: %v", tag, e)
 		http.Error(res, e.Error(), http.StatusInternalServerError)
 	}
 }
 
+// Internal Function
+// Passes along any information to templates and then executes them.
 func ServeTemplateWithParams(res http.ResponseWriter, req *http.Request, templateName string, params interface{}) {
-	// simple func to cut down on repeating code.
 	err := pages.ExecuteTemplate(res, templateName, &params)
 	HandleError(res, err)
 }
 
 // ------------------------------------
-// Pages
+// Core Functionality, Handlers
 /////
 
+// Call: /favicon
+// Description:
+// Simple redirect to the relavant public file for our icon. This is only for browsers ease of access.
+//
+// Method: GET
+// Results: HTTP.Redirect
+// Mandatory Options:
+// Optional Options:
 func favIcon(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// Simple redirect to the relavant public file for our icon. This is only for browsers ease of access.
 	http.Redirect(res, req, "public/images/favicon.ico", http.StatusTemporaryRedirect)
 }
 
+// Call: /
+// Description:
+// Our home page
+//
+// Method: GET
+// Results: HTML
+// Mandatory Options:
+// Optional Options:
 func home(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	pu, _ := GetPermissionUserFromSession(appengine.NewContext(req))
 	ServeTemplateWithParams(res, req, "index.html", pu)
 }
 
+// Call: /select
+// Description:
+// The selector page for site structures.
+// Outdated?
+//
+// Method: GET
+// Results: HTML
+// Mandatory Options:
+// Optional Options:
 func selectBookFromForm(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// GET: /select
 	ServeTemplateWithParams(res, req, "simpleSelector.html", nil)
 }
 
+// Call: /edit
+// Description:
+// Our editor page for objectives given a valid objective id.
+// Mandatory:ID must be a well-formatted integer of an existing objective id.
+//
+// Method: GET
+// Results: HTML
+// Mandatory Options: ID
+// Optional Options:
 func getSimpleObjectiveEditor(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// GET: /edit?ID=<Objective ID Number>
 	if validPerm, permErr := HasPermission(res, req, WritePermissions); !validPerm {
 		// User Must be at least Writer.
 		http.Error(res, permErr.Error(), http.StatusUnauthorized)
@@ -191,15 +246,34 @@ func getSimpleObjectiveEditor(res http.ResponseWriter, req *http.Request, params
 	ServeTemplateWithParams(res, req, "simpleEditor.html", ve)
 }
 
+// Call: /read
+// Description:
+// Our reader page for objectives.
+// Mandatory:ID has no requirements on this level. Sub levels will
+// require that objective ID exists and is a well-formatted integer.
+//
+// Method: GET
+// Results: HTML
+// Mandatory Options: ID
+// Optional Options:
 func getSimpleObjectiveReader(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// GET: /read
 	readID := req.FormValue("ID")
 	ServeTemplateWithParams(res, req, "simpleReader.html", readID)
 }
 
+// Call: /toc.html/:ID
+// Description:
+// Our table of contents page for a book. Currently, this is handling the same
+// as a selector for objectives to read/edit.
+//
+// Mandatory:ID has no requirements on this level. Sub levels will
+// require that objective ID exists and is a well-formatted integer.
+//
+// Method: GET
+// Results: HTML
+// Mandatory Options: ID
+// Optional Options:
 func getSimpleTOC(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// GET: /toc.html/<Book ID Number>
-
 	pu, _ := GetPermissionUserFromSession(appengine.NewContext(req))
 
 	screenOutput := struct {
@@ -217,8 +291,17 @@ func getSimpleTOC(res http.ResponseWriter, req *http.Request, params httprouter.
 	ServeTemplateWithParams(res, req, "toc.html", screenOutput)
 }
 
+// Call: /preview
+// Description:
+// Our simple page preview.
+//
+// Mandatory:ID must be an existing objective ID and is a well-formatted integer.
+//
+// Method: GET
+// Results: HTML
+// Mandatory Options: ID
+// Optional Options:
 func getObjectivePreview(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	// GET: /toc.html?ID=<Book ID Number>
 	objKey, convErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
 	HandleError(res, convErr)
 	objToScreen, err := GetObjectiveFromDatastore(req, objKey)

@@ -41,7 +41,7 @@ var (
 // Mandatory Options:
 // Optional Options: oid
 // Codes:
-// 		418 : Invalid Authorization; Check your login status and permission level.
+//      418 : Invalid Authorization; Check your login status and permission level.
 func IMAGE_PostUploadForm(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	if validPerm, permErr := HasPermission(res, req, image_Make_Permission); !validPerm {
 		// User Must be at least Writer.
@@ -158,8 +158,8 @@ func IMAGE_API_CKEDITOR_PlaceImageIntoCS(res http.ResponseWriter, req *http.Requ
 // Mandatory Options: upload
 // Optional Options: oid
 // Codes:
-// 		Success, redirect to image/uploader with status of success
-// 		Failure, redirect to image/uploader with status of failure
+//      Success, redirect to image/uploader with status of success
+//      Failure, redirect to image/uploader with status of failure
 func IMAGE_API_PlaceImageIntoCS(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	if validPerm, _ := HasPermission(res, req, image_Make_Permission); !validPerm {
 		// User Must be at least Writer.
@@ -197,8 +197,8 @@ func IMAGE_API_PlaceImageIntoCS(res http.ResponseWriter, req *http.Request, para
 // Mandatory Options: id
 // Optional Options:
 // Codes:
-// 		Success, Image in response
-//		400 - Missing Parameter
+//      Success, Image in response
+//      400 - Missing Parameter
 func IMAGE_API_GetImageFromCS(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	id := req.FormValue("id") // this is an id request only.
 	if id == "" {             // if no id, exit with failure.
@@ -228,10 +228,10 @@ func IMAGE_API_GetImageFromCS(res http.ResponseWriter, req *http.Request, params
 // Mandatory Options: id
 // Optional Options:
 // Codes:
-//		  0 - Success, All actions completed
-//		400 - Failure, Missing Parameter
-// 		418 - Failure, Invalid Authorization
-//		500 - Failure, Internal Services Error
+//        0 - Success, All actions completed
+//      400 - Failure, Missing Parameter
+//      418 - Failure, Invalid Authorization
+//      500 - Failure, Internal Services Error
 //
 func IMAGE_API_RemoveImageFromCS(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	id := req.FormValue("id") // this is an id request only.
@@ -265,8 +265,8 @@ func IMAGE_API_RemoveImageFromCS(res http.ResponseWriter, req *http.Request, par
 // This function will prepare and send file to GCS then return the key.
 //
 // Returns:
-// 		key(string) - name of GCS key. Item is now in GCS
-//		failure?(error) - If any errors occur they exist here.
+//      key(string) - name of GCS key. Item is now in GCS
+//      failure?(error) - If any errors occur they exist here.
 func IMAGE_API_SendToCloudStorage(req *http.Request, mpf multipart.File, hdr *multipart.FileHeader, prefix string) (string, error) {
 	ext, extErr := filterExtension(req, hdr) // ensure that file's extension is an image
 	if extErr != nil {                       // if it is not, exit, returning error
@@ -286,7 +286,7 @@ func IMAGE_API_SendToCloudStorage(req *http.Request, mpf multipart.File, hdr *mu
 // This will ensure that duplicate items have the same key.
 //
 // Returns:
-// 		key(string) - SHA of contents.
+//      key(string) - SHA of contents.
 func makeSHA(src multipart.File) string {
 	h := sha1.New()
 	io.Copy(h, src)
@@ -299,8 +299,8 @@ func makeSHA(src multipart.File) string {
 // is allowed by this server. Will return the isolated extension if yes.
 //
 // Returns:
-// 		extension(string) - Extension of file.
-//		failure?(error) - Error if filetype is not allowed.
+//      extension(string) - Extension of file.
+//      failure?(error) - Error if filetype is not allowed.
 func filterExtension(req *http.Request, hdr *multipart.FileHeader) (string, error) {
 	ext := hdr.Filename[strings.LastIndex(hdr.Filename, ".")+1:] // parse through the fileheader for its extension.
 	ext = strings.ToLower(ext)                                   // uppercase, lowercase. all the same here.
@@ -324,7 +324,7 @@ func filterExtension(req *http.Request, hdr *multipart.FileHeader) (string, erro
 // This function will add a file to GCS at filename.
 //
 // Returns:
-//		failure?(error) - Error if storage fails.
+//      failure?(error) - Error if storage fails.
 func addFileToGCS(ctx context.Context, filename string, freader io.Reader) error {
 	client, clientErr := storage.NewClient(ctx)
 	if clientErr != nil {
@@ -349,7 +349,7 @@ func addFileToGCS(ctx context.Context, filename string, freader io.Reader) error
 // This function will remove a file to GCS at filename.
 //
 // Returns:
-//		failure?(error) - Error if deletion fails.
+//      failure?(error) - Error if deletion fails.
 func removeFileFromGCS(ctx context.Context, filename string) error {
 	client, clientErr := storage.NewClient(ctx)
 	if clientErr != nil {
@@ -364,8 +364,8 @@ func removeFileFromGCS(ctx context.Context, filename string) error {
 // This function will retrive filenames from GCS per a storage Query
 //
 // Returns:
-//		files []string - list of filenames.
-//		failure?(error) - Error if storage fails.
+//      files []string - list of filenames.
+//      failure?(error) - Error if storage fails.
 func getFileFromGCS(ctx context.Context, q *storage.Query) ([]string, error) {
 	results := make([]string, 0)
 

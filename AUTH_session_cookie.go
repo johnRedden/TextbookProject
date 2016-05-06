@@ -29,8 +29,8 @@ func ToCookie(res http.ResponseWriter, key string, value string, expiration time
 // This function will retrieve a value that may exist in key from request:cookie.
 //
 // Returns:
-//		value(string) - Value of key
-//		failure?(error) - If any errors occur they exist here.
+//      value(string) - Value of key
+//      failure?(error) - If any errors occur they exist here.
 func FromCookie(req *http.Request, key string) (string, error) {
 	cookie, err := req.Cookie(key)
 	if err != nil {
@@ -44,7 +44,7 @@ func FromCookie(req *http.Request, key string) (string, error) {
 // This function will update a value with new time.Duration
 //
 // Returns:
-//		failure?(error) - If any errors occur they exist here.
+//      failure?(error) - If any errors occur they exist here.
 func UpdateCookie(res http.ResponseWriter, req *http.Request, key string, expiration time.Duration) error {
 	cookie, err := req.Cookie(key)
 	if err != nil {

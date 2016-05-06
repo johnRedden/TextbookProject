@@ -37,7 +37,7 @@ var (
 // This will create a google login url to have a user login using their gmail. It will then redirect back to an internal url of our choosing.
 //
 // Returns:
-//		url(string) - Google login url with redirect.
+//      url(string) - Google login url with redirect.
 func GetLoginURL(ctx context.Context, redirect string) string {
 	login, _ := user.LoginURLFederated(ctx, redirect, "")
 	return login
@@ -48,7 +48,7 @@ func GetLoginURL(ctx context.Context, redirect string) string {
 // If a session exists, this function will refresh all timers back to StorageDuration.
 //
 // Returns:
-//		failure?(error) - Any errors are stored here if exists.
+//      failure?(error) - Any errors are stored here if exists.
 func MaintainSession(res http.ResponseWriter, req *http.Request) error {
 	ctx := appengine.NewContext(req)
 
@@ -81,7 +81,7 @@ func MaintainSession(res http.ResponseWriter, req *http.Request) error {
 // If a user has a valid OAuth token, this function will create a new session.
 //
 // Returns:
-//		failure?(error) - Any errors are stored here if exists.
+//      failure?(error) - Any errors are stored here if exists.
 func CreateSession(res http.ResponseWriter, req *http.Request, dataToMemchache string) error {
 	ctx := appengine.NewContext(req)
 	if u := user.Current(ctx); u != nil {

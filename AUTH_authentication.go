@@ -56,8 +56,8 @@ func (u PermissionUser) ToString() string {
 // Function takes a stringed permission user and unmarshalls the values back into their original struct.
 //
 // Returns:
-// 		user(PermissionUser) - Unpacked PermissionUser
-//		failure?(error) - Any errors are stored here if exists.
+//      user(PermissionUser) - Unpacked PermissionUser
+//      failure?(error) - Any errors are stored here if exists.
 func MarshallPermissionUser(p string) (PermissionUser, error) {
 	data := strings.Split(p, "�")
 	if len(data) < 4 {
@@ -80,7 +80,7 @@ func MarshallPermissionUser(p string) (PermissionUser, error) {
 // Given an appengine/user.User, a name, and a permission level, will create a valid permission user.
 //
 // Returns:
-//		user(PermissionUser) - Prepared PermissionUser
+//      user(PermissionUser) - Prepared PermissionUser
 func MakePermissionUser(name string, permission int, u *user.User) PermissionUser {
 	return PermissionUser{
 		Name:       name,
@@ -95,8 +95,8 @@ func MakePermissionUser(name string, permission int, u *user.User) PermissionUse
 // Given a session context, this will retrieve the current user's PermissionUser.
 //
 // Returns:
-//		user(PermissionUser) - Prepared PermissionUser
-//		failure?(error) - Any errors are stored here if exists.
+//      user(PermissionUser) - Prepared PermissionUser
+//      failure?(error) - Any errors are stored here if exists.
 func GetPermissionUserFromSession(ctx context.Context) (PermissionUser, error) {
 	u := user.Current(ctx)
 	if u != nil {
@@ -163,8 +163,8 @@ const (
 // does or does not meet the requirement.
 //
 // Returns:
-//		valid?(bool) - True/False if user meets requirement
-//		failure?(error) - Any errors are stored here if exists.
+//      valid?(bool) - True/False if user meets requirement
+//      failure?(error) - Any errors are stored here if exists.
 func HasPermission(res http.ResponseWriter, req *http.Request, minimumRequiredPermission int) (bool, error) {
 	if sessErr := MaintainSession(res, req); sessErr != nil { // Must have a session
 		return false, sessErr

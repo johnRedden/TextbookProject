@@ -15,7 +15,10 @@ import (
 )
 
 // ------------------------------
-// Keys
+// Datastore Keys for structure objects.
+//
+// Using Tables: Catalogs, Books, Chapters, Sections, and Objectives
+// for our structure objects.
 /////
 func MakeCatalogKey(ctx context.Context, keyname string) *datastore.Key {
 	return datastore.NewKey(ctx, "Catalogs", keyname, 0, nil)
@@ -34,9 +37,8 @@ func MakeObjectiveKey(ctx context.Context, id int64) *datastore.Key {
 }
 
 // ------------------------------
-// Datastore Get/Puts
+// Struct:Catalog, Get,Put, and Remove from datastore
 /////
-
 func GetCatalogFromDatastore(req *http.Request, key string) (Catalog, error) {
 	ctx := appengine.NewContext(req)
 
@@ -62,6 +64,9 @@ func RemoveCatalogFromDatastore(req *http.Request, catalogKey string) error {
 	return datastore.Delete(ctx, ck)
 }
 
+// ------------------------------
+// Struct:Book, Get,Put, and Remove from datastore
+/////
 func GetBookFromDatastore(req *http.Request, key int64) (Book, error) {
 	if key == 0 {
 		return Book{}, nil
@@ -91,6 +96,9 @@ func RemoveBookFromDatastore(req *http.Request, bookKey int64) error {
 	return datastore.Delete(ctx, bk)
 }
 
+// ------------------------------
+// Struct:Chapter, Get,Put, and Remove from datastore
+/////
 func GetChapterFromDatastore(req *http.Request, key int64) (Chapter, error) {
 	if key == 0 {
 		return Chapter{}, nil
@@ -119,6 +127,9 @@ func RemoveChapterFromDatastore(req *http.Request, chapterKey int64) error {
 	return datastore.Delete(ctx, ck)
 }
 
+// ------------------------------
+// Struct:Section, Get,Put, and Remove from datastore
+/////
 func GetSectionFromDatastore(req *http.Request, key int64) (Section, error) {
 	if key == 0 {
 		return Section{}, nil
@@ -147,6 +158,9 @@ func RemoveSectionFromDatastore(req *http.Request, sectionKey int64) error {
 	return datastore.Delete(ctx, sk)
 }
 
+// ------------------------------
+// Struct:Objective, Get,Put, and Remove from datastore
+/////
 func GetObjectiveFromDatastore(req *http.Request, key int64) (Objective, error) {
 	if key == 0 {
 		return Objective{}, nil
@@ -176,7 +190,20 @@ func RemoveObjectiveFromDatastore(req *http.Request, objectiveKey int64) error {
 	return datastore.Delete(ctx, ok)
 }
 
-// Datastore Simple retrival helper
+// ------------------------------
+// Additional Functionality
+//
+// This section includes functions to handle misc
+// interactions with the structure outside of
+// previously defined behavior
+/////
+
+// Internal Function
+// Description:
+// This function's main purpose is to return a list of structs
+// that have Title and ID for any kind in the datastore.
+// Objects to be returned must have the parameters
+// Parent(interface{}) and Title(string)
 func Get_Name_ID_From_Parent(ctx context.Context, parentID interface{}, kind string) []struct {
 	Title string
 	ID    int64
