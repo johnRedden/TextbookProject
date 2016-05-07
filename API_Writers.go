@@ -8,7 +8,7 @@
 //
 // This module shares a collective set of error codes described below:
 //    Code: Message
-//      0 - Success: All actions completed.
+//      0 - Success: All actions completed. Check Object for created information.
 //    400 - Failure: Mandatory parameter missing; check reason for missing/invalid parameter.
 //    418 - Failure: Authentication Error; check login status and permission level.
 //
@@ -37,7 +37,7 @@ var (
 )
 
 // -------------------------------------------------------------------
-// Creation Data calls
+// Creation Data calls, No-Wait
 // API calls for singular objects.
 // Please read each call for expected input/output
 ////////
@@ -90,13 +90,13 @@ func API_MakeCatalog(res http.ResponseWriter, req *http.Request, params httprout
 	}
 
 	// Get the datastore up and running!
-	_, putErr := PutCatalogIntoDatastore(req, catalogForDatastore)
+	rk, putErr := PutCatalogIntoDatastore(req, catalogForDatastore)
 	if putErr != nil {
 		fmt.Fprint(res, `{"result":"failure","reason":"Placement Error: `+putErr.Error()+`","code":500}`)
 		return
 	}
 	// HandleError(res, putErr)
-	fmt.Fprint(res, `{"result":"success","reason":"","code":0}`)
+	fmt.Fprint(res, `{"result":"success","reason":"","code":0,"object":{"Title":"`, catalogForDatastore.Title, `","ID":"`, rk.IntID(), `"}}`)
 }
 
 // Call: /api/makeBook
@@ -153,10 +153,10 @@ func API_MakeBook(res http.ResponseWriter, req *http.Request, params httprouter.
 		bookForDatastore.Description = template.HTML(req.FormValue("Description"))
 	}
 
-	_, putErr := PutBookIntoDatastore(req, bookForDatastore)
+	rk, putErr := PutBookIntoDatastore(req, bookForDatastore)
 	HandleError(res, putErr)
 
-	fmt.Fprint(res, `{"result":"success","reason":"","code":0}`)
+	fmt.Fprint(res, `{"result":"success","reason":"","code":0,"object":{"Title":"`, bookForDatastore.Title, `","ID":"`, rk.IntID(), `"}}`)
 }
 
 // Call: /api/makeChapter
@@ -206,10 +206,10 @@ func API_MakeChapter(res http.ResponseWriter, req *http.Request, params httprout
 		chapterForDatastore.Description = template.HTML(req.FormValue("Description"))
 	}
 
-	_, putErr := PutChapterIntoDatastore(req, chapterForDatastore)
+	rk, putErr := PutChapterIntoDatastore(req, chapterForDatastore)
 	HandleError(res, putErr)
 
-	fmt.Fprint(res, `{"result":"success","reason":"","code":0}`)
+	fmt.Fprint(res, `{"result":"success","reason":"","code":0,"object":{"Title":"`, chapterForDatastore.Title, `","ID":"`, rk.IntID(), `"}}`)
 }
 
 // Call: /api/makeSection
@@ -259,10 +259,10 @@ func API_MakeSection(res http.ResponseWriter, req *http.Request, params httprout
 		sectionForDatastore.Description = template.HTML(req.FormValue("Description"))
 	}
 
-	_, putErr := PutSectionIntoDatastore(req, sectionForDatastore)
+	rk, putErr := PutSectionIntoDatastore(req, sectionForDatastore)
 	HandleError(res, putErr)
 
-	fmt.Fprint(res, `{"result":"success","reason":"","code":0}`)
+	fmt.Fprint(res, `{"result":"success","reason":"","code":0,"object":{"Title":"`, sectionForDatastore.Title, `","ID":"`, rk.IntID(), `"}}`)
 }
 
 // Call: /api/makeObjective
@@ -322,8 +322,8 @@ func API_MakeObjective(res http.ResponseWriter, req *http.Request, params httpro
 		objectiveForDatastore.Author = req.FormValue("Author")
 	}
 
-	_, putErr := PutObjectiveIntoDatastore(req, objectiveForDatastore)
+	rk, putErr := PutObjectiveIntoDatastore(req, objectiveForDatastore)
 	HandleErrorWithLog(res, putErr, "api/makeObjective Error: (PUT) ", ctx)
 
-	fmt.Fprint(res, `{"result":"success","reason":"","code":0}`)
+	fmt.Fprint(res, `{"result":"success","reason":"","code":0,"object":{"Title":"`, objectiveForDatastore.Title, `","ID":"`, rk.IntID(), `"}}`)
 }
