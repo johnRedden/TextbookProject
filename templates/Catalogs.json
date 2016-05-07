@@ -4,7 +4,7 @@
     "results":[
     {{range $index,$e := .}}{{if $index}},
     {{end}}   {
-        "Name":"{{$e.Name}}",
+        "Name":"{{$e.Title}}",
         "Company":"{{$e.Company}}",
         "Version":{{$e.Version}},
         "ID":"{{$e.ID}}"

@@ -51,7 +51,7 @@ func API_GetCatalogs(res http.ResponseWriter, req *http.Request, params httprout
 		} else if qErr != nil {
 			http.Error(res, qErr.Error(), http.StatusInternalServerError)
 		}
-		x.ID = k.StringID()
+		x.ID = k.IntID()
 		cataloglist = append(cataloglist, x)
 	}
 	ServeTemplateWithParams(res, req, "Catalogs.json", cataloglist)
@@ -71,9 +71,11 @@ func API_GetBooks(res http.ResponseWriter, req *http.Request, params httprouter.
 	ctx := appengine.NewContext(req)
 	q := datastore.NewQuery("Books")
 
-	queryCatalogName := req.FormValue("Catalog")
-	if queryCatalogName != "" {
-		q = q.Filter("Parent =", queryCatalogName)
+	queryCatID := req.FormValue("Catalog")
+	if queryCatID != "" { // Ensure that a BookID was indeed sent.
+		i, numErr := strconv.Atoi(queryCatID) // does that BookID contain a number?
+		HandleError(res, numErr)
+		q = q.Filter("Parent =", int64(i))
 	}
 
 	booklist := make([]Book, 0)
@@ -230,7 +232,7 @@ func API_getTOC(res http.ResponseWriter, req *http.Request, params httprouter.Pa
 	// Gather Book information, ensure that book exists.
 	////////
 
-	BookTitle, BookCatalog, BookID_Out := func(req *http.Request, id int64) (string, string, int64) { // get book data
+	BookTitle, BookCatalog, BookID_Out := func(req *http.Request, id int64) (string, int64, int64) { // get book data
 		book_to_output, _ := GetBookFromDatastore(req, id)
 		return book_to_output.Title, book_to_output.Parent, book_to_output.ID
 	}(req, BookID_In)
@@ -252,7 +254,7 @@ func API_getTOC(res http.ResponseWriter, req *http.Request, params httprouter.Pa
 	//////
 
 	fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8"?><book>`)
-	fmt.Fprintf(res, `<booktitle>%s</booktitle><bookid>%d</bookid><catalog>%s</catalog>`, BookTitle, BookID_Out, BookCatalog)
+	fmt.Fprintf(res, `<booktitle>%s</booktitle><bookid>%d</bookid><catalog>%d</catalog>`, BookTitle, BookID_Out, BookCatalog)
 
 	/// - - - -
 	// Gather & Print Sub information as available
@@ -297,21 +299,22 @@ func API_getTOC(res http.ResponseWriter, req *http.Request, params httprouter.Pa
 //      XML<status> Failure - read <message> of error for more information
 //      Success will return the well formed xml.
 func API_GetCatalog(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	CatalogID := req.FormValue("ID")
-	if CatalogID == "" {
+	CatalogID, _ := strconv.Atoi(req.FormValue("ID"))
+	if CatalogID == 0 {
 		fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8" ?><error><status>Failure</status><message>Invalid ID</message></error>`)
 		return
 	}
-	Catalog_to_Output, geterr := GetCatalogFromDatastore(req, CatalogID)
+	Catalog_to_Output, geterr := GetCatalogFromDatastore(req, int64(CatalogID))
 	if geterr != nil {
 		fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8" ?><error><status>Failure</status><message>ID Not Found!</message></error>`)
 		return
 	}
 	fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8"?><catalog>`)
-	fmt.Fprintf(res, `<title>%s</title>`, Catalog_to_Output.Name)
+	fmt.Fprintf(res, `<title>%s</title>`, Catalog_to_Output.Title)
 	fmt.Fprintf(res, `<version>%f</version>`, Catalog_to_Output.Version)
 	fmt.Fprintf(res, `<parentid>%s</parentid>`, Catalog_to_Output.Company)
 	fmt.Fprint(res, `<description>`+Catalog_to_Output.Description+`</description>`)
+	fmt.Fprint(res, `<id>`, Catalog_to_Output.ID, `</id>`)
 	fmt.Fprint(res, `</catalog>`)
 }
 

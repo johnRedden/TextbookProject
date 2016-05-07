@@ -12,12 +12,12 @@ import (
 )
 
 type Catalog struct {
-	Name        string
+	Title       string
 	Version     float64 `datastore:",noindex"`
 	Company     string
 	Description template.HTML `datastore:",noindex"`
 
-	ID string `datastore:"-"`
+	ID int64 `datastore:"-"`
 }
 
 type Book struct { // Book has an ancestor in catalog, searchable based on catalog that it was a part of.
@@ -27,8 +27,8 @@ type Book struct { // Book has an ancestor in catalog, searchable based on catal
 	Tags        string        // searchable tags to describe the book, We can search based on substring.
 	Description template.HTML `datastore:",noindex"`
 
-	Parent string // This is the key.string for Catalog
-	ID     int64  `datastore:"-"` // self.ID, assigned when pulled from datastore.
+	Parent int64 // This is the key.string for Catalog
+	ID     int64 `datastore:"-"` // self.ID, assigned when pulled from datastore.
 }
 
 type Chapter struct { // Chapter has an ancestor in Book. Chapter only has meaning from book.

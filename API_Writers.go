@@ -44,11 +44,11 @@ var (
 
 // Call: /api/makeCatalog
 // Description:
-// This call is for the creation or update of a catalog. If Mandatory:CatalogName already exists, this call will update the existing information. Mandatory:CatalogName must be a well-formed non-nil string. Option:Version should be a well-formatted float value.
+// This call is for the creation or update of a catalog. If given Mandatory:ID this call is in update mode. Mandatory:CatalogName must be a well-formed non-nil string. Mandatory:ID must be a well-formatted integer. Option:Version should be a well-formatted float value.
 //
 // Method: POST
 // Results: JSON
-// Mandatory Options: CatalogName
+// Mandatory Options: {CatalogName} OR {ID}
 // Optional Options: Company, Version, Description
 // Codes: See Above.
 func API_MakeCatalog(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
@@ -58,15 +58,21 @@ func API_MakeCatalog(res http.ResponseWriter, req *http.Request, params httprout
 		return
 	}
 
-	catalogName := req.FormValue("CatalogName")
-	if catalogName == "" {
+	catID, _ := strconv.Atoi(req.FormValue("ID"))
+
+	catalogForDatastore, getErr := GetCatalogFromDatastore(req, int64(catID))
+	if getErr != nil {
+		fmt.Fprint(res, `{"result":"failure","reason":"Retrivial Error: `+getErr.Error()+`","code":500}`)
+		return
+	}
+	// HandleError(res, getErr) // If this catalog already exists. We should go get that information to update it.
+
+	if req.FormValue("CatalogName") != "" { // if you're giving me a title, we're good
+		catalogForDatastore.Title = req.FormValue("CatalogName")
+	} else if catID == 0 { // new catalogs must have a title
 		fmt.Fprint(res, `{"result":"failure","reason":"Empty Catalog Name","code":400}`)
 		return
 	}
-
-	catalogForDatastore, getErr := GetCatalogFromDatastore(req, catalogName)
-	HandleError(res, getErr) // If this catalog already exists. We should go get that information to update it.
-	catalogForDatastore.Name = catalogName
 
 	if req.FormValue("Company") != "" {
 		catalogForDatastore.Company = req.FormValue("Company")
@@ -85,7 +91,11 @@ func API_MakeCatalog(res http.ResponseWriter, req *http.Request, params httprout
 
 	// Get the datastore up and running!
 	_, putErr := PutCatalogIntoDatastore(req, catalogForDatastore)
-	HandleError(res, putErr)
+	if putErr != nil {
+		fmt.Fprint(res, `{"result":"failure","reason":"Placement Error: `+putErr.Error()+`","code":500}`)
+		return
+	}
+	// HandleError(res, putErr)
 	fmt.Fprint(res, `{"result":"success","reason":"","code":0}`)
 }
 
@@ -95,7 +105,7 @@ func API_MakeCatalog(res http.ResponseWriter, req *http.Request, params httprout
 //
 // Method: POST
 // Results: JSON
-// Mandatory Options: {CatalogName, BookName} OR {ID}
+// Mandatory Options: {CatalogID, BookName} OR {ID}
 // Optional Options: Author, Version, Tags, Description
 // Codes: See Above.
 func API_MakeBook(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
@@ -110,8 +120,8 @@ func API_MakeBook(res http.ResponseWriter, req *http.Request, params httprouter.
 	bookForDatastore, getErr := GetBookFromDatastore(req, int64(bookID))
 	HandleError(res, getErr)
 
-	if req.FormValue("CatalogName") != "" { // if you're giving me a catalog, we're good
-		bookForDatastore.Parent = req.FormValue("CatalogName")
+	if catKey, parseErr := strconv.ParseInt(req.FormValue("CatalogID"), 10, 64); parseErr == nil && catKey != int64(0) { // if you're giving me a catalog, we're good
+		bookForDatastore.Parent = catKey
 	} else if bookID == 0 { // new books must have a catalog
 		fmt.Fprint(res, `{"result":"failure","reason":"Empty Catalog Name","code":400}`)
 		return

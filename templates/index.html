@@ -288,7 +288,7 @@
                             var newBook =  $(this).closest('div').find('input').val(); //hackery i'll tell you!
                             console.log(newBook);
 
-                            $.post("/api/makeBook",{CatalogName:catalogID,BookName:newBook},function(data){
+                            $.post("/api/makeBook",{CatalogID:catalogID,BookName:newBook},function(data){
                                g = $.parseJSON(data);
                                console.log(g.result +":"+ g.reason);
 

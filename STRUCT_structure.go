@@ -20,8 +20,8 @@ import (
 // Using Tables: Catalogs, Books, Chapters, Sections, and Objectives
 // for our structure objects.
 /////
-func MakeCatalogKey(ctx context.Context, keyname string) *datastore.Key {
-	return datastore.NewKey(ctx, "Catalogs", keyname, 0, nil)
+func MakeCatalogKey(ctx context.Context, id int64) *datastore.Key {
+	return datastore.NewKey(ctx, "Catalogs", "", id, nil)
 }
 func MakeBookKey(ctx context.Context, id int64) *datastore.Key {
 	return datastore.NewKey(ctx, "Books", "", id, nil)
@@ -39,7 +39,10 @@ func MakeObjectiveKey(ctx context.Context, id int64) *datastore.Key {
 // ------------------------------
 // Struct:Catalog, Get,Put, and Remove from datastore
 /////
-func GetCatalogFromDatastore(req *http.Request, key string) (Catalog, error) {
+func GetCatalogFromDatastore(req *http.Request, key int64) (Catalog, error) {
+	if key == 0 {
+		return Catalog{}, nil
+	}
 	ctx := appengine.NewContext(req)
 
 	catalogToReturn := Catalog{}
@@ -58,7 +61,7 @@ func PutCatalogIntoDatastore(req *http.Request, c Catalog) (*datastore.Key, erro
 	rk, putErr := datastore.Put(ctx, ck, &c)
 	return rk, putErr
 }
-func RemoveCatalogFromDatastore(req *http.Request, catalogKey string) error {
+func RemoveCatalogFromDatastore(req *http.Request, catalogKey int64) error {
 	ctx := appengine.NewContext(req)
 	ck := MakeCatalogKey(ctx, catalogKey)
 	return datastore.Delete(ctx, ck)

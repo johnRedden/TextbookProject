@@ -60,8 +60,8 @@ func API_DeleteCatalog(res http.ResponseWriter, req *http.Request, params httpro
 		return
 	}
 
-	catalogKey := req.FormValue("ID")
-	if catalogKey == "" {
+	catalogKey, _ := strconv.ParseInt(req.FormValue("ID"), 10, 64)
+	if catalogKey == 0 {
 		fmt.Fprint(res, `{"result":"failure","reason":"Invalid ID","code":400}`)
 		return
 	}
