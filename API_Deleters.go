@@ -89,7 +89,7 @@ func API_DeleteCatalog(res http.ResponseWriter, req *http.Request, params httpro
 		fmt.Fprint(res, `{"result":"failure","reason":"Internal Error:`+remvErr.Error()+`","code":500}`)
 	}
 
-	fmt.Fprint(res, `{"result":"success","reason":","code":0}`)
+	fmt.Fprint(res, `{"result":"success","reason":"","code":0}`)
 }
 
 // Call: /api/deleteBook
@@ -134,7 +134,7 @@ func API_DeleteBook(res http.ResponseWriter, req *http.Request, params httproute
 		fmt.Fprint(res, `{"result":"failure","reason":"Internal Error:`+remvErr.Error()+`","code":500}`)
 	}
 
-	fmt.Fprint(res, `{"result":"success","reason":","code":0}`)
+	fmt.Fprint(res, `{"result":"success","reason":"","code":0}`)
 }
 
 // Call: /api/deleteChapter
@@ -178,7 +178,7 @@ func API_DeleteChapter(res http.ResponseWriter, req *http.Request, params httpro
 		fmt.Fprint(res, `{"result":"failure","reason":"Internal Error:`+remvErr.Error()+`","code":500}`)
 	}
 
-	fmt.Fprint(res, `{"result":"success","reason":","code":0}`)
+	fmt.Fprint(res, `{"result":"success","reason":"","code":0}`)
 }
 
 // Call: /api/deleteSection
@@ -218,7 +218,7 @@ func API_DeleteSection(res http.ResponseWriter, req *http.Request, params httpro
 		fmt.Fprint(res, `{"result":"failure","reason":"Internal Error:`+remvErr.Error()+`","code":500}`)
 	}
 
-	fmt.Fprint(res, `{"result":"success","reason":","code":0}`)
+	fmt.Fprint(res, `{"result":"success","reason":"","code":0}`)
 }
 
 // Call: /api/deleteObjective
@@ -249,5 +249,5 @@ func API_DeleteObjective(res http.ResponseWriter, req *http.Request, params http
 		fmt.Fprint(res, `{"result":"failure","reason":"Internal Error","code":500}`)
 	}
 
-	fmt.Fprint(res, `{"result":"success","reason":","code":0}`)
+	fmt.Fprint(res, `{"result":"success","reason":"","code":0}`)
 }
