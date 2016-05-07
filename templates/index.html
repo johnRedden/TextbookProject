@@ -115,7 +115,7 @@
         </div>
     </footer>
 
-    <!-- Delete Cat Modal -->
+    <!-- Delete Cat Modal *******************-->
       <div class="modal fade" id="catDeleteModal" role="dialog">
         <div class="modal-dialog">
         
@@ -126,7 +126,8 @@
                 <h2 class="modal-title"><span class="glyphicon glyphicon-alert"></span> Delete Catalog</h2>
             </div>
             <div class="modal-body">
-                <h4 class="modal-title">All books in this catalog will be deleted. Are you sure you wish to delete?</h4>
+                <h4 class="modal-title">All books in this catalog will be deleted. Are you sure you wish to delete the whole catalog?</h4>
+                <br/>
                 <p>Catalog Name: <strong id="catDeleteTxt" type="text"></strong></p>
               
             </div>
@@ -138,6 +139,7 @@
           
         </div>
       </div>
+    <!-- END Delete Cat Modal ******************-->
 
     <script type="text/JavaScript">
 
@@ -145,10 +147,32 @@
 
             populateCatalog();
 
+            //modal work
+            $('#catDeleteBtn').on('click',function(){ 
+                var catID = $('#catDeleteTxt').html();
+                deleteCatalog(catID);
+            });
+
         });
+
+        function deleteCatalog(catID){
+            $.post("/api/deleteCatalog",{ID:catID},function(data){
+                g = $.parseJSON(data);
+                console.log(g.result +":"+ g.reason);
+                                
+                if(g.result==="success"){
+                    $('#catHeading').html('Catalogs Loading...');
+                    $('.list-group-root').html('').fadeOut(1500,function(){
+                        populateCatalog();
+                    }).fadeIn(1000,function(){$('#catHeading').html('Catalogs');});
+                }
+                            
+            });  
+        };
 
         // methods
         function populateCatalog(){
+            // populate Catalog list items
             $.get("/api/catalogs.json",function(data, status){
                 j = $.parseJSON(data);
                 //console.log(j);
@@ -159,7 +183,7 @@
                     var catHTMLid = catalogID.replace(/\s+/g, '-').toLowerCase();
                     //html id tags cannot have spaces but catalog names can (need id??)
                     var htmlBlock = '\
-                                    <a href="#'+catHTMLid+'" name="'+catalogID+'"class="list-group-item" data-toggle="collapse">\
+                                    <a href="#'+catHTMLid+'" id="cat'+catHTMLid+'" name="'+catalogID+'" class="list-group-item" data-toggle="collapse">\
                                         <i class="glyphicon glyphicon-chevron-right chevy"></i>'+catalogName+' \
                                         <div class="btn-group btn-group-sm pull-right" role="group">\
                                             <button id="edit'+catHTMLid+'btn" class="btn btn-success" data-toggle="modal" data-target="#catEditModal" type="button"><span class="glyphicon glyphicon-pencil"></button>\
@@ -167,62 +191,44 @@
                                         </div>\
                                     </a>\
                                     <div class="list-group collapse" id="'+catHTMLid+'">\
-                                        <a href="#" class="list-group-item" >\
-                                        <i class="glyphicon glyphicon-download"></i>Loading...</a>\
+                                        <a href="#" class="list-group-item" ><i class="glyphicon glyphicon-download"></i>Loading...</a>\
                                     </div>\
                                     ';
 
                     $('.list-group-root').append(htmlBlock);
 
-                    // catalog edit button listener
-                    $('#delete'+catHTMLid+'btn').one('click',function(e){
-                        //console.log($(this).parent().attr('href'));
-                        //e.stopPropagation();
-                        var catID = $(this).closest('a').attr('name');
-                        console.log(catID);
-                        $('#catDeleteTxt').html(catID);
+                    $('#cat'+catHTMLid).on('click',function(){
+                        //only polulate books if catalog is clicked.
+                        // but not everytime  TODO fix this
+                        populateBooks(catalogID);
 
-    
-                        $('#catDeleteBtn').one('click',function(){
-
-                            $.post("/api/deleteCatalog",{ID:catID},function(data){
-                                $('#catHeading').html('Catalogs Loading...');
-                                $('.list-group-root').html('').fadeOut(1500,function(){
-                                    populateCatalog();
-                                }).fadeIn(1000,function(){$('#catHeading').html('Catalogs');});
-                                //g = $.parseJSON(data);
-                                //console.log(g.result +":"+ g.reason);
-                                /*
-                                if(g.result==="success"){
-                                    $('.list-group-root').html('').fadeOut(1500,function(){
-                                        populateCatalog();
-                                    }).fadeIn(1000,function(){$('#catHeading').html('Catalogs');});
-                                }
-                                */
-                       
-                            });     
-
-
-
-                        });
-
-                        
                     });
 
-                    populateBooks(catalogID);
+                    // catalog edit button listener
+                    $('#delete'+catHTMLid+'btn').one('click',function(e){
+                        var catID = $(this).closest('a').attr('name');
+                        //populate modal 
+                        $('#catDeleteTxt').html(catID);
+                    });
+
+                    //populateBooks(catalogID);
                     
                 });
 
                 $('#catHeading').html('Catalogs');
 
                 //add Catalog button at end of level 1 list  *********************
-                var addCatBlock = '<div class="input-group">\
-                                        <input id="catInput" type="text" class="form-control" placeholder="Add Catalog."/>\
-                                        <span class="input-group-btn">\
-                                            <button id="catBtn" class="btn btn-primary" type="button">Add Catalog</button>\
-                                        </span>\
-                                    </div>';
-                $('.list-group-root').append('<div class="list-group-item">'+addCatBlock+'</div>');
+                var addCatBlock = '\
+                                    <div class="list-group-item">\
+                                        <div class="input-group">\
+                                            <input id="catInput" type="text" class="form-control" placeholder="Add Catalog."/>\
+                                            <span class="input-group-btn">\
+                                                <button id="catBtn" class="btn btn-primary" type="button">Add Catalog</button>\
+                                            </span>\
+                                        </div>\
+                                    </div>\
+                                    ';
+                $('.list-group-root').append(addCatBlock);
 
                 $('#catInput').on('keyup',function(e){
                     if(e.keyCode==13)
@@ -240,7 +246,7 @@
                         if(g.result==="success"){
                             $('.list-group-root').html('').fadeOut(1500,function(){
                                 populateCatalog();
-                            }).fadeIn(1000,function(){$('#catHeading').html('Catalogs');});;
+                            }).fadeIn(2000,function(){$('#catHeading').html('Catalogs');});
                         }
                        
                     });
@@ -276,34 +282,39 @@
                         });
                         
                         //append Book button at end of level 2 list  *********************
-                        var addBookBlock = '<div class="input-group">\
-                                    <input type="text" class="form-control" placeholder="Add Book."/>\
-                                    <span class="input-group-btn">\
-                                        <button id="book'+catHTMLid+'" class="btn btn-warning" type="button">Add Book</button>\
-                                    </span>\
-                                    </div>';
+                        var addBookBlock = '\
+                                    <div class="list-group-item">\
+                                        <div class="input-group">\
+                                            <input id="bookInput'+catHTMLid+'" type="text" class="form-control" placeholder="Add Book."/>\
+                                            <span class="input-group-btn">\
+                                                <button id="addBookBtn'+catHTMLid+'" class="btn btn-warning" type="button">Add Book</button>\
+                                            </span>\
+                                        </div>\
+                                    </div>\
+                                    ';
 
-                        $("#"+catHTMLid).append('<div class="list-group-item">'+addBookBlock+'</div>');
-                        $("#book"+catHTMLid).on('click',function(){
+                        $('#'+catHTMLid).append(addBookBlock);
+
+                        $("#bookInput"+catHTMLid).on('keyup',function(e){
+                            if(e.keyCode==13)
+                            $("#addBookBtn"+catHTMLid).trigger('click');
+                        });
+
+                        $("#addBookBtn"+catHTMLid).on('click',function(){
                             var newBook =  $(this).closest('div').find('input').val(); //hackery i'll tell you!
                             console.log(newBook);
 
                             $.post("/api/makeBook",{CatalogName:catalogID,BookName:newBook},function(data){
                                g = $.parseJSON(data);
                                console.log(g.result +":"+ g.reason);
-
+                               $('#'+catHTMLid).html('<a href="#" class="list-group-item" ><i class="glyphicon glyphicon-download"></i>Loading...</a>');
                                if(g.result==="success"){
-
-                                    $('#'+catHTMLid).html('Created new book...').fadeOut(1500,function(){
-                                        populateBooks(catalogID,catHTMLid);
-                                    });
-                                    $('#'+catHTMLid).fadeIn(1000);
+                                    setTimeout(function (){
+                                      populateBooks(catalogID,catHTMLid);
+                                    }, 2000);
 
                                }
 
-                                
-                                
-                                //$('#'+catHTMLid).collapse('toggle');
 
                             });
                    
