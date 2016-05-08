@@ -20,11 +20,22 @@
             font-family: 'Merriweather', Georgia, 'Times New Roman', Times, serif;
         }
         .navbar { 
-             box-shadow: 0px 5px 3px -3px #888;
+            background: darkslategray;
+            /*box-shadow: 0px 5px 3px -3px #888;*/
+        }
+        .navbar-default .navbar-brand,
+        .navbar-default .navbar-nav > li > a {
+            color: white;
+        }
+        .navbar-default .navbar-brand:hover {
+            color: teal;
         }
         .well {
-            background: darkslategrey;
+            background: darkslategray;
             color: white;
+        }
+        .books a{
+            color: darkslateblue;
         }
 
 
@@ -65,8 +76,8 @@
     <nav class="navbar navbar-default navbar-static-top">
       <div class="container-fluid">
         <div class="navbar-header">
-          <a class="navbar-text" href="/"><img class="pull-left" src="/public/images/eduNetSystems-logo.png"/> 
-            <strong> &nbsp eduNetSystems Textbook System α</strong></a>
+          <a class="navbar-brand" href="/"><img class="pull-left" src="/public/images/eduNetSystems-logo.png"/> 
+            <strong> &nbsp eduNetSystems</strong></a>
         </div>
         <ul class="nav navbar-nav">
           <li class="active"><a href="\">Catalogs</a></li>
@@ -84,7 +95,13 @@
     </nav>
 
     <div class="container">
-        <p><em>This is a pre-alpha version of our Online Textbook System.</em></p>
+
+        <h2>Textbook Stystem α</h2>
+        <p>
+            <em>This is a pre-alpha version of our Online Textbook System.</em>
+            <strong>User Perm. {{.Permission}}</strong>
+        </p>
+
         <div class="list-group well">
             <div class="list-group-item-heading">
                 <button id="refreshCat" class="btn btn-xs btn-default pull-right" type="button"><span class="glyphicon glyphicon-refresh"></span></button>
@@ -162,8 +179,6 @@
 
         $(document).ready(function(){
 
-            populateCatalog();
-
             //modal work
             $('#catEditBtn').on('click',function(){ 
                 var catID = $('#catEditTxt').html();
@@ -175,9 +190,16 @@
                 deleteCatalog(catID);
             });
             $('#refreshCat').on('click',function(){ 
-                $('.list-group-root').html('');
-                populateCatalog();
+                $('#catHeading').html('<div class="text-center" id="catHeading">Catalogs Loading... <i class="glyphicon glyphicon-download"> </i> </div>');
+                $('.list-group-root').html('<p> </p>');
+                setTimeout(function (){
+                    $('.list-group-root').html('');
+                    populateCatalog();
+                }, 1000);
+                
             });
+            //init page
+            $('#refreshCat').trigger('click');
 
         });
 
@@ -199,6 +221,7 @@
                 $('#catHeading').html('Catalogs');
 
                 //add Catalog button at end of level 1 list  *********************
+                {{if eq .Permission 3}}
                 var addCatBlock = '\
                                     <div class="list-group-item">\
                                         <div class="input-group">\
@@ -209,6 +232,11 @@
                                         </div>\
                                     </div>\
                                     ';
+                
+                {{else}}
+                var addCatBlock = '<p class="text-center">End Catalogs</p>';
+                {{end}}
+
                 $('.list-group-root').append(addCatBlock);
                 
                 //Adding a new catalog here
@@ -255,6 +283,7 @@
                 });
                 
                 //append Book button at end of level 2 list  *********************
+                {{if eq .Permission 3}}
                 var addBookBlock = '\
                             <div class="list-group-item">\
                                 <div class="input-group">\
@@ -264,10 +293,14 @@
                                     </span>\
                                 </div>\
                             </div>\
+                            <p class="text-center"></p>\
                             ';
 
+                
+                {{else}}
+                var addBookBlock ='<p class="text-center">*** ** ***</p>';
+                {{end}}
                 $('#cat-'+catalogID).append(addBookBlock);
-
                 //now listeners
                 $("#bookInput-"+catalogID).on('keyup',function(e){
                     if(e.keyCode==13)
@@ -300,19 +333,31 @@
         
         function catalogListGroupItem(catalogID, catalogName){
             //note: href and collapse id have to have the same value to collapse
+             {{if eq .Permission 3}}
             var htmlBlock = '\
                 <div id="'+catalogID+'" name="'+catalogName+'">\
-                    <a href="#cat-'+catalogID+'" class="list-group-item" data-toggle="collapse"><span class="glyphicon glyphicon-chevron-right chevy"></span>'+catalogName+' \
+                    <a href="#cat-'+catalogID+'" class="list-group-item" data-toggle="collapse"><span class="glyphicon glyphicon-chevron-right chevy"></span>'+catalogName +' \
                         <div class="btn-group btn-group-sm pull-right" role="group">\
                             <button id="edit-'+catalogID+'" class="btn btn-success" data-toggle="modal" data-target="#catEditModal" type="button"><span class="glyphicon glyphicon-pencil"></button>\
                             <button id="delete-'+catalogID+'" class="btn btn-danger " data-toggle="modal" data-target="#catDeleteModal" type="button"><span class="glyphicon glyphicon-remove"></span> </button>\
                         </div>\
                     </a>\
-                    <div class="collapse" id="cat-'+catalogID+'">\
+                    <div class="collapse books" id="cat-'+catalogID+'">\
                         <a href="#" class="list-group-item" ><i class="glyphicon glyphicon-download"></i>Loading...</a>\
                     </div>\
                 </div>\
                 ';
+                {{else}}
+            var htmlBlock = '\
+                <div id="'+catalogID+'" name="'+catalogName+'">\
+                    <a href="#cat-'+catalogID+'" class="list-group-item" data-toggle="collapse"><span class="glyphicon glyphicon-chevron-right chevy"></span>'+catalogName +' \
+                    </a>\
+                    <div class="collapse books" id="cat-'+catalogID+'">\
+                        <a href="#" class="list-group-item" ><i class="glyphicon glyphicon-download"></i>Loading...</a>\
+                    </div>\
+                </div>\
+                ';
+                {{end}}
             return htmlBlock;
         }
         function catalogListGroupItemListeners(catalogID, catalogName){

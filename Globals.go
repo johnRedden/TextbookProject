@@ -1,4 +1,4 @@
-// package main
+package main
 
 /*
 Globals.go by Allen J. Mills
