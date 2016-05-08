@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Textbook Project: Edit Catalog</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap -->
+    <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
+    <!-- JQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <!-- CKEditor -->
+    <script src="http://cdn.ckeditor.com/4.5.3/full-all/ckeditor.js"></script>
+    <!-- Mathjax -->
+    <script type="text/javascript" async src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+    <script type="text/javascript">
+    $(document).ready(function(){
+
+        var stdConfig = {
+                    extraPlugins: 'mathjax',
+                    mathJaxLib: 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML'
+                };
+
+        var contentEditor = CKEDITOR.replace('JQ-Description',stdConfig);
+
+        $("#JQ-SubmitButton").click(function(){
+            console.log("Save Called!")
+            params = {
+                ID: $("#JQ-ID").val(),
+                CatalogName: $("#JQ-Title").val(),
+                Company: $("#JQ-Company").val(),
+                Version: $("#JQ-Version").val(),
+                Description:CKEDITOR.instances['JQ-Description'].getData(),
+            }
+            console.log("Posting: ")
+            console.log(params)
+            $.post("/api/makeCatalog",params,function(data){
+                j = $.parseJSON(data);
+                console.log(j.result +":"+ j.reason)
+                if (j.code == 0){
+                    $("#JQ-Results").val("Submission Success");
+                } else {
+                    $("#JQ-Results").val(j.reason)
+                }
+            })
+        });
+
+    });
+    </script>
+</head>
+<body>
+
+<h1>Catalog Editor</h1>
+
+<div>
+    Title: <input id="JQ-Title" value="{{.Title}}" placeholder="Catalog Title" />
+</div>
+
+<div>
+    Version: <input id="JQ-Version" value="{{.Version}}" placeholder="Catalog Version Number" />
+</div>
+
+<div>
+    Company: <input id="JQ-Company" value="{{.Company}}" placeholder="Catalog Company" />
+</div>
+
+<div>
+    Description:
+    <textarea id="JQ-Description" value=>{{.Description}}</textarea>
+</div>
+<input id="JQ-ID" readonly style="display: none;" value="{{.ID}}" />
+
+<button id="JQ-SubmitButton">Submit</button>
+<label for="JQ-Results">Results:</label>
+<input id="JQ-Results" readonly />
+
+</body>
+</html>

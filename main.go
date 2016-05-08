@@ -81,6 +81,14 @@ func init() {
 	r.POST("/api/deleteSection", API_DeleteSection)     // <api><auth> delete datastore, section
 	r.POST("/api/deleteObjective", API_DeleteObjective) // <api><auth> delete datastore, objective
 
+	// Module: Structure Modifiers
+	// Files: main.go
+	/*********************************************/
+	r.GET("/edit/Catalog/:ID", getCatalogEditor) // <user><auth> Modify Catalog Information
+	r.GET("/edit/Book/:ID", getBookEditor)       // <user><auth> Modify Book Information
+	r.GET("/edit/Chapter/:ID", getChapterEditor) // <user><auth> Modify Chapter Information
+	r.GET("/edit/Section/:ID", getSectionEditor) // <user><auth> Modify Section Information
+
 	// Module: Core Structure
 	// Files: main.go
 	/*****************************************/
@@ -244,6 +252,98 @@ func getSimpleObjectiveEditor(res http.ResponseWriter, req *http.Request, params
 	ve.Author = obj_temp.Author
 
 	ServeTemplateWithParams(res, req, "simpleEditor.html", ve)
+}
+
+// Call: /edit/Catalog/:ID
+// Description:
+//
+// Method: GET
+// Results: HTML
+// Mandatory Options: ID
+// Optional Options:
+func getCatalogEditor(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	editID := params.ByName("ID")
+	i, parseErr := strconv.Atoi(editID)
+	HandleError(res, parseErr)
+
+	if i == 0 {
+		http.Error(res, "Invalid ID", http.StatusExpectationFailed)
+		return
+	}
+
+	itemToScreen, getErr := GetCatalogFromDatastore(req, int64(i))
+	HandleError(res, getErr)
+
+	ServeTemplateWithParams(res, req, "editor_Catalog.html", itemToScreen)
+}
+
+// Call: /edit/Book/:ID
+// Description:
+//
+// Method: GET
+// Results: HTML
+// Mandatory Options: ID
+// Optional Options:
+func getBookEditor(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	editID := params.ByName("ID")
+	i, parseErr := strconv.Atoi(editID)
+	HandleError(res, parseErr)
+
+	if i == 0 {
+		http.Error(res, "Invalid ID", http.StatusExpectationFailed)
+		return
+	}
+
+	itemToScreen, getErr := GetBookFromDatastore(req, int64(i))
+	HandleError(res, getErr)
+
+	ServeTemplateWithParams(res, req, "editor_Book.html", itemToScreen)
+}
+
+// Call: /edit/Chapter/:ID
+// Description:
+//
+// Method: GET
+// Results: HTML
+// Mandatory Options: ID
+// Optional Options:
+func getChapterEditor(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	editID := params.ByName("ID")
+	i, parseErr := strconv.Atoi(editID)
+	HandleError(res, parseErr)
+
+	if i == 0 {
+		http.Error(res, "Invalid ID", http.StatusExpectationFailed)
+		return
+	}
+
+	itemToScreen, getErr := GetChapterFromDatastore(req, int64(i))
+	HandleError(res, getErr)
+
+	ServeTemplateWithParams(res, req, "editor_Chapter.html", itemToScreen)
+}
+
+// Call: /edit/Section/:ID
+// Description:
+//
+// Method: GET
+// Results: HTML
+// Mandatory Options: ID
+// Optional Options:
+func getSectionEditor(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	editID := params.ByName("ID")
+	i, parseErr := strconv.Atoi(editID)
+	HandleError(res, parseErr)
+
+	if i == 0 {
+		http.Error(res, "Invalid ID", http.StatusExpectationFailed)
+		return
+	}
+
+	itemToScreen, getErr := GetSectionFromDatastore(req, int64(i))
+	HandleError(res, getErr)
+
+	ServeTemplateWithParams(res, req, "editor_Section.html", itemToScreen)
 }
 
 // Call: /read
