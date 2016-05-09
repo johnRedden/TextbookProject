@@ -204,6 +204,47 @@ func API_GetObjectives(res http.ResponseWriter, req *http.Request, params httpro
 	ServeTemplateWithParams(res, req, "Objectives.json", objectiveList)
 }
 
+// Call: /api/exercises.json
+// Description:
+// This call will return a complete list of exercises.
+// Limit results by parent objective by ObjectiveID
+// Limit results by Instruction kind by IKind
+//
+// Method: GET
+// Results: JSON
+// Mandatory Options:
+// Optional Options: ObjectiveID, IKind
+// Codes:
+//      None, Data is either served or an http.Error is returned.
+func API_GetExercises(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	ctx := appengine.NewContext(req)
+	q := datastore.NewQuery("Exercises")
+
+	if req.FormValue("ObjectiveID") != "" {
+		i, numErr := strconv.Atoi(req.FormValue("ObjectiveID"))
+		HandleError(res, numErr)
+		q = q.Filter("Parent =", int64(i))
+	}
+
+	if req.FormValue("IKind") != "" {
+		q = q.Filter("Instruction =", req.FormValue("IKind"))
+	}
+
+	exerciselist := make([]Exercise, 0)
+	for t := q.Run(ctx); ; {
+		var x Exercise
+		k, qErr := t.Next(&x)
+		if qErr == datastore.Done {
+			break
+		} else if qErr != nil {
+			http.Error(res, qErr.Error(), http.StatusInternalServerError)
+		}
+		x.ID = k.IntID()
+		exerciselist = append(exerciselist, x)
+	}
+	ServeTemplateWithParams(res, req, "Exercises.json", exerciselist)
+}
+
 // Call: /toc
 // Description:
 // This call will return an xml formatted view of an entire book by ID. ID must be a well-formatted integer id of an existing book.
@@ -439,4 +480,36 @@ func API_GetObjectiveHTML(res http.ResponseWriter, req *http.Request, params htt
 	}
 
 	ServeTemplateWithParams(res, req, "ObjectiveHTML.html", objectiveToScreen)
+}
+
+// Call: /api/exercise.xml
+// Description:
+// Call will return an xml view on a singular Exercise.
+// ID is a well-formed string of an existing exercise.
+//
+// Method: GET
+// Results: XML
+// Mandatory Options: ID
+// Optional Options:
+// Codes:
+//      XML<status> Failure - read <message> of error for more information
+//      Success will return the well formed xml.
+func API_GetExercise(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	ExerciseID, _ := strconv.Atoi(req.FormValue("ID"))
+	if ExerciseID == 0 {
+		fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8" ?><error><status>Failure</status><message>Invalid ID</message></error>`)
+		return
+	}
+	Exercise_to_Output, geterr := GetExerciseFromDatastore(req, int64(ExerciseID))
+	if geterr != nil {
+		fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8" ?><error><status>Failure</status><message>ID Not Found!</message></error>`)
+		return
+	}
+	fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8"?><exercise>`)
+	fmt.Fprintf(res, `<instruction>`, Exercise_to_Output.Instruction, `</instruction>`)
+	fmt.Fprintf(res, `<question>`, Exercise_to_Output.Question, `</question>`)
+	fmt.Fprintf(res, `<solution>`, Exercise_to_Output.Solution, `</solution>`)
+	fmt.Fprintf(res, `<parent>`, Exercise_to_Output.Parent, `</parent>`)
+	fmt.Fprintf(res, `<id>`, Exercise_to_Output.ID, `</id>`)
+	fmt.Fprint(res, `</exercise>`)
 }

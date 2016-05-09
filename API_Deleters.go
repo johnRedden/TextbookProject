@@ -251,3 +251,34 @@ func API_DeleteObjective(res http.ResponseWriter, req *http.Request, params http
 
 	fmt.Fprint(res, `{"result":"success","reason":"","code":0}`)
 }
+
+// Call: /api/deleteExercise
+// Description:
+// This call will delete an Exercise and all child structures.
+// ID should be a well-formatted integer of an existing Exercise id.
+//
+// Method: POST
+// Results: JSON
+// Mandatory Options: ID
+// Optional Options:
+// Codes: See Above.
+func API_DeleteExercise(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	if validPerm, permErr := HasPermission(res, req, api_Delete_Permission); !validPerm {
+		// User Must be at least Admin.
+		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization: `+permErr.Error()+`","code":418}`)
+		return
+	}
+
+	exerID, convErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
+	if convErr != nil {
+		fmt.Fprint(res, `{"result":"failure","reason":"Invalid ID","code":400}`)
+		return
+	}
+
+	remvErr := RemoveExerciseFromDatastore(req, exerID)
+	if remvErr != nil {
+		fmt.Fprint(res, `{"result":"failure","reason":"Internal Error","code":500}`)
+	}
+
+	fmt.Fprint(res, `{"result":"success","reason":"","code":0}`)
+}

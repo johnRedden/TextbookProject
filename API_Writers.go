@@ -327,3 +327,50 @@ func API_MakeObjective(res http.ResponseWriter, req *http.Request, params httpro
 
 	fmt.Fprint(res, `{"result":"success","reason":"","code":0,"object":{"Title":"`, objectiveForDatastore.Title, `","ID":"`, rk.IntID(), `"}}`)
 }
+
+// Call: /api/makeExercise
+// Description:
+// This call will create or update objective information. If Mandatory:ID is given, all parameters are set as update mode, otherwise Mandatory:SectionID, Mandatory:ObjectiveName must be given. Option:Version should be a well-formatted float. Mandatory:SectionID should be a well-formatted integer.
+//
+// Method: POST
+// Results: JSON
+// Mandatory Options: {ObjectiveID} OR {ID}
+// Optional Options: Instruction, Question, Solution
+// Codes: See Above.
+func API_MakeExercise(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	if validPerm, permErr := HasPermission(res, req, api_Make_Permission); !validPerm {
+		// User Must be at least Writer.
+		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization: `+permErr.Error()+`","code":418}`)
+		return
+	}
+
+	exerID, _ := strconv.Atoi(req.FormValue("ID"))
+
+	exerciseForDatastore, getErr := GetExerciseFromDatastore(req, int64(exerID))
+	HandleError(res, getErr)
+
+	objectiveID, numErr2 := strconv.Atoi(req.FormValue("ObjectiveID"))
+	if numErr2 == nil { // if you're giving me a section, we're good
+		exerciseForDatastore.Parent = int64(objectiveID)
+	} else if exerID == 0 { // new books must have a catalog
+		fmt.Fprint(res, `{"result":"failure","reason":"Empty ObjectiveID","code":400}`)
+		return
+	}
+
+	if req.FormValue("Instruction") != "" {
+		exerciseForDatastore.Instruction = req.FormValue("Instruction")
+	}
+
+	if req.FormValue("Question") != "" {
+		exerciseForDatastore.Question = template.HTML(req.FormValue("Question"))
+	}
+
+	if req.FormValue("Solution") != "" {
+		exerciseForDatastore.Solution = template.HTML(req.FormValue("Solution"))
+	}
+
+	rk, putErr := PutExerciseIntoDatastore(req, exerciseForDatastore)
+	HandleError(res, putErr)
+
+	fmt.Fprint(res, `{"result":"success","reason":"","code":0,"object":{"Title":"","ID":"`, rk.IntID(), `"}}`)
+}

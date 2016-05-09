@@ -61,6 +61,15 @@ type Objective struct {
 	ID     int64 `datastore:"-"`
 }
 
+type Exercise struct {
+	Instruction string
+	Question    template.HTML `datastore:",noindex"`
+	Solution    template.HTML `datastore:",noindex"`
+
+	Parent int64
+	ID     int64 `datastore:"-"`
+}
+
 // This is the key; the editor page for the book.
 // This struct technically contains Objective but for the sake of verbosity
 //  all included datapoints are spelled out here.

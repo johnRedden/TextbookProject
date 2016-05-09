@@ -1,0 +1,12 @@
+{
+    "type":"List - Exercise",
+    "count":{{len .}},
+    "results":[
+    {{range $index,$e := .}}{{if $index}},
+    {{end}}   {
+        "Instruction":"{{$e.Instruction}}",
+        "ObjectiveID":{{$e.Parent}},
+        "ID":{{$e.ID}}
+        }{{end}}
+    ]
+}

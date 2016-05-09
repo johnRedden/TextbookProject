@@ -52,6 +52,7 @@ func init() {
 	r.GET("/api/chapters.json", API_GetChapters)     // <api> read datastore, chapters
 	r.GET("/api/sections.json", API_GetSections)     // <api> read datastore, sections
 	r.GET("/api/objectives.json", API_GetObjectives) // <api> read datastore, objectives
+	r.GET("/api/exercises.json", API_GetExercises)   // <api> read datatore, exercises
 	r.GET("/toc", API_getTOC)                        // <api> xml toc for a book
 
 	// Module: API-Readers, Singular
@@ -62,6 +63,7 @@ func init() {
 	r.GET("/api/chapter.xml", API_GetChapter)          // <api> read datastore, chapter as xml
 	r.GET("/api/section.xml", API_GetSection)          // <api> read datastore, section as xml
 	r.GET("/api/objective.html", API_GetObjectiveHTML) // <api> read datastore, objective as html
+	r.GET("/api/exercise.xml", API_GetExercise)        // <api> read datastore, exercise as xml
 
 	// Module: API-Writers
 	// Files: API_Writers.go
@@ -71,6 +73,7 @@ func init() {
 	r.POST("/api/makeChapter", API_MakeChapter)     // <api><auth> create datastore, chapter
 	r.POST("/api/makeSection", API_MakeSection)     // <api><auth> create datastore, section
 	r.POST("/api/makeObjective", API_MakeObjective) // <api><auth> create datastore, objective
+	r.GET("/api/makeExercise", API_MakeExercise)    // <api><auth> create datastore, exercise
 
 	// Module: API-Deleters
 	// Files: API_Deleters.go
@@ -80,6 +83,7 @@ func init() {
 	r.POST("/api/deleteChapter", API_DeleteChapter)     // <api><auth> delete datastore, chapter
 	r.POST("/api/deleteSection", API_DeleteSection)     // <api><auth> delete datastore, section
 	r.POST("/api/deleteObjective", API_DeleteObjective) // <api><auth> delete datastore, objective
+	r.GET("/api/deleteExercise", API_DeleteExercise)    // <api><auth> delete datastore, exercise
 
 	// Module: Structure Modifiers
 	// Files: main.go

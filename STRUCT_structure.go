@@ -35,6 +35,9 @@ func MakeSectionKey(ctx context.Context, id int64) *datastore.Key {
 func MakeObjectiveKey(ctx context.Context, id int64) *datastore.Key {
 	return datastore.NewKey(ctx, "Objectives", "", id, nil)
 }
+func MakeExerciseKey(ctx context.Context, id int64) *datastore.Key {
+	return datastore.NewKey(ctx, "Exercises", "", id, nil)
+}
 
 // ------------------------------
 // Struct:Catalog, Get,Put, and Remove from datastore
@@ -191,6 +194,34 @@ func RemoveObjectiveFromDatastore(req *http.Request, objectiveKey int64) error {
 	ctx := appengine.NewContext(req)
 	ok := MakeObjectiveKey(ctx, objectiveKey)
 	return datastore.Delete(ctx, ok)
+}
+
+// ------------------------------
+// Struct:Exercise, Get,Put, and Remove from datastore
+/////
+func GetExerciseFromDatastore(req *http.Request, key int64) (Exercise, error) {
+	if key == 0 { // 0 is a new blank ID. In this context, return a blank struct.
+		return Exercise{}, nil
+	}
+	ctx := appengine.NewContext(req)
+
+	exerciseToReturn := Exercise{}
+	ek := MakeExerciseKey(ctx, key)
+	getErr := datastore.Get(ctx, ek, &exerciseToReturn)
+	exerciseToReturn.ID = key
+	return exerciseToReturn, getErr
+}
+func PutExerciseIntoDatastore(req *http.Request, e Exercise) (*datastore.Key, error) {
+	ctx := appengine.NewContext(req)
+
+	ek := MakeExerciseKey(ctx, e.ID)
+	rk, putErr := datastore.Put(ctx, ek, &e)
+	return rk, putErr
+}
+func RemoveExerciseFromDatastore(req *http.Request, exerciseKey int64) error {
+	ctx := appengine.NewContext(req)
+	ek := MakeExerciseKey(ctx, exerciseKey)
+	return datastore.Delete(ctx, ek)
 }
 
 // ------------------------------
