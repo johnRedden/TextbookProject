@@ -93,6 +93,7 @@ func init() {
 	// Files: main.go
 	/*****************************************/
 	r.GET("/", home)                         // <user> Root page
+	r.GET("/catalogs", getCatalogsPage)      // <user> Catalogs listing
 	r.GET("/select", selectBookFromForm)     // <user> select objective based on information
 	r.GET("/edit", getSimpleObjectiveEditor) // <user><auth> edit objective given id
 	r.GET("/read", getSimpleObjectiveReader) // <user> read objective given id
@@ -180,7 +181,21 @@ func favIcon(res http.ResponseWriter, req *http.Request, params httprouter.Param
 // Mandatory Options:
 // Optional Options:
 func getAboutPage(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	ServeTemplateWithParams(res, req, "about.html", nil)
+	pu, _ := GetPermissionUserFromSession(appengine.NewContext(req))
+	ServeTemplateWithParams(res, req, "about.html", pu)
+}
+
+// Call: /catalogs
+// Description:
+// Our catalogs page
+//
+// Method: GET
+// Results: HTML
+// Mandatory Options:
+// Optional Options:
+func getCatalogsPage(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	pu, _ := GetPermissionUserFromSession(appengine.NewContext(req))
+	ServeTemplateWithParams(res, req, "catalogs.html", pu)
 }
 
 // Call: /
