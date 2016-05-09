@@ -14,25 +14,47 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 
 <style type="text/css">
+        html {
+          position: relative;
+          min-height: 100%;
+        }
         body{
             font-size:large;
             line-height: 1.5;
             font-family: 'Merriweather', Georgia, 'Times New Roman', Times, serif;
+            /* Margin bottom by footer height */
+            margin-bottom: 60px;
         }
         .navbar { 
             background: darkslategray;
             /*box-shadow: 0px 5px 3px -3px #888;*/
         }
+
         .navbar-default .navbar-brand,
         .navbar-default .navbar-nav > li > a {
             color: white;
         }
-        .navbar-default .navbar-brand:hover {
-            color: teal;
+        .navbar-default .navbar-brand:hover,
+        .navbar-default .navbar-nav > li > a:hover {
+            color: oldlace;
+        }
+
+        
+        footer {
+          position: absolute;
+          bottom: 0;
+          width: 100%;
+          /* Set the fixed height of the footer here */
+          height: 60px;
         }
         .well {
             background: darkslategray;
             color: white;
+        }
+        .books{
+            width:98%;
+            margin-left: auto;
+            margin-right: auto;
         }
         .books a{
             color: darkslateblue;
@@ -98,8 +120,8 @@
 
         <h2>ENS Content Stystem α</h2>
         <p>
-            <em>This is a pre-alpha version of our Online Textbook System.</em>
-            <strong>User Perm. {{.Permission}}</strong>
+            <em>This is a pre-alpha version of our web based educational content system.</em>
+            <strong>User PL: {{.Permission}}</strong>
         </p>
 
         <div class="list-group well">
@@ -116,7 +138,7 @@
             <div class="container">
                 <div class="row">
                     <div class="col-xs-12">
-                        <div><span class="glyphicon glyphicon-copyright-mark"></span> 2016-2017 <a href="http://www.edunetsystems.com/">eduNetSystems.com</a></div>
+                        <div>© 2016 <a href="http://www.edunetsystems.com/">eduNetSystems.com</a></div>
                     </div>
                 </div>
 
@@ -252,10 +274,11 @@
                                         </span>\
                                     </div>\
                                 </div>\
+                                <p class="text-center"></p>\
                                 ';
             
             {{else}}
-            var addCatBlock = '<p class="text-center">End Catalogs</p>';
+            var addCatBlock = '<p class="text-center"> </p>';
             {{end}}
 
             $('.list-group-root').append(addCatBlock);
