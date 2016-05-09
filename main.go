@@ -98,6 +98,7 @@ func init() {
 	r.GET("/read", getSimpleObjectiveReader) // <user> read objective given id
 	r.GET("/preview", getObjectivePreview)   // <user> preview objective given id
 	r.GET("/toc.html/:ID", getSimpleTOC)     // <user> user viewable toc for a book
+	r.GET("/about", getAboutPage)            // <user> About Page
 	r.GET("/favicon.ico", favIcon)           // <user> favicon
 
 	// Module: Authentication/Session
@@ -168,6 +169,18 @@ func ServeTemplateWithParams(res http.ResponseWriter, req *http.Request, templat
 // Optional Options:
 func favIcon(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	http.Redirect(res, req, "public/images/favicon.ico", http.StatusTemporaryRedirect)
+}
+
+// Call: /about
+// Description:
+// Our about page
+//
+// Method: GET
+// Results: HTML
+// Mandatory Options:
+// Optional Options:
+func getAboutPage(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	ServeTemplateWithParams(res, req, "about.html", nil)
 }
 
 // Call: /
