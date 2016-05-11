@@ -4,11 +4,9 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"golang.org/x/net/context"
 	"google.golang.org/appengine"
-	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/log"
 	"html/template"
 	"net/http"
-	"strconv"
 )
 
 // pages is a local storage variable for all of our executable templates.
@@ -32,6 +30,42 @@ func init() {
 	//  * <auth>: (Modifier) This request requires user authentication.
 	//  * <DEBUG>: (Modifier) This handler is to be treated as temporary, used in development only.
 	//// ---------------------------------------------------------- //
+
+	// Module: Core Structure
+	// Files: main.go, STRUCT_Handlers.go
+	/*************************************/
+	r.GET("/", home)                     // <user> Root page
+	r.GET("/catalogs", getCatalogsPage)  // <user> Catalogs listing
+	r.GET("/select", selectBookFromForm) // <user> select objective based on information
+	r.GET("/toc.html/:ID", getSimpleTOC) // <user> user viewable toc for a book
+	r.GET("/about", getAboutPage)        // <user> About Page
+	r.GET("/favicon.ico", favIcon)       // <user> favicon
+
+	// Module: Authentication/Session
+	// Files: AUTH_authentication.go
+	/****************************************/
+	r.GET("/login", AUTH_Login_GET)         // <user> User Login
+	r.GET("/logout", AUTH_Logout_GET)       // <user> User Logout
+	r.GET("/register", AUTH_Register_GET)   // <user> Register New Users/Modify existing users
+	r.POST("/register", AUTH_Register_POST) // <user><auth> Post to make the new user
+	r.GET("/user", AUTH_UserInfo)           // <user><auth><DEBUG> DEBUG user info
+
+	// Module: Structure Readers
+	// Files: main.go, STRUCT_Handlers.go
+	/*****************************************************/
+	r.GET("/read/exercise/:ID", getSimpleExerciseReader) // <user> read exercise given id
+	r.GET("/read/", getSimpleObjectiveReader)            // <user> read objective given id
+	r.GET("/preview", getObjectivePreview)               // <user> preview objective given id
+
+	// Module: Structure Modifiers
+	// Files: STRUCT_Handlers.go
+	/***********************************************/
+	r.GET("/edit/Catalog/:ID", getCatalogEditor)   // <user><auth> Modify Catalog Information
+	r.GET("/edit/Book/:ID", getBookEditor)         // <user><auth> Modify Book Information
+	r.GET("/edit/Chapter/:ID", getChapterEditor)   // <user><auth> Modify Chapter Information
+	r.GET("/edit/Section/:ID", getSectionEditor)   // <user><auth> Modify Section Information
+	r.GET("/edit/Exercise/:ID", getExerciseEditor) // <user><auth> Modify Exercise Information
+	r.GET("/edit", getSimpleObjectiveEditor)       // <user><auth> edit objective given id
 
 	// Module: Images
 	// Files: Images.go
@@ -73,7 +107,7 @@ func init() {
 	r.POST("/api/makeChapter", API_MakeChapter)     // <api><auth> create datastore, chapter
 	r.POST("/api/makeSection", API_MakeSection)     // <api><auth> create datastore, section
 	r.POST("/api/makeObjective", API_MakeObjective) // <api><auth> create datastore, objective
-	r.GET("/api/makeExercise", API_MakeExercise)    // <api><auth> create datastore, exercise
+	r.POST("/api/makeExercise", API_MakeExercise)   // <api><auth> create datastore, exercise
 
 	// Module: API-Deleters
 	// Files: API_Deleters.go
@@ -83,37 +117,7 @@ func init() {
 	r.POST("/api/deleteChapter", API_DeleteChapter)     // <api><auth> delete datastore, chapter
 	r.POST("/api/deleteSection", API_DeleteSection)     // <api><auth> delete datastore, section
 	r.POST("/api/deleteObjective", API_DeleteObjective) // <api><auth> delete datastore, objective
-	r.GET("/api/deleteExercise", API_DeleteExercise)    // <api><auth> delete datastore, exercise
-
-	// Module: Structure Modifiers
-	// Files: main.go
-	/*********************************************/
-	r.GET("/edit/Catalog/:ID", getCatalogEditor) // <user><auth> Modify Catalog Information
-	r.GET("/edit/Book/:ID", getBookEditor)       // <user><auth> Modify Book Information
-	r.GET("/edit/Chapter/:ID", getChapterEditor) // <user><auth> Modify Chapter Information
-	r.GET("/edit/Section/:ID", getSectionEditor) // <user><auth> Modify Section Information
-
-	// Module: Core Structure
-	// Files: main.go
-	/*****************************************/
-	r.GET("/", home)                         // <user> Root page
-	r.GET("/catalogs", getCatalogsPage)      // <user> Catalogs listing
-	r.GET("/select", selectBookFromForm)     // <user> select objective based on information
-	r.GET("/edit", getSimpleObjectiveEditor) // <user><auth> edit objective given id
-	r.GET("/read", getSimpleObjectiveReader) // <user> read objective given id
-	r.GET("/preview", getObjectivePreview)   // <user> preview objective given id
-	r.GET("/toc.html/:ID", getSimpleTOC)     // <user> user viewable toc for a book
-	r.GET("/about", getAboutPage)            // <user> About Page
-	r.GET("/favicon.ico", favIcon)           // <user> favicon
-
-	// Module: Authentication/Session
-	// Files: AUTH_authentication.go
-	/****************************************/
-	r.GET("/login", AUTH_Login_GET)         // <user> User Login
-	r.GET("/logout", AUTH_Logout_GET)       // <user> User Logout
-	r.GET("/register", AUTH_Register_GET)   // <user> Register New Users/Modify existing users
-	r.POST("/register", AUTH_Register_POST) // <user><auth> Post to make the new user
-	r.GET("/user", AUTH_UserInfo)           // <user><auth><DEBUG> DEBUG user info
+	r.POST("/api/deleteExercise", API_DeleteExercise)   // <api><auth> delete datastore, exercise
 
 	// Module: Administration, Console and Commands
 	// Files: ADMIN_administration.go
@@ -132,75 +136,8 @@ func init() {
 }
 
 // ------------------------------------
-// Helper Functions
-/////
-
-// Internal Function
-// generic error handling for any error we encounter.
-func HandleError(res http.ResponseWriter, e error) {
-	if e != nil {
-		http.Error(res, e.Error(), http.StatusInternalServerError)
-	}
-}
-
-// Internal Function
-// generic error handling for any error we encounter plus a message we've defined.
-// This sends a log out to appengine.
-func HandleErrorWithLog(res http.ResponseWriter, e error, tag string, ctx context.Context) {
-	if e != nil {
-		log.Criticalf(ctx, "%s: %v", tag, e)
-		http.Error(res, e.Error(), http.StatusInternalServerError)
-	}
-}
-
-// Internal Function
-// Passes along any information to templates and then executes them.
-func ServeTemplateWithParams(res http.ResponseWriter, req *http.Request, templateName string, params interface{}) {
-	err := pages.ExecuteTemplate(res, templateName, &params)
-	HandleError(res, err)
-}
-
-// ------------------------------------
 // Core Functionality, Handlers
 /////
-
-// Call: /favicon
-// Description:
-// Simple redirect to the relavant public file for our icon. This is only for browsers ease of access.
-//
-// Method: GET
-// Results: HTTP.Redirect
-// Mandatory Options:
-// Optional Options:
-func favIcon(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	http.Redirect(res, req, "public/images/favicon.ico", http.StatusTemporaryRedirect)
-}
-
-// Call: /about
-// Description:
-// Our about page
-//
-// Method: GET
-// Results: HTML
-// Mandatory Options:
-// Optional Options:
-func getAboutPage(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	pu, _ := GetPermissionUserFromSession(appengine.NewContext(req))
-	ServeTemplateWithParams(res, req, "about.html", pu)
-}
-
-// Call: /catalogs
-// Description:
-// Our catalogs page
-//
-// Method: GET
-// Results: HTML
-// Mandatory Options:
-// Optional Options:
-func getCatalogsPage(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	pu, _ := GetPermissionUserFromSession(appengine.NewContext(req))
-	ServeTemplateWithParams(res, req, "catalogs.html", pu)
-}
 
 // Call: /
 // Description:
@@ -215,182 +152,17 @@ func home(res http.ResponseWriter, req *http.Request, params httprouter.Params) 
 	ServeTemplateWithParams(res, req, "index.html", pu)
 }
 
-// Call: /select
+// Call: /about
 // Description:
-// The selector page for site structures.
-// Outdated?
+// Our about page
 //
 // Method: GET
 // Results: HTML
 // Mandatory Options:
 // Optional Options:
-func selectBookFromForm(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	ServeTemplateWithParams(res, req, "simpleSelector.html", nil)
-}
-
-// Call: /edit
-// Description:
-// Our editor page for objectives given a valid objective id.
-// Mandatory:ID must be a well-formatted integer of an existing objective id.
-//
-// Method: GET
-// Results: HTML
-// Mandatory Options: ID
-// Optional Options:
-func getSimpleObjectiveEditor(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	if validPerm, permErr := HasPermission(res, req, WritePermissions); !validPerm {
-		// User Must be at least Writer.
-		http.Error(res, permErr.Error(), http.StatusUnauthorized)
-		return
-	}
-
-	ObjectiveID, numErr := strconv.Atoi(req.FormValue("ID"))
-	if numErr != nil || ObjectiveID == 0 {
-		http.Redirect(res, req, "/select?status=invalid_id", http.StatusTemporaryRedirect)
-	}
-	ctx := appengine.NewContext(req)
-
-	objKey := MakeObjectiveKey(ctx, int64(ObjectiveID))
-	obj_temp := Objective{}
-	objectiveGetErr := datastore.Get(ctx, objKey, &obj_temp)
-	HandleError(res, objectiveGetErr)
-
-	sect_temp := Section{}
-	sectionGetErr := datastore.Get(ctx, MakeSectionKey(ctx, obj_temp.Parent), &sect_temp)
-	HandleError(res, sectionGetErr)
-
-	chap_temp := Chapter{}
-	chapterGetErr := datastore.Get(ctx, MakeChapterKey(ctx, sect_temp.Parent), &chap_temp)
-	HandleError(res, chapterGetErr)
-
-	book_temp := Book{}
-	bookGetErr := datastore.Get(ctx, MakeBookKey(ctx, chap_temp.Parent), &book_temp)
-	HandleError(res, bookGetErr)
-
-	ve := VIEW_Editor{}
-	ve.ObjectiveID = objKey.IntID()
-	ve.SectionID = obj_temp.Parent
-	ve.ChapterID = sect_temp.Parent
-	ve.BookID = chap_temp.Parent
-
-	ve.ObjectiveTitle = obj_temp.Title
-	ve.SectionTitle = sect_temp.Title
-	ve.ChapterTitle = chap_temp.Title
-	ve.BookTitle = book_temp.Title
-
-	ve.ObjectiveVersion = obj_temp.Version
-	ve.Content = obj_temp.Content
-	ve.KeyTakeaways = obj_temp.KeyTakeaways
-	ve.Author = obj_temp.Author
-
-	ServeTemplateWithParams(res, req, "simpleEditor.html", ve)
-}
-
-// Call: /edit/Catalog/:ID
-// Description:
-//
-// Method: GET
-// Results: HTML
-// Mandatory Options: ID
-// Optional Options:
-func getCatalogEditor(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	editID := params.ByName("ID")
-	i, parseErr := strconv.Atoi(editID)
-	HandleError(res, parseErr)
-
-	if i == 0 {
-		http.Error(res, "Invalid ID", http.StatusExpectationFailed)
-		return
-	}
-
-	itemToScreen, getErr := GetCatalogFromDatastore(req, int64(i))
-	HandleError(res, getErr)
-
-	ServeTemplateWithParams(res, req, "editor_Catalog.html", itemToScreen)
-}
-
-// Call: /edit/Book/:ID
-// Description:
-//
-// Method: GET
-// Results: HTML
-// Mandatory Options: ID
-// Optional Options:
-func getBookEditor(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	editID := params.ByName("ID")
-	i, parseErr := strconv.Atoi(editID)
-	HandleError(res, parseErr)
-
-	if i == 0 {
-		http.Error(res, "Invalid ID", http.StatusExpectationFailed)
-		return
-	}
-
-	itemToScreen, getErr := GetBookFromDatastore(req, int64(i))
-	HandleError(res, getErr)
-
-	ServeTemplateWithParams(res, req, "editor_Book.html", itemToScreen)
-}
-
-// Call: /edit/Chapter/:ID
-// Description:
-//
-// Method: GET
-// Results: HTML
-// Mandatory Options: ID
-// Optional Options:
-func getChapterEditor(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	editID := params.ByName("ID")
-	i, parseErr := strconv.Atoi(editID)
-	HandleError(res, parseErr)
-
-	if i == 0 {
-		http.Error(res, "Invalid ID", http.StatusExpectationFailed)
-		return
-	}
-
-	itemToScreen, getErr := GetChapterFromDatastore(req, int64(i))
-	HandleError(res, getErr)
-
-	ServeTemplateWithParams(res, req, "editor_Chapter.html", itemToScreen)
-}
-
-// Call: /edit/Section/:ID
-// Description:
-//
-// Method: GET
-// Results: HTML
-// Mandatory Options: ID
-// Optional Options:
-func getSectionEditor(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	editID := params.ByName("ID")
-	i, parseErr := strconv.Atoi(editID)
-	HandleError(res, parseErr)
-
-	if i == 0 {
-		http.Error(res, "Invalid ID", http.StatusExpectationFailed)
-		return
-	}
-
-	itemToScreen, getErr := GetSectionFromDatastore(req, int64(i))
-	HandleError(res, getErr)
-
-	ServeTemplateWithParams(res, req, "editor_Section.html", itemToScreen)
-}
-
-// Call: /read
-// Description:
-// Our reader page for objectives.
-// Mandatory:ID has no requirements on this level. Sub levels will
-// require that objective ID exists and is a well-formatted integer.
-//
-// Method: GET
-// Results: HTML
-// Mandatory Options: ID
-// Optional Options:
-func getSimpleObjectiveReader(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	readID := req.FormValue("ID")
-	ServeTemplateWithParams(res, req, "simpleReader.html", readID)
+func getAboutPage(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	pu, _ := GetPermissionUserFromSession(appengine.NewContext(req))
+	ServeTemplateWithParams(res, req, "about.html", pu)
 }
 
 // Call: /toc.html/:ID
@@ -423,20 +195,69 @@ func getSimpleTOC(res http.ResponseWriter, req *http.Request, params httprouter.
 	ServeTemplateWithParams(res, req, "toc.html", screenOutput)
 }
 
-// Call: /preview
+// Call: /catalogs
 // Description:
-// Our simple page preview.
-//
-// Mandatory:ID must be an existing objective ID and is a well-formatted integer.
+// Our catalogs page
 //
 // Method: GET
 // Results: HTML
-// Mandatory Options: ID
+// Mandatory Options:
 // Optional Options:
-func getObjectivePreview(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	objKey, convErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
-	HandleError(res, convErr)
-	objToScreen, err := GetObjectiveFromDatastore(req, objKey)
+func getCatalogsPage(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	pu, _ := GetPermissionUserFromSession(appengine.NewContext(req))
+	ServeTemplateWithParams(res, req, "catalogs.html", pu)
+}
+
+// Call: /select
+// Description:
+// The selector page for site structures.
+// Outdated?
+//
+// Method: GET
+// Results: HTML
+// Mandatory Options:
+// Optional Options:
+func selectBookFromForm(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	ServeTemplateWithParams(res, req, "simpleSelector.html", nil)
+}
+
+// Call: /favicon
+// Description:
+// Simple redirect to the relavant public file for our icon. This is only for browsers ease of access.
+//
+// Method: GET
+// Results: HTTP.Redirect
+// Mandatory Options:
+// Optional Options:
+func favIcon(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	http.Redirect(res, req, "public/images/favicon.ico", http.StatusTemporaryRedirect)
+}
+
+// ------------------------------------
+// Helper Functions
+/////
+
+// Internal Function
+// generic error handling for any error we encounter.
+func HandleError(res http.ResponseWriter, e error) {
+	if e != nil {
+		http.Error(res, e.Error(), http.StatusInternalServerError)
+	}
+}
+
+// Internal Function
+// generic error handling for any error we encounter plus a message we've defined.
+// This sends a log out to appengine.
+func HandleErrorWithLog(res http.ResponseWriter, e error, tag string, ctx context.Context) {
+	if e != nil {
+		log.Criticalf(ctx, "%s: %v", tag, e)
+		http.Error(res, e.Error(), http.StatusInternalServerError)
+	}
+}
+
+// Internal Function
+// Passes along any information to templates and then executes them.
+func ServeTemplateWithParams(res http.ResponseWriter, req *http.Request, templateName string, params interface{}) {
+	err := pages.ExecuteTemplate(res, templateName, &params)
 	HandleError(res, err)
-	ServeTemplateWithParams(res, req, "preview.html", objToScreen)
 }

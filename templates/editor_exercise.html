@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Textbook Project: Edit Exercise</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap -->
+    <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
+    <!-- JQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <!-- CKEditor -->
+    <script src="http://cdn.ckeditor.com/4.5.3/full-all/ckeditor.js"></script>
+    <!-- Mathjax -->
+    <script type="text/javascript" async src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+    <script type="text/javascript">
+    $(document).ready(function(){
+        exerciseID = {{.ID}}
+        var stdConfig = {
+                    extraPlugins: 'mathjax',
+                    mathJaxLib: 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML',
+                    filebrowserImageBrowseUrl: '/image/browser?action=browseImageURL&oid='+exerciseID,
+                    filebrowserImageUploadUrl: '/api/ckeditor/create?action=uploadImageURL&oid='+exerciseID,
+                    filebrowserBrowseUrl: '/image/browser?action=browseURL&oid='+exerciseID,
+                    filebrowserUploadUrl: '/api/ckeditor/create?action=uploadURL&oid='+exerciseID
+                };
+        var questionEditor = CKEDITOR.replace('JQ-Question',stdConfig);
+        var solutionEditor = CKEDITOR.replace('JQ-Solution',stdConfig);
+
+        $("#JQ-SubmitButton").click(function(){
+            console.log("Save Called!")
+            params = {
+                ID: $("#JQ-ID").val(),
+                ObjectiveID: $("#JQ-OID").val(),
+                Instruction: $("#JQ-Instruction").val(),
+                Question:CKEDITOR.instances['JQ-Question'].getData(),
+                Solution:CKEDITOR.instances['JQ-Solution'].getData(),
+            }
+            console.log("Posting: ")
+            console.log(params)
+            $.post("/api/makeExercise",params,function(data){
+                j = $.parseJSON(data);
+                console.log(j.result +":"+ j.reason)
+                if (j.code == 0){
+                    $("#JQ-Results").val("Submission Success");
+                } else {
+                    $("#JQ-Results").val(j.reason)
+                }
+            })
+        });
+    });
+    </script>
+</head>
+<body>
+
+<h1>Exercise Editor</h1>
+
+<div>
+    Instruction: <input id="JQ-Instruction" value="{{.Instruction}}" placeholder="Exercise Instruction" />
+</div>
+
+<div>
+    Question:
+    <textarea id="JQ-Question">{{.Question}}</textarea>
+</div>
+
+<div>
+    Solution:
+    <textarea id="JQ-Solution">{{.Solution}}</textarea>
+</div>
+
+<input id="JQ-ID" readonly style="display: none;" value="{{.ID}}" />
+<input id="JQ-OID" readonly style="display: none;" value="{{.Parent}}" />
+
+<button id="JQ-SubmitButton">Submit</button>
+<label for="JQ-Results">Results:</label>
+<input id="JQ-Results" readonly />
+
+</body>
+</html>
