@@ -26,7 +26,7 @@ var (
 	ErrTimedOut = errors.New("Session: User has timed out.")
 
 	// Common duration time for session storage
-	StorageDuration = time.Hour
+	StorageDuration = time.Hour * time.Duration(24)
 
 	// Common key for a session validation cookie
 	CookieKey = "Session"
