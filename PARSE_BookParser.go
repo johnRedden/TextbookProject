@@ -10,13 +10,20 @@ filename.go by Allen J. Mills
 import (
 	"fmt"
 	"github.com/julienschmidt/httprouter"
+	"google.golang.org/appengine"
+	"google.golang.org/appengine/datastore"
+	"html/template"
 	"mime/multipart"
 	"net/http"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
 var (
+	// This regex will select on html structures that are prefixed by:
+	// <div book|chapter|section|objective|exercise or
+	// <i book|chapter|section|objective|exercise
 	re = regexp.MustCompile(`(<div book.*\n|<div chapter.*\n|<div section.*\n|<div objective.*\n|<div exercise.*\n|<i book.*\n|<i chapter.*\n|<i section.*\n|<i objective.*\n|<i exercise.*\n)`)
 )
 
@@ -38,7 +45,7 @@ func getAllLinesFromFile(mpf multipart.File) ([]string, error) {
 			return make([]string, 0), readErr
 		}
 	}
-	return re.FindAllString(input, -1), nil
+	return re.FindAllString(retnData, -1), nil
 }
 
 func breakCommand(s string) (string, string) {
@@ -76,21 +83,45 @@ func PARSE_POST_FileUploader(res http.ResponseWriter, req *http.Request, params 
 
 	contentType := multipartHeader.Header.Get("Content-Type")
 	filename := multipartHeader.Filename
-	filedata, _ := GetAllLinesFromFile(multipartFile)
+	filedata, _ := getAllLinesFromFile(multipartFile)
 
 	fmt.Fprint(res, "<html><plaintext>")
 	fmt.Fprintln(res, filename)
 	fmt.Fprintln(res, contentType)
-	fmt.Fprintln(res, "Data:")
-	for i, v := range filedata {
-		com, pre := breakCommand(v)
-		fmt.Fprintln(res, i, "\tCOMMD:", pre)
-		fmt.Fprintln(res, "\tVALUE:", com)
+	fmt.Fprintln(res, "Running State Machine")
+
+	for _, v := range runParserStateMachine(filedata) {
+		fmt.Fprintln(res, v)
 	}
+
 	fmt.Fprintln(res, "End Of File")
 }
 
-func runParserStateMachine(lines []string) {}
+type debugger struct {
+	data []string
+}
+
+func newDebugger() debugger {
+	return debugger{make([]string, 0)}
+}
+func (d *debugger) add(s string) {
+	d.data = append(d.data, s)
+}
+
+func runParserStateMachine(lines []string) []string {
+	commandsRan := newDebugger()
+	commandsRan.add("FSM-Init: 10")
+	command, at := 10, 0
+	for {
+		switch command {
+		default:
+			commandsRan.add("Not Found: " + fmt.Sprint(command))
+			commandsRan.add(fmt.Sprint("Line[", at, "]: ", lines[at]))
+			return commandsRan.data
+		}
+	}
+	return commandsRan.data
+}
 
 ////// ------------------------------
 // Exporter
