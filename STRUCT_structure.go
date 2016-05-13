@@ -268,3 +268,16 @@ func Get_Name_ID_From_Parent(ctx context.Context, parentID interface{}, kind str
 	}
 	return output_chapters
 }
+
+// Internal Function
+// Description:
+//
+func Get_Child_Key_From_Parent(ctx context.Context, parentID interface{}, kind string) []*datastore.Key {
+	// function Get_Name_ID_From_Parent to collect Title/Key information for each given kind
+	q := datastore.NewQuery(kind)      // Make a query into the given kind
+	q = q.Filter("Parent =", parentID) // Limit to only the parent ID
+	q = q.KeysOnly()
+
+	cks, _ := q.GetAll(ctx, nil)
+	return cks
+}

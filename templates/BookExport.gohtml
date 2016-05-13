@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<body>
+{{template "BookInformation" .}}
+{{range .Chapters}}{{template "ChapterInformation" .}}{{end}}
+</body>
+</html>
+
+{{define "BookInformation"}}
+<i book></i>
+<div book-title>{{.Title}}</div>
+<div book-version>{{.Version}}</div>
+<div book-author>{{.Author}}</div>
+<div book-tags>{{.Tags}}</div>
+<div book-description>{{.Description}}</div>
+{{end}}
+
+{{define "ChapterInformation"}}
+<i chapter></i>
+<div chapter-title>{{.Title}}</div>
+<div chapter-version>{{.Version}}</div>
+<div chapter-description>{{.Description}}</div>
+{{range .Sections}}{{template "SectionInformation" .}}{{end}}{{end}}
+
+{{define "SectionInformation"}}
+<i section></i>
+<div section-title>{{.Title}}</div>
+<div section-version>{{.Version}}</div>
+<div section-description>{{.Description}}</div>
+{{range .Objectives}}{{template "ObjectiveInformation" .}}{{end}}{{end}}
+
+{{define "ObjectiveInformation"}}
+<i objective></i>
+<div objective-title>{{.Title}}</div>
+<div objective-version>{{.Version}}</div>
+<div objective-author>{{.Author}}</div>
+<div objective-content>{{.Content}}</div>
+<div objective-keyTakeaways>{{.KeyTakeaways}}</div>
+{{range .Exercises}}{{template "ExerciseInformation" .}}{{end}}{{end}}
+
+{{define "ExerciseInformation"}}
+<i exercise></i>
+<div exercise-instruction>{{.Instruction}}</div>
+<div exercise-question>{{.Question}}</div>
+<div exercise-solution>{{.Solution}}</div>
+{{end}}

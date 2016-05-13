@@ -67,6 +67,13 @@ func init() {
 	r.GET("/edit/Exercise/:ID", getExerciseEditor) // <user><auth> Modify Exercise Information
 	r.GET("/edit", getSimpleObjectiveEditor)       // <user><auth> edit objective given id
 
+	// Module: Structure Parser
+	// Files: PARSE_BookParser.go
+	/************************************************/
+	r.GET("/export/:ID", exportBookToScreen)        // <user><DEBUG>
+	r.GET("/import/book", PARSE_GET_FileUploader)   // <DEBUG>
+	r.POST("/import/book", PARSE_POST_FileUploader) // <DEBUG
+
 	// Module: Images
 	// Files: Images.go
 	/********************************************************************/
