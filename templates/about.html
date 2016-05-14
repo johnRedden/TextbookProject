@@ -1,12 +1,123 @@
 <!DOCTYPE html>
-<html>
-<head>
-    <title>About</title>
-</head>
-<body>
+<html lang="en">
+  <head>
+    <!-- Required meta tags always come first -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
 
-<h1>About Page</h1>
-<a href="/">Return Home</a>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <!-- JQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 
-</body>
+<style type="text/css">
+        html {
+          position: relative;
+          min-height: 100%;
+        }
+        body{
+            font-size:large;
+            line-height: 1.5;
+            font-family: 'Merriweather', Georgia, 'Times New Roman', Times, serif;
+            /* Margin bottom by footer height */
+            margin-bottom: 60px;
+        }
+        .navbar { 
+            background: darkslategray;
+            /*box-shadow: 0px 5px 3px -3px #888;*/
+        }
+
+        .navbar-default .navbar-brand,
+        .navbar-default .navbar-nav > li > a {
+            color: white;
+        }
+        .navbar-default .navbar-brand:hover,
+        .navbar-default .navbar-nav > li > a:hover {
+            color: oldlace;
+        }
+
+        
+        footer {
+          position: absolute;
+          bottom: 0;
+          width: 100%;
+          /* Set the fixed height of the footer here */
+          height: 60px;
+        }
+        .well {
+            background: darkslategray;
+            color: white;
+        }
+        .books{
+            width:98%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .books a{
+            color: darkslateblue;
+        }
+
+    
+</style>
+  </head>
+
+  <body>
+
+    <nav class="navbar navbar-default navbar-static-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="/"><img class="pull-left" src="/public/images/eduNetSystems-logo-inv.png"/> 
+            <strong> &nbsp eduNetSystems Content System</strong></a>
+        </div>
+        <ul class="nav navbar-nav">
+          <li ><a href="/catalogs">Catalogs</a></li>
+          <li class="active"><a href="/about">About</a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+        {{if .Email}}
+            <li><a href="/login?changeuser=yes"><span class="glyphicon glyphicon-log-in"></span> Not {{.Name}}?</a></li>
+            <li><a href="/logout"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
+        {{else}}
+            <li><a href="/login"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+        {{end}}
+        </ul>
+      </div>
+    </nav>
+
+    <div class="container">
+
+        <h2>ENS Content Stystem α</h2>
+        <p>
+            <em>This is a pre-alpha version of our web based educational content system.</em><br/>
+    
+            More information soon!
+        </p>
+        
+        <p>Here is our core <a href="https://github.com/johnRedden/TextbookProject/wiki/API-Readers" target="_blank">API Reader Reference</a></p>
+
+    </div>
+
+    <footer class="text-center">
+        <div class="well">
+            <div class="container">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div>© 2016 <a href="http://www.edunetsystems.com/">eduNetSystems.com</a></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </footer>
+
+
+    <script type="text/JavaScript">
+
+
+    </script>
+  </body>
 </html>
+

@@ -60,36 +60,6 @@
             color: darkslateblue;
         }
 
-
-    .list-group {
-        padding: 0;
-        overflow: hidden;
-    }
-
-    .list-group .list-group-item {
-        border-radius: 5px;
-        border-width: 1px 0 0 0;
-    }
-
-    .list-group-root > .list-group-item:first-child {
-        border-top-width: 0;
-    }
-
-    .list-group-root > .list-group > .list-group-item {
-        padding-left: 30px;
-    }
-
-    .list-group-root > .list-group > .list-group > .list-group-item {
-        padding-left: 45px;
-    }
-
-    .list-group-item .glyphicon {
-        margin-right: 5px;
-    }
-    .list-group-item-heading{
-        padding:5px;
-    }
-    
 </style>
   </head>
 
@@ -102,8 +72,8 @@
             <strong> &nbsp eduNetSystems Content System</strong></a>
         </div>
         <ul class="nav navbar-nav">
-          <li class="active"><a href="\">Catalogs</a></li>
-          <li><a href="#">About</a></li>
+          <li ><a href="/catalogs">Catalogs</a></li>
+          <li><a href="/about">About</a></li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
         {{if .Email}}
@@ -120,9 +90,11 @@
 
         <h2>ENS Content Stystem α</h2>
         <p>
-            <em>This is a pre-alpha version of our web based educational content system.</em>
-            <strong>User PL: {{.Permission}}</strong>
+            <em>This is a pre-alpha version of our web based educational content system.</em><br/>
         </p>
+        <p>Goal is to create a 21st century mobile first web based textbook content delivery system. What could go wrong?</p>
+
+
     </div>
 
     <footer class="text-center">
@@ -137,6 +109,13 @@
             </div>
         </div>
     </footer>
+
+ 
+
+    <script type="text/JavaScript">
+
+
+    </script>
   </body>
 </html>
 
