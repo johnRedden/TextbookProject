@@ -26,8 +26,8 @@ var (
 	//  followed by a space with any (book/chapter/section/objective/exercise)
 	//  eventually closed with >.
 	//  Then eventually, it must finish with a closing div or i tag and a newline
-	// Example: https://regex101.com/r/hY2nK8/1
-	re = regexp.MustCompile(`((<div|<i) (book|chapter|section|objective|exercise).*(>).*(<\/(div|i).*\n))`)
+	// Example: https://regex101.com/r/hY2nK8/2
+	re = regexp.MustCompile(`<(div|i) (book|chapter|section|objective|exercise).*>.*<\/(div|i)>\n`)
 )
 
 /////---------------------------------
