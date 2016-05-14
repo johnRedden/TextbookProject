@@ -14,86 +14,134 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 
 
-    <style type="text/css">
+<style type="text/css">
+        html {
+          position: relative;
+          min-height: 100%;
+        }
         body{
-                font-size:large;
-                line-height: 1.5;
-                font-family: 'Merriweather', Georgia, 'Times New Roman', Times, serif;
+            font-size:large;
+            line-height: 1.5;
+            font-family: 'Merriweather', Georgia, 'Times New Roman', Times, serif;
+            /* Margin bottom by footer height */
+            margin-bottom: 60px;
         }
         .navbar { 
-                 box-shadow: 0px 5px 3px -3px #888;
+            background: darkslategray;
+            /*box-shadow: 0px 5px 3px -3px #888;*/
         }
 
-        .list-group {
-            padding: 0;
-            overflow: hidden;
+        .navbar-default .navbar-brand,
+        .navbar-default .navbar-nav > li > a {
+            color: white;
+        }
+        .navbar-default .navbar-brand:hover,
+        .navbar-default .navbar-nav > li > a:hover {
+            color: oldlace;
         }
 
-        .list-group .list-group-item {
-            border-radius: 5px;
-            border-width: 1px 0 0 0;
+        
+        footer {
+          position: absolute;
+          bottom: 0;
+          width: 100%;
+          /* Set the fixed height of the footer here */
+          height: 60px;
+        }
+        .well {
+            background: darkslategray;
+            color: white;
+        }
+        .books{
+            width:98%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .books a{
+            color: darkslateblue;
         }
 
-        .list-group-root > .list-group-item:first-child {
-            border-top-width: 0;
-        }
 
-        .list-group-root > .list-group > .list-group-item {
-            padding-left: 30px;
-        }
+    .list-group {
+        padding: 0;
+        overflow: hidden;
+    }
 
-        .list-group-root > .list-group > .list-group > .list-group-item {
-            padding-left: 45px;
-        }
+    .list-group .list-group-item {
+        border-radius: 5px;
+        border-width: 1px 0 0 0;
+    }
 
-        .list-group-item .glyphicon {
-            margin-right: 5px;
-        }
-        .list-group-item-heading{
-                    padding:5px;
-        }
-    </style>
+    .list-group-root > .list-group-item:first-child {
+        border-top-width: 0;
+    }
+
+    .list-group-root > .list-group > .list-group-item {
+        padding-left: 30px;
+    }
+
+    .list-group-root > .list-group > .list-group > .list-group-item {
+        padding-left: 45px;
+    }
+
+    .list-group-item .glyphicon {
+        margin-right: 5px;
+    }
+    .list-group-item-heading{
+        padding:5px;
+    }
+    
+</style>
 </head>
 
 <body>
-   <nav class="navbar navbar-default navbar-static-top">
+
+    <nav class="navbar navbar-default navbar-static-top">
       <div class="container-fluid">
         <div class="navbar-header">
-          <a class="navbar-text" href="/"><img class="pull-left" src="/public/images/eduNetSystems-logo.png"/> 
-            <strong> &nbsp eduNetSystems Textbook System α</strong></a>
-             
+          <a class="navbar-brand" href="/"><img class="pull-left" src="/public/images/eduNetSystems-logo-inv.png"/> 
+            <strong> &nbsp eduNetSystems Content System</strong></a>
         </div>
         <ul class="nav navbar-nav">
-          <li><a href="\">Catalogs</a></li>
-          <li><a href="#">About</a></li>
+          <li><a href="/catalogs">Catalogs</a></li>
+          <li><a href="/about">About</a></li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
-          {{if .Email}}
-            <li><a href="/login?changeuser=yes&redirect=toc.html/{{.ID}}"><span class="glyphicon glyphicon-log-in"></span> Not {{.Name}}?</a></li>
-            <li><a href="/logout?redirect=toc.html/{{.ID}}"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
-          {{else}}
-            <li><a href="/login?changeuser=yes&redirect=toc.html/{{.ID}}"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
-          {{end}}
+        {{if .Email}}
+            <li><a href="/login?changeuser=yes"><span class="glyphicon glyphicon-log-in"></span> Not {{.Name}}?</a></li>
+            <li><a href="/logout"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
+        {{else}}
+            <li><a href="/login"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+        {{end}}
         </ul>
       </div>
     </nav>
 
     <div class="container">
-        <div id="myBookID"><h2>Book: loading...</h2></div>
-        <p><em>This is a pre-alpha version of our Online Textbook System.</em></p>
+
+        <div id="bookHeader" class="well">
+            <div class="btn-group btn-group-sm pull-right" role="group">
+                <button id="editBookBtn" class="btn btn-success" data-toggle="modal" data-target="#bookEditModal" type="button"><span class="glyphicon glyphicon-pencil"></span></button>
+                <button id="deleteBookBtn" class="btn btn-danger " data-toggle="modal" data-target="#bookDeleteModal" type="button"><span class="glyphicon glyphicon-remove"></span> </button>
+            </div>
+            <div id="bookTitle" class="">Loading...</div>
+            <div id="bookAuthor" class=""></div>
+            <div id="bookID" class=""> </div>
+        </div>
+
+
         <div class="list-group  well">
             <div class="list-group-item-heading" id="bookHeading">Chapters Loading... <i class="glyphicon glyphicon-download"> </i> </div>
             <div class="list-group-root"></div>
         </div>
     </div>
 
-
     <footer class="text-center">
         <div class="well">
             <div class="container">
                 <div class="row">
                     <div class="col-xs-12">
-                        <div><span class="glyphicon glyphicon-copyright-mark"></span> 2015 <a href="http://www.edunetsystems.com/">eduNetSystems.com</a></div>
+                        <div>© 2016 <a href="http://www.edunetsystems.com/">eduNetSystems.com</a></div>
                     </div>
                 </div>
 
@@ -102,14 +150,80 @@
     </footer>
 
 
+    <!-- Edit Book Modal *******************-->
+      <div class="modal fade" id="bookEditModal" role="dialog">
+        <div class="modal-dialog">
+        
+          <!-- Modal content-->
+          <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h2 class="modal-title"><span class="glyphicon glyphicon-alert"></span> Edit Book Information</h2>
+            </div>
+            <div class="modal-body">
+                <h4 class="modal-title">You can edit the book information here.</h4>
+                <br/>
+                <input id="editBookName" class="form-control" placeholder="book tile"/>
+                <input id="editBookAuthor" class="form-control" placeholder="author"/>
+                <p id="editBookID"></p>              
+            </div>
+            <div class="modal-footer">
+              <button id="bookInfoSave" type="button" class="btn btn-danger" data-dismiss="modal">Save</button>
+              <button type="button" class="btn btn-success" data-dismiss="modal">Cancel</button>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    <!-- END Edit Book Modal ******************-->
+
 <script type="text/javascript">
     var incomingID = "{{.ID}}";
+    console.log({{.}})
+    
 
     $(document).ready(function(){
         if (incomingID == "") {return ;}
+        localStorage.clear();
+        getBookInfo(incomingID);
+
+        $('#editBookBtn').on('click',function(){ 
+            $('#editBookName').val(localStorage.bookTitle);
+            $('#editBookAuthor').val(localStorage.bookAuthor);
+            $('#editBookID').html('Book ID='+localStorage.bookID);
+
+            $('#bookInfoSave').one('click',function(){
+                var x = $('#editBookName').val();
+                var y = $('#editBookAuthor').val();
+                saveBookInfo(x,y);
+            });
+        });
+
         populateBook(incomingID);
 
     });
+
+    function getBookInfo(bookID){
+        $.get("/api/book.xml?ID="+bookID,function(xml){
+            //console.log(xml);
+            localStorage.bookTitle = $(xml).find("title").text();
+            localStorage.bookAuthor = $(xml).find("author").text();
+            localStorage.bookID = bookID;
+
+            $('#bookTitle').html('Book: '+localStorage.bookTitle);
+            $('#bookAuthor').html('Author: '+localStorage.bookAuthor);
+            $('#bookID').html('ID='+localStorage.bookID);
+        });
+    }
+    function saveBookInfo(bookName,bookAuths){
+        $.post("/api/makeBook",{ID:localStorage.bookID,BookName:bookName, Author:bookAuths},function(data){
+            g = $.parseJSON(data);
+            console.log(g.result +":"+ g.reason);
+            getBookInfo(localStorage.bookID);
+            
+        });
+    }
+
 
     // methods
     function populateBook(bookID){
@@ -118,7 +232,7 @@
             bookid = $(xml).find("bookid").text();
             catalog = $(xml).find("catalog").text();
 
-            $('#myBookID').html('<h2>Book:'+booktitle+'</h2>');
+            $('#myBookID').html('<h2>Book: '+booktitle+'</h2>');
 
 
             $(xml).find('chapter').each(function(){ // each chapter of book
