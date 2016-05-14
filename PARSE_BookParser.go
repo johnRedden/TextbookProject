@@ -21,10 +21,13 @@ import (
 )
 
 var (
-	// This regex will select on html structures that are prefixed by:
-	// <div book|chapter|section|objective|exercise or
-	// <i book|chapter|section|objective|exercise
-	re = regexp.MustCompile(`(<div book.*\n|<div chapter.*\n|<div section.*\n|<div objective.*\n|<div exercise.*\n|<i book.*\n|<i chapter.*\n|<i section.*\n|<i objective.*\n|<i exercise.*\n)`)
+	// This regex will select on html structures exactly:
+	// Begun with <div or <i,
+	//  followed by a space with any (book/chapter/section/objective/exercise)
+	//  eventually closed with >.
+	//  Then eventually, it must finish with a closing div or i tag and a newline
+	// Example: https://regex101.com/r/hY2nK8/1
+	re = regexp.MustCompile(`((<div|<i) (book|chapter|section|objective|exercise).*(>).*(<\/(div|i).*\n))`)
 )
 
 /////---------------------------------
@@ -51,7 +54,6 @@ func getAllLinesFromFile(mpf multipart.File) ([]string, error) {
 func breakCommand(s string) (string, string) {
 	prefixLim := strings.Index(s, ">")
 	suffixLim := strings.LastIndex(s, "<")
-
 	return s[prefixLim+1 : suffixLim], s[:prefixLim+1]
 }
 
@@ -108,18 +110,209 @@ func (d *debugger) add(s string) {
 	d.data = append(d.data, s)
 }
 
+// State Machine: Book Parser
+// TODO: Place Parser Def Link in here
 func runParserStateMachine(lines []string) []string {
 	commandsRan := newDebugger()
-	commandsRan.add("FSM-Init: 10")
-	command, at := 10, 0
-	for {
-		switch command {
-		default:
-			commandsRan.add("Not Found: " + fmt.Sprint(command))
-			commandsRan.add(fmt.Sprint("Line[", at, "]: ", lines[at]))
-			return commandsRan.data
-		}
+	commandsRan.add("S10: FSM-Init")
+	at := 0
+	if at >= len(lines) {
+		return commandsRan.data
 	}
+	data, command := breakCommand(lines[at])
+	// S10:
+	if command != `<i book="">` {
+		commandsRan.add("S10: MUST Failure.")
+		commandsRan.add(fmt.Sprint("Line[", at, "]: ", command, " ", data, " "))
+		return commandsRan.data
+	}
+	// S11:
+	commandsRan.add("S11: Create New Book")
+S12:
+	at += 1
+	if at >= len(lines) {
+		return commandsRan.data
+	}
+	data, command = breakCommand(lines[at])
+
+	switch command {
+	default:
+		commandsRan.add("S12: IF Failure, Push Book")
+	case `<div book-title="">`:
+		commandsRan.add(fmt.Sprint("   : Book.Title=", data))
+		goto S12
+	case `<div book-version="">`:
+		commandsRan.add(fmt.Sprint("   : Book.Version=", data))
+		goto S12
+	case `<div book-author="">`:
+		commandsRan.add(fmt.Sprint("   : Book.Author=", data))
+		goto S12
+	case `<div book-tags="">`:
+		commandsRan.add(fmt.Sprint("   : Book.Tags=", data))
+		goto S12
+	case `<div book-description="">`:
+		commandsRan.add(fmt.Sprint("   : Book.Description=", data))
+		goto S12
+	}
+	// S20:
+	if command != `<i chapter="">` {
+		commandsRan.add("S20: MUST Failure.")
+		commandsRan.add(fmt.Sprint("Line[", at, "]: ", command, " ", data, " "))
+		return commandsRan.data
+	}
+S21:
+	commandsRan.add("S21: Create New Chapter")
+S22:
+	at += 1
+	if at >= len(lines) {
+		return commandsRan.data
+	}
+	data, command = breakCommand(lines[at])
+
+	switch command {
+	default:
+		commandsRan.add("S22: IF Failure, Push Chapter")
+	case `<div chapter-title="">`:
+		commandsRan.add(fmt.Sprint("   : Chapter.Title=", data))
+		goto S22
+	case `<div chapter-version="">`:
+		commandsRan.add(fmt.Sprint("   : Chapter.Version=", data))
+		goto S22
+	case `<div chapter-description="">`:
+		commandsRan.add(fmt.Sprint("   : Chapter.Description=", data))
+		goto S22
+	}
+	// S30:
+	if command == `<i chapter="">` {
+		goto S21
+	}
+	// S40:
+	if command != `<i section="">` {
+		commandsRan.add("S40: MUST Failure.")
+		commandsRan.add(fmt.Sprint("Line[", at, "]: ", command, " ", data, " "))
+		return commandsRan.data
+	}
+S41:
+	commandsRan.add("S41: Create New Section")
+S42:
+	at += 1
+	if at >= len(lines) {
+		return commandsRan.data
+	}
+	data, command = breakCommand(lines[at])
+
+	switch command {
+	default:
+		commandsRan.add("S42: IF Failure, Push Section")
+	case `<div section-title="">`:
+		commandsRan.add(fmt.Sprint("   : Section.Title=", data))
+		goto S42
+	case `<div section-version="">`:
+		commandsRan.add(fmt.Sprint("   : Section.Version=", data))
+		goto S42
+	case `<div section-description="">`:
+		commandsRan.add(fmt.Sprint("   : Section.Description=", data))
+		goto S42
+	}
+	// S50:
+	if command == `<i chapter="">` {
+		goto S21
+	}
+	// S51:
+	if command == `<i section="">` {
+		goto S41
+	}
+	// S60:
+	if command != `<i objective="">` {
+		commandsRan.add("S60: MUST Failure.")
+		commandsRan.add(fmt.Sprint("Line[", at, "]: ", command, " ", data, " "))
+		return commandsRan.data
+	}
+S61:
+	commandsRan.add("S61: Create New Objective")
+S62:
+	at += 1
+	if at >= len(lines) {
+		return commandsRan.data
+	}
+	data, command = breakCommand(lines[at])
+
+	switch command {
+	default:
+		commandsRan.add("S62: IF Failure, Push Objective")
+	case `<div objective-title="">`:
+		commandsRan.add(fmt.Sprint("   : Objective.Title=", data))
+		goto S62
+	case `<div objective-version="">`:
+		commandsRan.add(fmt.Sprint("   : Objective.Version=", data))
+		goto S62
+	case `<div objective-author="">`:
+		commandsRan.add(fmt.Sprint("   : Objective.Author=", data))
+		goto S62
+	case `<div objective-content="">`:
+		commandsRan.add(fmt.Sprint("   : Objective.Content=", data))
+		goto S62
+	case `<div objective-keytakeaways="">`:
+		commandsRan.add(fmt.Sprint("   : Objective.KeyTakeaways=", data))
+		goto S62
+	}
+	// S70:
+	if command == `<i chapter="">` {
+		goto S21
+	}
+	// S71:
+	if command == `<i section="">` {
+		goto S41
+	}
+	// S72:
+	if command == `<i objective="">` {
+		goto S61
+	}
+	// S80:
+	if command != `<i exercise="">` {
+		commandsRan.add("S80: MUST Failure.")
+		commandsRan.add(fmt.Sprint("Line[", at, "]: ", command, " ", data, " "))
+		return commandsRan.data
+	}
+S81:
+	commandsRan.add("S81: Create New Exercise")
+S82:
+	at += 1
+	if at >= len(lines) {
+		return commandsRan.data
+	}
+	data, command = breakCommand(lines[at])
+
+	switch command {
+	default:
+		commandsRan.add("S82: IF Failure, Push Exercise")
+	case `<div exercise-instruction="">`:
+		commandsRan.add(fmt.Sprint("   : Exercise.Instruction=", data))
+		goto S82
+	case `<div exercise-question="">`:
+		commandsRan.add(fmt.Sprint("   : Exercise.Question=", data))
+		goto S82
+	case `<div exercise-solution="">`:
+		commandsRan.add(fmt.Sprint("   : Exercise.Solution=", data))
+		goto S82
+	}
+	// S90:
+	if command == `<i chapter="">` {
+		goto S21
+	}
+	// S91:
+	if command == `<i section="">` {
+		goto S41
+	}
+	// S92:
+	if command == `<i objective="">` {
+		goto S61
+	}
+	// S93:
+	if command == `<i exercise="">` {
+		goto S81
+	}
+	// Exit
 	return commandsRan.data
 }
 
