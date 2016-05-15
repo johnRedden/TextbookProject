@@ -1,15 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <title>Textbook Project: Editor</title>
+  <head>
+    <!-- Required meta tags always come first -->
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
 
-    <!-- Bootstrap -->
-    <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
     <!-- JQuery -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+
     <!-- CKEditor -->
     <script src="http://cdn.ckeditor.com/4.5.3/full-all/ckeditor.js"></script>
     <!-- Mathjax -->
@@ -17,34 +20,49 @@
     
     <!-- Styling/Scripting -->
     <style>
-        body {
-            font-size: larger;
-            background-color: oldlace;
+        html {
+          position: relative;
+          min-height: 100%;
+        }
+        body{
+            font-size:large;
+            line-height: 1.5;
+            font-family: 'Merriweather', Georgia, 'Times New Roman', Times, serif;
+            /* Margin bottom by footer height */
+            margin-bottom: 60px;
+        }
+        .navbar { 
+            background: darkslategray;
+            /*box-shadow: 0px 5px 3px -3px #888;*/
+        }
+
+        .navbar-default .navbar-brand,
+        .navbar-default .navbar-nav > li > a {
+            color: white;
+        }
+        .navbar-default .navbar-brand:hover,
+        .navbar-default .navbar-nav > li > a:hover {
+            color: oldlace;
+        }
+
+        
+        footer {
+          position: absolute;
+          bottom: 0;
+          width: 100%;
+          /* Set the fixed height of the footer here */
+          height: 60px;
+        }
+        .well {
+            background: darkslategray;
+            color: white;
         }
         textarea{
             width:100%;
             height:100px;
             padding:5px;
         }
-        .navbar { 
-             box-shadow: 0px 5px 3px -3px #888;
-             background-color: oldlace;
-        }
-        .good {
-            color: lightblue;
-        }
-        .bad {
-            color: lightpink;
-        }
-        .goodBack{
-              background-color: lightblue;
-        }
-        .badBack{
-              background-color: lightpink;
-        }
-        #myContainer{
-            margin-top: 200px;
-        }
+
         .input-group-addon { 
             width: 130px;
             text-align:left;
@@ -57,7 +75,8 @@
         $(document).ready(function(){
             console.log("Ready!")
             objectiveID = $("#JQ-ObjectiveID").val();
-            $("#JQ-SubmitButton").click(function(){
+
+            $(".saveBtn").click(function(){
                 console.log("Click Called!!")
                 sectID = $("#JQ-SectionID").val()
                 ObjeName = $("#JQ-ObjectiveTitle").val()
@@ -66,26 +85,22 @@
                 ver = $("#JQ-Version").val()
                 cont = CKEDITOR.instances['JQ-Content'].getData();
                 ktw = CKEDITOR.instances['JQ-KeyTakeaways'].getData();
-                authr = $("#JQ-AuthorInput").val()
+                authr = $("#JQ-AuthorInput").val();
+
                 $.post("/api/makeObjective",{SectionID:sectID,ObjectiveName:ObjeName,ID:objeID,Version:ver,Content:cont,KeyTakeaways:ktw,Author:authr},function(data){
                     j = $.parseJSON(data);
                     console.log(j.result +":"+ j.reason)
-                    if (j.code == 0){
-                        $("#JQ-Results").val("Submission Success");
-                        // reset save button
+                    if (j.code == 0){ // reset save button
                         toggleSaveBtn("saved");
                     } else {
-                        $("#JQ-Results").val(j.reason)
+                        // say something
                     }
                 });
                 $.wait(function(){$("#JQ-Results").val("")},3)
             });
 
-            $("#JQ-PreviewButton").click(function(){
-                console.log('preview clicked');
-                // objectiveID = $("#JQ-ObjectiveID").val();
+            $(".previewBtn").click(function(){
                 var url = '/preview?ID='+objectiveID;
-                //var url = '/api/objective.html?ID='+objectiveID;
                 window.open(url,'_blank');
             });
 
@@ -99,26 +114,66 @@
                     filebrowserImageBrowseUrl: '/image/browser?action=browseImageURL&oid='+objectiveID,
                     filebrowserImageUploadUrl: '/api/ckeditor/create?action=uploadImageURL&oid='+objectiveID,
                     filebrowserBrowseUrl: '/image/browser?action=browseURL&oid='+objectiveID,
-                    filebrowserUploadUrl: '/api/ckeditor/create?action=uploadURL&oid='+objectiveID
+                    filebrowserUploadUrl: '/api/ckeditor/create?action=uploadURL&oid='+objectiveID,
+                    removePlugins: 'forms'
                 };
 
             var contentEditor = CKEDITOR.replace('JQ-Content',stdConfig);
             var keyTakeawaysEditor = CKEDITOR.replace('JQ-KeyTakeaways',stdConfig);
 
+              CKEDITOR.plugins.registered['save'] = {
+                  init: function (editor) {
+                     var command = editor.addCommand('save',
+                     {
+                          modes: { wysiwyg: 1, source: 1 },
+                          exec: function (editor) { // Add here custom function for the save button
+                            //alert('You clicked the save button in CKEditor toolbar!');
+                            $('.saveBtn').trigger('click');
+                          }
+                     });
+                     editor.ui.addButton('Save', { label: 'Save', command: 'save' });
+                  }
+              }
+
             // save button functionality  TODO: IF any input changes toggle!
+            $('#objectiveInfo input').on('keyup',function(){
+                toggleSaveBtn();
+            })
             contentEditor.on('change',function(){
-                toggleSaveBtn("save");
+                toggleSaveBtn();
             });
 
+            keyTakeawaysEditor.on('change',function(){
+                toggleSaveBtn();
+            });
+            $('#deleteObjectiveBtn').on('click',function(){
+                var x = $("#JQ-ObjectiveTitle").val();
+                var y = $("#JQ-ObjectiveID").val();
+
+                $('#objName').html(x);
+                $('#objID').html(y);
+                $('#deleteObjectiveModal').modal('show');
+
+                $('#objDeleteBtn').on('click',function(){
+                    console.log("hi")
+                    $.post("/api/deleteObjective",{ID:y},function(data){
+                         g = $.parseJSON(data);
+                        console.log(g.result +":"+ g.reason); 
+                        //go back to book... have the id here somewhere
+                        window.close(); 
+                    }); 
+
+                });
+            });
 
             //utility functions
             function toggleSaveBtn(status){
                 if(status==="saved"){
-                    $('#JQ-SubmitButton').removeClass('btn-danger').addClass('btn-success').html('<span id="saveGlyph" class="glyphicon glyphicon-ok"> </span> Saved');
-                    $('#JQ-PreviewButton').prop('disabled', false);
+                    $('.saveBtn').removeClass('btn-danger').addClass('btn-primary').html('<span id="saveGlyph" class="glyphicon glyphicon-ok"> </span> Saved');
+                    $('.previewBtn').prop('disabled', false);
                 }else{
-                    $('#JQ-SubmitButton').removeClass('btn-success').addClass('btn-danger').html('<span id="saveGlyph" class="glyphicon glyphicon-exclamation-sign"> </span> Save');
-                    $('#JQ-PreviewButton').prop('disabled', true);
+                    $('.saveBtn').removeClass('btn-primary').addClass('btn-danger').html('<span id="saveGlyph" class="glyphicon glyphicon-exclamation-sign"> </span> Save');
+                    $('.previewBtn').prop('disabled', true);
                 }
 
             }
@@ -126,58 +181,76 @@
     </script>
 </head>
 <body>
-    <nav class="navbar navbar-default navbar-fixed-top">
-        <div class="container"> 
+    <nav class="navbar navbar-default navbar-static-top">
+      <div class="container-fluid">
         <div class="navbar-header">
+          <a class="navbar-brand" href="/"><img class="pull-left" src="/public/images/eduNetSystems-logo-inv.png"/> 
+            <strong> &nbsp eduNetSystems Content System</strong></a>
+        </div>
+        <ul class="nav navbar-nav">
+          <li class=""><a href="/catalogs">Catalogs</a></li>
+          <li><a href="/about">About</a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
 
-            <h2><img class="pull-left" src="/public/images/eduNetSystems-logo.png"/> &nbsp EduNetSystems Editor </h2>
-
-            <!-- Data Id's, Used for submission. -->
+            <li><a href="/login"><span class="glyphicon glyphicon-log-in"></span> Login TBA</a></li>
+    
+        </ul>
+      </div>
+    </nav>
+            <!-- can do this using the api -->
             <input id="JQ-BookID" type="hidden" value="{{.BookID}}" readonly>
             <input id="JQ-ChapterID" type="hidden" value="{{.ChapterID}}" readonly>
             <input id="JQ-SectionID" type="hidden" value="{{.SectionID}}" readonly>
             <input id="JQ-ObjectiveID" type="hidden" value="{{.ObjectiveID}}" readonly>
-
-            <!-- Objective Title -->
+    <div class="container">
+    
+        <div class="well" id="objectiveInfo">
+            <p> Objective Editor Alpha 
+                <span class="btn-group btn-group-sm pull-right">
+                    <button type="button" class="btn btn-primary saveBtn" id="JQ-SubmitButton"><span id="saveGlyph" class="glyphicon glyphicon-ok"> </span> Saved</button>
+                    <button type="button" class="btn btn-success previewBtn" id="JQ-PreviewButton">Preview</button>
+                    <button type="button" class="btn btn-danger" id="deleteObjectiveBtn">Delete</button>
+                </span>
+            </p>
             <div class="input-group">
                 <label class="input-group-addon">Objective:</label>
                 <input type="text" class="form-control" id="JQ-ObjectiveTitle" placeholder="Objective" value="{{.ObjectiveTitle}}">
-            </div>
-
-            <!-- Author -->
+            </div> 
             <div class="input-group">
                 <label class="input-group-addon">Author:</label>
                 <input type="text" class="form-control" id="JQ-AuthorInput" placeholder="Author" value="{{.Author}}">
-            </div>
-
-            <!-- Version -->
+            </div>  
             <div class="input-group">
                 <label class="input-group-addon">Version:</label>
                 <input type="text" class="form-control" placeholder="Version" id="JQ-Version" value="{{.ObjectiveVersion}}">
+            </div>
+        </div>
 
-                <!-- TODO: Hook in whatever these two things are supposed to be. -->
-                <span class="input-group-btn">
-                    <!-- I've replaced the button here with a saved button instead -->
-                    <button type="button" class="btn btn-success" id="JQ-SubmitButton"><span id="saveGlyph" class="glyphicon glyphicon-ok"> </span> Saved</button>
-                    <button type="button" class="btn btn-default" id="JQ-PreviewButton">Preview</button>
+        <div class="well">
+            <p> Content 
+                <span class="btn-group btn-group-sm pull-right">
+                    <button type="button" class="btn btn-primary saveBtn" id="JQ-SubmitButton"><span id="saveGlyph" class="glyphicon glyphicon-ok"> </span> Saved</button>
+                    <button type="button" class="btn btn-success previewBtn" id="JQ-PreviewButton">Preview</button>
                 </span>
-            </div>
+            </p>
+            <form class="goodBack">
+                <textarea name="Message" id="JQ-Content" cols="10" wrap="hard" autofocus placeholder="Enter new message.">{{html .Content}}</textarea>
+            </form>
+        </div>
 
-            <p><em>online editor alpha version</em></p>
+        <div class="well">
+            <p> Key Takeaways
+                <span class="btn-group btn-group-sm pull-right">
+                    <button type="button" class="btn btn-primary saveBtn" id="JQ-SubmitButton"><span id="saveGlyph" class="glyphicon glyphicon-ok"> </span> Saved</button>
+                    <button type="button" class="btn btn-success previewBtn" id="JQ-PreviewButton">Preview</button>
+                </span>
+            </p>
+            <form class="goodBack">
+                <textarea name="Message2" id="JQ-KeyTakeaways" wrap="hard" placeholder="KeyTakeaways">{{html .KeyTakeaways}}</textarea>
+            </form>
+        </div>
 
-            </div>
-            </div>
-    </nav>
-
-    <div class="container" id="myContainer">
-        <form class="well goodBack">
-            <strong>Content:</strong>
-            <textarea name="Message" id="JQ-Content" cols="10" wrap="hard" autofocus placeholder="Enter new message.">{{html .Content}}</textarea>
-        </form>
-        <form class="well goodBack">
-            <strong>Key Takeaways:</strong>
-            <textarea name="Message2" id="JQ-KeyTakeaways" wrap="hard" placeholder="KeyTakeaways">{{html .KeyTakeaways}}</textarea>
-        </form>
     </div>
 
     <footer class="text-center">
@@ -185,7 +258,7 @@
             <div class="container">
                 <div class="row">
                     <div class="col-xs-12">
-                        <div><span class="glyphicon glyphicon-sunglasses"></span>2015 eduNetSystems.com</div>
+                        <div>© 2016 <a href="http://www.edunetsystems.com/">eduNetSystems.com</a></div>
                     </div>
                 </div>
 
@@ -193,9 +266,35 @@
         </div>
     </footer>
 
-    <p>Results: <input id="JQ-Results" readonly></p><br>
+    <!-- Delete Objective Modal *******************-->
+      <div class="modal fade" id="deleteObjectiveModal" role="dialog">
+        <div class="modal-dialog">
+        
+          <!-- Modal content-->
+          <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h2 class="modal-title"><span class="glyphicon glyphicon-alert"></span> Delete Objective</h2>
+            </div>
+            <div class="modal-body">
+                <h4 class="modal-title">Deleting this objective cannot be undone.</h4>
+                <br/>
+                <p>Objective: <strong id="objName" type="text"></strong></p>
+                <p>Objective ID: <strong id="objID" type="text"></strong></p>              
+            </div>
+            <div class="modal-footer">
+              <button id="objDeleteBtn" type="button" class="btn btn-danger" data-dismiss="modal">Delete</button>
+              <button type="button" class="btn btn-success" data-dismiss="modal">Cancel</button>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    <!-- END Delete Cat Modal ******************-->
 
-    <!-- <p>Book: <input id="JQ-BookTitle" value="{{.BookTitle}}" readonly></p><br>
+   <!-- 
+    <p>Results: <input id="JQ-Results" readonly></p><br>
+    <p>Book: <input id="JQ-BookTitle" value="{{.BookTitle}}" readonly></p><br>
     <p>Chapter: <input id="JQ-ChapterTitle" value="{{.ChapterTitle}}" readonly></p><br>
     <p>Section: <input id="JQ-SectionTitle" value="{{.SectionTitle}}" readonly></p><br> -->
 </body>
