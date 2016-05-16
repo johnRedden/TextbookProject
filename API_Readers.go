@@ -42,6 +42,7 @@ import (
 func API_GetCatalogs(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	ctx := appengine.NewContext(req)
 	q := datastore.NewQuery("Catalogs")
+	q = q.Order("Title")
 	cataloglist := make([]Catalog, 0)
 	for t := q.Run(ctx); ; {
 		var x Catalog
@@ -70,6 +71,7 @@ func API_GetCatalogs(res http.ResponseWriter, req *http.Request, params httprout
 func API_GetBooks(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	ctx := appengine.NewContext(req)
 	q := datastore.NewQuery("Books")
+	q = q.Order("Title")
 
 	queryCatID := req.FormValue("Catalog")
 	if queryCatID != "" { // Ensure that a BookID was indeed sent.
@@ -106,6 +108,7 @@ func API_GetBooks(res http.ResponseWriter, req *http.Request, params httprouter.
 func API_GetChapters(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	ctx := appengine.NewContext(req)
 	q := datastore.NewQuery("Chapters")
+	q = q.Order("Title")
 
 	queryBookID := req.FormValue("BookID")
 	if queryBookID != "" { // Ensure that a BookID was indeed sent.
@@ -143,6 +146,7 @@ func API_GetChapters(res http.ResponseWriter, req *http.Request, params httprout
 func API_GetSections(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	ctx := appengine.NewContext(req)
 	q := datastore.NewQuery("Sections")
+	q = q.Order("Title")
 
 	queryChapterID := req.FormValue("ChapterID")
 	if queryChapterID != "" { // Ensure that a ChapterID was indeed sent.
@@ -180,6 +184,7 @@ func API_GetSections(res http.ResponseWriter, req *http.Request, params httprout
 func API_GetObjectives(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	ctx := appengine.NewContext(req)
 	q := datastore.NewQuery("Objectives")
+	q = q.Order("Title")
 
 	querySectionID := req.FormValue("SectionID")
 	if querySectionID != "" { // Ensure that a BookID was indeed sent.
@@ -219,6 +224,7 @@ func API_GetObjectives(res http.ResponseWriter, req *http.Request, params httpro
 func API_GetExercises(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	ctx := appengine.NewContext(req)
 	q := datastore.NewQuery("Exercises")
+	q = q.Order("Instruction")
 
 	if req.FormValue("ObjectiveID") != "" {
 		i, numErr := strconv.Atoi(req.FormValue("ObjectiveID"))
