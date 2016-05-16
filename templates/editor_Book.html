@@ -1,29 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <title>Textbook Project: Edit Book</title>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+{{template "Head"}}
+<body>
+    {{template "Nav" }}
 
-    <!-- Bootstrap -->
-    <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
-    <!-- JQuery -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
-    <!-- CKEditor -->
-    <script src="http://cdn.ckeditor.com/4.5.3/full-all/ckeditor.js"></script>
-    <!-- Mathjax -->
-    <script type="text/javascript" async src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+    <div class="container">
+
+        <div class="well" id="bookInfo">
+            <p> Book Editor
+                <span class="btn-group btn-group-sm pull-right">
+                    <button type="button" class="btn btn-primary saveBtn" id="JQ-SubmitButton"><span id="saveGlyph" class="glyphicon glyphicon-ok"> </span> Saved</button>
+                    <button type="button" class="btn btn-success backBtn" id="JQ-BackBtn">Back</button>
+                </span>
+            </p>
+            <div class="input-group">
+                <label class="input-group-addon">Catalog:</label>
+                <input type="text" class="form-control" id="JQ-Title" placeholder="Book" value="{{.Title}}">
+            </div> 
+            <div class="input-group">
+                <label class="input-group-addon">Version:</label>
+                <input type="text" class="form-control" id="JQ-Version" placeholder="Version" value="{{.Version}}">
+            </div>  
+            <div class="input-group">
+                <label class="input-group-addon">Author:</label>
+                <input type="text" class="form-control" placeholder="Author" id="JQ-Author" value="{{.Author}}">
+            </div>
+            <div class="input-group">
+                <label class="input-group-addon">Tags:</label>
+                <input type="text" class="form-control" placeholder="Tags" id="JQ-Tags" value="{{.Tags}}">
+            </div>
+        </div>
+
+        <div class="well">
+            <p> Description</p>
+            <form>
+                <textarea name="Message" id="JQ-Description" cols="10" wrap="hard" autofocus placeholder="Enter new message.">{{.Description}}</textarea>
+            </form>
+        </div>
+
+        <input id="JQ-ID" readonly style="display: none;" value="{{.ID}}" />
+
+    </div>
+<input id="JQ-ID" readonly style="display: none;" value="{{.ID}}" />
+    {{template "Footer"}}
+
+
+<body>
+
+
+
+
+<!--
+<button id="JQ-SubmitButton">Submit</button>
+<label for="JQ-Results">Results:</label>
+<input id="JQ-Results" readonly />
+-->
 
     <script type="text/javascript">
     $(document).ready(function(){
 
-        var stdConfig = {
+        // no images
+        var nonstdConfig = {
                     extraPlugins: 'mathjax',
-                    mathJaxLib: 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML'
+                    mathJaxLib: 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML',
+                    removePlugins: 'forms'
                 };
 
-        var contentEditor = CKEDITOR.replace('JQ-Description',stdConfig);
+        var contentEditor = CKEDITOR.replace('JQ-Description',nonstdConfig);
+            // code stolen to overried the save event
+              CKEDITOR.plugins.registered['save'] = {
+                  init: function (editor) {
+                     var command = editor.addCommand('save',
+                     {
+                          modes: { wysiwyg: 1, source: 1 },
+                          exec: function (editor) { // Add here custom function for the save button
+                            //alert('You clicked the save button in CKEditor toolbar!');
+                            $('.saveBtn').trigger('click');
+                          }
+                     });
+                     editor.ui.addButton('Save', { label: 'Save', command: 'save' });
+                  }
+              }
 
         $("#JQ-SubmitButton").click(function(){
             console.log("Save Called!")
@@ -41,45 +98,35 @@
                 j = $.parseJSON(data);
                 console.log(j.result +":"+ j.reason)
                 if (j.code == 0){
-                    $("#JQ-Results").val("Submission Success");
+                    //$("#JQ-Results").val("Submission Success");
+                    toggleSaveBtn('saved');
                 } else {
-                    $("#JQ-Results").val(j.reason)
+                    //$("#JQ-Results").val(j.reason)
                 }
             })
         });
 
+
+        $('#JQ-BackBtn').on('click',function(){
+            window.location = '/toc.html/'+$("#JQ-ID").val();
+        });
+
+        $('#bookInfo input').on('keyup',function(){
+            toggleSaveBtn();
+        })
+        contentEditor.on('change',function(){
+            toggleSaveBtn();
+        });
+        function toggleSaveBtn(status){
+            if(status==="saved"){
+                $('.saveBtn').removeClass('btn-danger').addClass('btn-primary').html('<span id="saveGlyph" class="glyphicon glyphicon-ok"> </span> Saved');
+            }else{
+                $('.saveBtn').removeClass('btn-primary').addClass('btn-danger').html('<span id="saveGlyph" class="glyphicon glyphicon-exclamation-sign"> </span> Save');
+            }
+
+        }
+
     });
     </script>
-</head>
-<body>
-
-<h1>Book Editor</h1>
-
-<div>
-    Title: <input id="JQ-Title" value="{{.Title}}" placeholder="Book Title" />
-</div>
-
-<div>
-    Version: <input id="JQ-Version" value="{{.Version}}" placeholder="Book Version Number" />
-</div>
-
-<div>
-    Author: <input id="JQ-Author" value="{{.Author}}" placeholder="Book Author" />
-</div>
-
-<div>
-    Tags: <input id="JQ-Tags" value="{{.Tags}}" placeholder="Book Taglines" />
-</div>
-
-<div>
-    Description:
-    <textarea id="JQ-Description" value=>{{.Description}}</textarea>
-</div>
-<input id="JQ-ID" readonly style="display: none;" value="{{.ID}}" />
-
-<button id="JQ-SubmitButton">Submit</button>
-<label for="JQ-Results">Results:</label>
-<input id="JQ-Results" readonly />
-
 </body>
 </html>

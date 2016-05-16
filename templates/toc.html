@@ -10,13 +10,17 @@
         <div id="bookHeader" class="well">
         {{if eq .Permission 3}}
             <div class="btn-group btn-group-sm pull-right" role="group">
-                <button id="editBookBtn" class="btn btn-success" data-toggle="modal" data-target="#bookEditModal" type="button"><span class="glyphicon glyphicon-pencil"></span></button>
+                <button id="editBookBtn" class="btn btn-success" type="button"><span class="glyphicon glyphicon-pencil"></span></button>
                 <button id="deleteBookBtn" class="btn btn-danger " data-toggle="modal" data-target="#bookDeleteModal" type="button"><span class="glyphicon glyphicon-remove"></span> </button>
             </div>
         {{end}}
             <div id="bookTitle" class="">Loading...</div>
-            <div id="bookAuthor" class=""></div>
-            <div id="bookID" class=""> </div>
+            <p>
+                <span id="bookAuthor" class=""></span>
+                <span id="bookVersion" class=""></span>        
+            </p>
+            <div id="bookDescription"></div>
+            <!--<div id="bookID" class=""></div>-->
         </div>
 
         <div id="bookChapters" class="list-group well">
@@ -27,13 +31,6 @@
             <div class="list-group-root"></div>
         </div>
 
-<!--
-        <div class="list-group  well">
-            <div class="list-group-item-heading" id="bookHeading">Chapters Loading... <i class="glyphicon glyphicon-download"> </i> </div>
-            <div class="list-group-root"></div>
-        </div>
-
--->
     </div>
 
     {{template "Footer"}}
@@ -102,23 +99,13 @@
 
         // buttons not available to unauthorized users
         $('#editBookBtn').on('click',function(){ 
-            $('#editGenName').val(localStorage.bookTitle);
-            $('#editGenAuthor').val(localStorage.bookAuthor);
-            $('#editGenID').html(localStorage.bookID);
-            $('#editGenType').html('Book: ');
+            window.location = '/edit/Book/'+localStorage.bookID;
         });
         $('#deleteBookBtn').on('click',function(){ 
             $('#genDeleteName').html(localStorage.bookTitle);
             $('#genDeleteID').html(localStorage.bookID);
             $('#genDeleteType').html('Book: ');
-
-            $('#bookDeleteBtn').one('click',function(){
-                $.post("/api/deleteBook",{ID:localStorage.bookID},function(data){
-                    g = $.parseJSON(data);
-                    console.log(g.result +":"+ g.reason);
-                    $('#cats')[0].click(); //redirect to catalogs
-                });
-            });
+            //gen listeners takes care of this case from here in modal.
         });
         $('#refreshChapters').on('click',function(){ 
             $('.list-group-root').html('<p> </p>');
@@ -169,7 +156,8 @@
                     $.post("/api/deleteBook",{ID:tempID},function(data){
                         g = $.parseJSON(data);
                         console.log(g.result +":"+ g.reason);
-                        $('#cats')[0].click(); //redirect to catalogs
+                        //$('#cats')[0].click(); //redirect to catalogs
+                        window.location = '/catalogs/';
                     });
                 case 'C': //deleteing chapters
                     $.post("/api/deleteChapter",{ID:tempID},function(data){
@@ -201,14 +189,16 @@
 
     function getBookInfo(bookID){
         $.get("/api/book.xml?ID="+bookID,function(xml){
-            //console.log(xml);
             localStorage.bookTitle = $(xml).find("title").text();
             localStorage.bookAuthor = $(xml).find("author").text();
+            localStorage.bookDescription = $(xml).find("description").text();
+            localStorage.bookVer = $(xml).find("version").text();
             localStorage.bookID = bookID;
 
             $('#bookTitle').html('Book: '+localStorage.bookTitle);
             $('#bookAuthor').html('Author: '+localStorage.bookAuthor);
-            $('#bookID').html('ID='+localStorage.bookID);
+            $('#bookDescription').html(localStorage.bookDescription);
+            $('#bookVersion').html(' Ver: '+localStorage.bookVer);
         });
     }
     function getBookChapters(bookID){
@@ -422,7 +412,7 @@
                             <button id="delete-'+genID+'" class="btn btn-danger " data-toggle="modal" data-target="#catDeleteModal" type="button"><span class="glyphicon glyphicon-remove"></span> </button>\
                         </div>\
                     </a>\
-                    <div class="collapse books" id="cat-'+genID+'">\
+                    <div class="collapse items" id="cat-'+genID+'">\
                         <a href="#" class="list-group-item" ><i class="glyphicon glyphicon-download"></i>Loading...</a>\
                     </div>\
                 </div>\
@@ -459,14 +449,15 @@
             }
         });
         $('#edit-'+genID).on('click',function(e){
+            e.stopPropagation();
             var tempID = $(this).closest('a').parent().attr('id');
             var tempName = $(this).closest('a').parent().attr('name');
-            $('#bookEditModal').modal('show');
-                //populate modal 
-            $('#editGenName').val(tempName).focus();
-            $('#editGenAuthor').val('NA');
-            $('#editGenID').html(tempID);
-            $('#editGenType').html(genType);
+            if(genType[0]==='C'){ //chapter clicked
+                window.location = '/edit/Chapter/'+tempID;
+            }
+            if(genType[0]==='S'){ //chapter clicked
+                window.location = '/edit/Section/'+tempID;
+            }
         });
         $('#delete-'+genID).on('click',function(e){
             var tempID = $(this).closest('a').parent().attr('id');
