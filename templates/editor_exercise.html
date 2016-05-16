@@ -40,7 +40,7 @@
             }
             console.log("Posting: ")
             console.log(params)
-            $.post("/api/makeExercise",params,function(data){
+            $.post("/api/create/exercise",params,function(data){
                 j = $.parseJSON(data);
                 console.log(j.result +":"+ j.reason)
                 if (j.code == 0){

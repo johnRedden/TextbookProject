@@ -152,7 +152,7 @@
             $('#catalogBtn').on('click',function(){
                 var newCat =  $('#catalogInput').val();
 
-                $.post("/api/makeCatalog",{CatalogName:newCat},function(data){
+                $.post("/api/create/catalog",{CatalogName:newCat},function(data){
                     g = $.parseJSON(data);
                     console.log(g.result +":"+ g.reason+":"+ g.object.Title);
                     $('.list-group-root').html('<p> </p>');
@@ -176,7 +176,7 @@
             $('#cat-'+catalogID).html('');
             $.each( k, function( key, arg ){
                
-                var htmlBlock2 = '<a href="/toc.html/'+arg.ID+'" class="list-group-item" >\
+                var htmlBlock2 = '<a href="/toc/'+arg.ID+'" class="list-group-item" >\
                                 <i class="glyphicon glyphicon-new-window"></i>Book: '+arg.Title+'</a>';
 
                 $('#cat-'+catalogID).append(htmlBlock2);
@@ -209,7 +209,7 @@
             $("#addBookBtn-"+catalogID).on('click',function(){
                 var newBook =  $("#bookInput-"+catalogID).val(); 
 
-                $.post("/api/makeBook",{CatalogID:catalogID,BookName:newBook},function(data){
+                $.post("/api/create/book",{CatalogID:catalogID,BookName:newBook},function(data){
                    g = $.parseJSON(data);
                    console.log(g.result +":"+ g.reason);
                    $('#cat-'+catalogID).html('<a href="#" class="list-group-item" ><i class="glyphicon glyphicon-download"></i>Loading...</a>');
@@ -275,7 +275,7 @@
 
         }
         function deleteCatalog(catID){
-            $.post("/api/deleteCatalog",{ID:catID},function(data){
+            $.post("/api/delete/catalog",{ID:catID},function(data){
                 g = $.parseJSON(data);
                 console.log(g.result +":"+ g.reason);
 
@@ -286,7 +286,7 @@
             });  
         };
         function editCatalog(catID,catName){
-            $.post("/api/makeCatalog",{ID:catID,CatalogName:catName},function(data){
+            $.post("/api/create/catalog",{ID:catID,CatalogName:catName},function(data){
                 g = $.parseJSON(data);
                 console.log(g.result +":"+ g.reason+":"+ catName);
                                 

@@ -85,7 +85,7 @@
             }
             console.log("Posting: ")
             console.log(params)
-            $.post("/api/makeChapter",params,function(data){
+            $.post("/api/create/chapter",params,function(data){
                 j = $.parseJSON(data);
                 console.log(j.result +":"+ j.reason)
                 if (j.code == 0){

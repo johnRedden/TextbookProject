@@ -119,12 +119,12 @@ func init() {
 	// Module: API-Deleters
 	// Files: API_Deleters.go
 	/****************************************************/
-	r.POST("/api/delete/catalog/:ID", API_DeleteCatalog)     // <api><auth> delete datastore, catalog
-	r.POST("/api/delete/book/:ID", API_DeleteBook)           // <api><auth> delete datastore, book
-	r.POST("/api/delete/chapter/:ID", API_DeleteChapter)     // <api><auth> delete datastore, chapter
-	r.POST("/api/delete/section/:ID", API_DeleteSection)     // <api><auth> delete datastore, section
-	r.POST("/api/delete/objective/:ID", API_DeleteObjective) // <api><auth> delete datastore, objective
-	r.POST("/api/delete/exercise/:ID", API_DeleteExercise)   // <api><auth> delete datastore, exercise
+	r.POST("/api/delete/catalog", API_DeleteCatalog)     // <api><auth> delete datastore, catalog
+	r.POST("/api/delete/book", API_DeleteBook)           // <api><auth> delete datastore, book
+	r.POST("/api/delete/chapter", API_DeleteChapter)     // <api><auth> delete datastore, chapter
+	r.POST("/api/delete/section", API_DeleteSection)     // <api><auth> delete datastore, section
+	r.POST("/api/delete/objective", API_DeleteObjective) // <api><auth> delete datastore, objective
+	r.POST("/api/delete/exercise", API_DeleteExercise)   // <api><auth> delete datastore, exercise
 
 	// Module: Administration, Console and Commands
 	// Files: ADMIN_administration.go

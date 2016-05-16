@@ -79,7 +79,7 @@
             }
             console.log("Posting: ")
             console.log(params)
-            $.post("/api/makeCatalog",params,function(data){
+            $.post("/api/create/catalog",params,function(data){
                 j = $.parseJSON(data);
                 console.log(j.result +":"+ j.reason)
                 if (j.code == 0){

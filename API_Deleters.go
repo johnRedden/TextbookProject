@@ -60,7 +60,7 @@ func API_DeleteCatalog(res http.ResponseWriter, req *http.Request, params httpro
 		return
 	}
 
-	catalogKey, _ := strconv.ParseInt(params.ByName("ID"), 10, 64)
+	catalogKey, _ := strconv.ParseInt(req.FormValue("ID"), 10, 64)
 	if catalogKey == 0 {
 		fmt.Fprint(res, `{"result":"failure","reason":"Invalid ID","code":400}`)
 		return
@@ -109,7 +109,7 @@ func API_DeleteBook(res http.ResponseWriter, req *http.Request, params httproute
 		return
 	}
 
-	bookKey, convErr := strconv.ParseInt(params.ByName("ID"), 10, 64)
+	bookKey, convErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
 	if convErr != nil {
 		fmt.Fprint(res, `{"result":"failure","reason":"Invalid ID","code":400}`)
 		return
@@ -154,7 +154,7 @@ func API_DeleteChapter(res http.ResponseWriter, req *http.Request, params httpro
 		return
 	}
 
-	chaptKey, convErr := strconv.ParseInt(params.ByName("ID"), 10, 64)
+	chaptKey, convErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
 	if convErr != nil {
 		fmt.Fprint(res, `{"result":"failure","reason":"Invalid ID","code":400}`)
 		return
@@ -198,7 +198,7 @@ func API_DeleteSection(res http.ResponseWriter, req *http.Request, params httpro
 		return
 	}
 
-	sectKey, convErr := strconv.ParseInt(params.ByName("ID"), 10, 64)
+	sectKey, convErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
 	if convErr != nil {
 		fmt.Fprint(res, `{"result":"failure","reason":"Invalid ID","code":400}`)
 		return
@@ -238,7 +238,7 @@ func API_DeleteObjective(res http.ResponseWriter, req *http.Request, params http
 		return
 	}
 
-	objKey, convErr := strconv.ParseInt(params.ByName("ID"), 10, 64)
+	objKey, convErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
 	if convErr != nil {
 		fmt.Fprint(res, `{"result":"failure","reason":"Invalid ID","code":400}`)
 		return
@@ -269,7 +269,7 @@ func API_DeleteExercise(res http.ResponseWriter, req *http.Request, params httpr
 		return
 	}
 
-	exerID, convErr := strconv.ParseInt(params.ByName("ID"), 10, 64)
+	exerID, convErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
 	if convErr != nil {
 		fmt.Fprint(res, `{"result":"failure","reason":"Invalid ID","code":400}`)
 		return

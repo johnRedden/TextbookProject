@@ -94,7 +94,7 @@
             }
             console.log("Posting: ")
             console.log(params)
-            $.post("/api/makeBook",params,function(data){
+            $.post("/api/create/book",params,function(data){
                 j = $.parseJSON(data);
                 console.log(j.result +":"+ j.reason)
                 if (j.code == 0){
@@ -108,7 +108,7 @@
 
 
         $('#JQ-BackBtn').on('click',function(){
-            window.location = '/toc.html/'+$("#JQ-ID").val();
+            window.location = '/toc/'+$("#JQ-ID").val();
         });
 
         $('#bookInfo input').on('keyup',function(){
