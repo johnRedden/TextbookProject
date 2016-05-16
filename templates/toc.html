@@ -1,121 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <!-- Required meta tags always come first -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta http-equiv="x-ua-compatible" content="ie=edge">
-
-    <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-    <!-- JQuery -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
-    <!-- Latest compiled and minified JavaScript -->
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
-
-
-<style type="text/css">
-        html {
-          position: relative;
-          min-height: 100%;
-        }
-        body{
-            font-size:large;
-            line-height: 1.5;
-            font-family: 'Merriweather', Georgia, 'Times New Roman', Times, serif;
-            /* Margin bottom by footer height */
-            margin-bottom: 60px;
-        }
-        .navbar { 
-            background: darkslategray;
-            /*box-shadow: 0px 5px 3px -3px #888;*/
-        }
-
-        .navbar-default .navbar-brand,
-        .navbar-default .navbar-nav > li > a {
-            color: white;
-        }
-        .navbar-default .navbar-brand:hover,
-        .navbar-default .navbar-nav > li > a:hover {
-            color: oldlace;
-        }
-
-        
-        footer {
-          position: absolute;
-          bottom: 0;
-          width: 100%;
-          /* Set the fixed height of the footer here */
-          height: 60px;
-        }
-        .well {
-            background: darkslategray;
-            color: white;
-        }
-        .books{
-            width:98%;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        .books a{
-            color: darkslateblue;
-        }
-
-
-    .list-group {
-        padding: 0;
-        overflow: hidden;
-    }
-
-    .list-group .list-group-item {
-        border-radius: 5px;
-        border-width: 1px 0 0 0;
-    }
-
-    .list-group-root > .list-group-item:first-child {
-        border-top-width: 0;
-    }
-
-    .list-group-root > .list-group > .list-group-item {
-        padding-left: 30px;
-    }
-
-    .list-group-root > .list-group > .list-group > .list-group-item {
-        padding-left: 45px;
-    }
-
-    .list-group-item .glyphicon {
-        margin-right: 5px;
-    }
-    .list-group-item-heading{
-        padding:5px;
-    }
-    
-</style>
-</head>
+{{template "Head"}}
 
 <body>
-
-    <nav class="navbar navbar-default navbar-static-top">
-      <div class="container-fluid">
-        <div class="navbar-header">
-          <a class="navbar-brand" href="/"><img class="pull-left" src="/public/images/eduNetSystems-logo-inv.png"/> 
-            <strong> &nbsp eduNetSystems Content System</strong></a>
-        </div>
-        <ul class="nav navbar-nav">
-          <li><a id="cats" href="/catalogs">Catalogs</a></li>
-          <li><a href="/about">About</a></li>
-        </ul>
-        <ul class="nav navbar-nav navbar-right">
-        {{if .Email}}
-            <li><a href="/login?changeuser=yes"><span class="glyphicon glyphicon-log-in"></span> Not {{.Name}}?</a></li>
-            <li><a href="/logout"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
-        {{else}}
-            <li><a href="/login"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
-        {{end}}
-        </ul>
-      </div>
-    </nav>
+{{template "Nav"}}
 
     <div class="container">
 
@@ -147,20 +35,8 @@
 
 -->
     </div>
-    <footer class="text-center">
-        <div class="well">
-            <div class="container">
-                <div class="row">
-                    <div class="col-xs-12">
-                        <div>© 2016 <a href="http://www.edunetsystems.com/">eduNetSystems.com</a></div>
-                    </div>
-                </div>
 
-            </div>
-        </div>
-    </footer>
-
-
+    {{template "Footer"}}
 
     <!-- Edit Book Modal *******************-->
       <div class="modal fade" id="bookEditModal" role="dialog">
@@ -223,7 +99,6 @@
         if (incomingID == "") {return ;}
         localStorage.clear();
         getBookInfo(incomingID);
-        getBookChapters(incomingID);
 
         // buttons not available to unauthorized users
         $('#editBookBtn').on('click',function(){ 
@@ -246,13 +121,12 @@
             });
         });
         $('#refreshChapters').on('click',function(){ 
-            $('#chapterHeading').html('<div class="text-center" id="chapterHeading">Chapters Loading... <i class="glyphicon glyphicon-download"> </i> </div>');
             $('.list-group-root').html('<p> </p>');
             //Pause Solution here :(  Need to bind an on done or something.
-            setTimeout(function (){
-                location.reload();
-            }, 1500);
+            getBookChapters(incomingID);
         });
+        //init page
+        $('#refreshChapters').trigger('click');
         //edit modal save button
         $('#genInfoSave').on('click',function(){
                 var genName = $('#editGenName').val();
@@ -297,22 +171,29 @@
                         console.log(g.result +":"+ g.reason);
                         $('#cats')[0].click(); //redirect to catalogs
                     });
-                case 'C':
+                case 'C': //deleteing chapters
                     $.post("/api/deleteChapter",{ID:tempID},function(data){
                         g = $.parseJSON(data);
                         console.log(g.result +":"+ g.reason);
-                        $('#refreshChapters').click();
+                        $('.list-group-root').html('<a href="#" class="list-group-item" ><i class="glyphicon glyphicon-download"></i>Loading...</a>');
+                        //gotta wait for the datastore here
+                        setTimeout(function(){
+                            $('#refreshChapters').click();
+                        },1500);
                     });
                     break;
-                case 'S':
+                case 'S': //deleting sections
                     $.post("/api/deleteSection",{ID:tempID},function(data){
                         g = $.parseJSON(data);
                         console.log(g.result +":"+ g.reason);
-                        $('#refreshChapters').click();
+                        $('#cat-'+tempID).html('<a href="#" class="list-group-item" ><i class="glyphicon glyphicon-download"></i>Loading...</a>');
+                        //gotta wait for the datastore here
+                        setTimeout(function(){
+                            $('#refreshChapters').click();
+                        },1500);
                     });
                     break;
                 default:
-
             }
         });
 
@@ -352,6 +233,7 @@
     function populateChapters(){
             //grab catalogs from local storage rather than api call
             j = JSON.parse(localStorage.chapters);
+            $('.list-group-root').html('');
 
             $.each( j, function( key, val ){
                 var chapterID = val.ID;
@@ -360,7 +242,8 @@
                 var HTMLblock = generalListGroupItem(chapterID,chapterName);
                 $('.list-group-root').append( HTMLblock );
                 setGeneralListGroupItemListeners(chapterID,chapterName,'Chapter: ');
-                //catalogListGroupItemListeners(catalogID,catalogName);
+                //be one step ahead
+                getBookSections(chapterID);
             });
 
             $('#chapterHeading').html('Chapters');
@@ -394,11 +277,14 @@
             //Adding a new catalog here
             $('#chapterBtn').on('click',function(){
                 var newChap =  $('#chapterInput').val();
-                $('#chapterHeading').html('<div class="text-center" id="chapterHeading">Chapters Loading... <i class="glyphicon glyphicon-download"> </i> </div>');
                 $.post("/api/makeChapter",{BookID:localStorage.bookID,ChapterName:newChap},function(data){
                     g = $.parseJSON(data);
                     console.log(g.result +":"+ g.reason+":"+ g.object.Title);
-                    $('#refreshChapters').trigger('click');
+                    $('.list-group-root').html('<a href="#" class="list-group-item" ><i class="glyphicon glyphicon-download"></i>Loading...</a>');
+                    // first wait for datastore
+                    setTimeout(function (){
+                        getBookChapters(localStorage.bookID);
+                    }, 1500);
                 });
                 
             });
@@ -415,18 +301,18 @@
                 var HTMLblock = generalListGroupItem(sectionID,sectionName);
                 $('#cat-'+chapterID).append( HTMLblock );
                 setGeneralListGroupItemListeners(sectionID,sectionName,'Section: ');
+                //be one step ahead
+                getBookObjectives(sectionID);
             });
-
-            //$('#chapterHeading').html('Chapters');
 
             //add Catalog button at end of level 1 list  *********************
         {{if eq .Permission 3}}
             var addSectionBlock = '\
                                 <div class="list-group-item">\
                                     <div class="input-group">\
-                                        <input id="sectionInput" type="text" class="form-control" placeholder="Add Section."/>\
+                                        <input id="sectionInput-'+chapterID+'" type="text" class="form-control" placeholder="Add Section."/>\
                                         <span class="input-group-btn">\
-                                            <button id="sectionBtn" class="btn btn-warning" type="button">New Section</button>\
+                                            <button id="sectionBtn-'+chapterID+'" class="btn btn-warning" type="button">New Section</button>\
                                         </span>\
                                     </div>\
                                 </div>\
@@ -440,27 +326,24 @@
             $('#cat-'+chapterID).append(addSectionBlock);
             
             //Adding a new catalog here
-            $('#sectionInput').on('keyup',function(e){
+            $('#sectionInput-'+chapterID).on('keyup',function(e){
                 if(e.keyCode==13){
-                    $('#sectionBtn').trigger('click');
+                    $('#sectionBtn-'+chapterID).trigger('click');
                 }
             });
             //Adding a new catalog here
-            $('#sectionBtn').on('click',function(){
-                var newSectionName =  $('#sectionInput').val();
-                //$('#chapterHeading').html('<div class="text-center" id="chapterHeading">Chapters Loading... <i class="glyphicon glyphicon-download"> </i> </div>');
-                $('#cat-'+chapterID).html('loading...');
+            $('#sectionBtn-'+chapterID).on('click',function(){
+                var newSectionName =  $('#sectionInput-'+chapterID).val();
+
+                $('#cat-'+chapterID).html('<a href="#" class="list-group-item" ><i class="glyphicon glyphicon-download"></i>Loading...</a>');
                 $.post("/api/makeSection",{ChapterID:chapterID,SectionName:newSectionName},function(data){
                     g = $.parseJSON(data);
                     console.log(g.result +":"+ g.reason);
-                    localStorage.removeItem('sectionsFor'+chapterID);
-                    //need to do better here
+                    //second place to wait for datastore
                     setTimeout(function (){
                         getBookSections(chapterID);
                     }, 1500);
-                
                 });
-                
             });
     } 
     function populateObjectives(sectionID){
@@ -492,9 +375,9 @@
             var addObjectiveBlock = '\
                                 <div class="list-group-item">\
                                     <div class="input-group">\
-                                        <input id="objectiveInput" type="text" class="form-control" placeholder="Add Objective."/>\
+                                        <input id="objectiveInput-'+sectionID+'" type="text" class="form-control" placeholder="Add Objective."/>\
                                         <span class="input-group-btn">\
-                                            <button id="objectiveBtn" class="btn btn-success" type="button">New Objective</button>\
+                                            <button id="objectiveBtn-'+sectionID+'" class="btn btn-success" type="button">New Objective</button>\
                                         </span>\
                                     </div>\
                                 </div>\
@@ -506,27 +389,24 @@
             $('#cat-'+sectionID).append(addObjectiveBlock);
             
             //Adding a new catalog here
-            $('#objectiveInput').on('keyup',function(e){
+            $('#objectiveInput-'+sectionID).on('keyup',function(e){
                 if(e.keyCode==13){
-                    $('#objectiveBtn').trigger('click');
+                    $('#objectiveBtn-'+sectionID).trigger('click');
                 }
             });
             //Adding a new catalog here
-            $('#objectiveBtn').on('click',function(){
-                var newObjectiveName =  $('#objectiveInput').val();
-                //$('#chapterHeading').html('<div class="text-center" id="chapterHeading">Chapters Loading... <i class="glyphicon glyphicon-download"> </i> </div>');
-                $('#cat-'+sectionID).html('loading...');
+            $('#objectiveBtn-'+sectionID).on('click',function(){
+                var newObjectiveName =  $('#objectiveInput-'+sectionID).val();
+
+                $('#cat-'+sectionID).html('<a href="#" class="list-group-item" ><i class="glyphicon glyphicon-download"></i>Loading...</a>');
                 $.post("/api/makeObjective",{SectionID:sectionID,ObjectiveName:newObjectiveName},function(data){
                     g = $.parseJSON(data);
                     console.log(g.result +":"+ g.reason);
-                    localStorage.removeItem('objectivesFor'+sectionID);
-                    //need to do better here
+                    //third place to wait
                     setTimeout(function (){
                         getBookObjectives(sectionID);
                     }, 1500);
-                
                 });
-                
             });
         };  
 
