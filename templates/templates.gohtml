@@ -1,17 +1,60 @@
 {{define "Head"}}
-<div class="ExampleHeader" style="border-left: 1px solid darkgreen;font-size: 1.3em;margin-left: 10px;">
-    <p>This should be a header. If you keep it consistant, then use the dot . operator to bring in information.</p>
-    <p>For example, lets say that you call the template and give it a user then I should be able to get .Name</p>
-    <p style="color:gray;">Information given to this template: {{.}}</p>
-</div>
-<!-- The dot will be whatever you wish to give it. Likely the dot itself. -->
+<head>
+    <!-- Required meta tags always come first -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <!-- JQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <!-- Mathjax -->
+    <script type="text/javascript" async src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+    <!-- CKEditor -->
+    <script src="http://cdn.ckeditor.com/4.5.3/full-all/ckeditor.js"></script>
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="/public/css/ens-contentSystem.css">
+    <script src="/public/css/ens-contentSystem.js"></script>
+</head>
 {{end}}
 
-{{define "Foot"}}
-<div class="ExampleFooter" style="border-left: 1px solid darkgreen;font-size: 1.3em;margin-left: 10px;">
-    <p>This on the other hand is a footer defined in the same file as header.</p>
-    <p>You should call this the same way as a the header but with footer as the name.</p>
-    <p>Better documentation on this behavior can be found at <a href="https://golang.org/pkg/text/template/">The Documentation for Templates</a></p>
-    <p style="color:gray;">Information given to this template: {{.}}</p>
-</div>
+{{define "Nav"}}
+<nav class="navbar navbar-default navbar-static-top">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="/"><img class="pull-left" src="/public/images/eduNetSystems-logo-inv.png"> 
+         &nbsp eduNetSystems Content System</a>
+    </div>
+    <ul class="nav navbar-nav">
+      <li id="catalogsNavBtn"><a href="/catalogs">Catalogs</a></li>
+      <li id="aboutNavBtn"><a href="/about">About</a></li>
+    </ul>
+    <ul class="nav navbar-nav navbar-right">
+    {{if .Email}}
+        <li><a href="/login?changeuser=yes"><span class="glyphicon glyphicon-log-in"></span> Not {{.Name}}?</a></li>
+        <li><a href="/logout"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
+    {{else}}
+        <li><a href="/login"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+    {{end}}
+    </ul>
+  </div>
+</nav>
+{{end}}
+
+{{define "Footer"}}
+<footer class="text-center">
+    <div class="well">
+        <div class="container">
+            <div class="row">
+                <div class="col-xs-12">
+                    <div>© 2016 <a href="http://www.edunetsystems.com/">eduNetSystems.com</a></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</footer>
 {{end}}

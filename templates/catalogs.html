@@ -1,120 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <!-- Required meta tags always come first -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta http-equiv="x-ua-compatible" content="ie=edge">
-
-    <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-    <!-- JQuery -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
-    <!-- Latest compiled and minified JavaScript -->
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
-
-<style type="text/css">
-        html {
-          position: relative;
-          min-height: 100%;
-        }
-        body{
-            font-size:large;
-            line-height: 1.5;
-            font-family: 'Merriweather', Georgia, 'Times New Roman', Times, serif;
-            /* Margin bottom by footer height */
-            margin-bottom: 60px;
-        }
-        .navbar { 
-            background: darkslategray;
-            /*box-shadow: 0px 5px 3px -3px #888;*/
-        }
-
-        .navbar-default .navbar-brand,
-        .navbar-default .navbar-nav > li > a {
-            color: white;
-        }
-        .navbar-default .navbar-brand:hover,
-        .navbar-default .navbar-nav > li > a:hover {
-            color: oldlace;
-        }
-
-        
-        footer {
-          position: absolute;
-          bottom: 0;
-          width: 100%;
-          /* Set the fixed height of the footer here */
-          height: 60px;
-        }
-        .well {
-            background: darkslategray;
-            color: white;
-        }
-        .books{
-            width:98%;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        .books a{
-            color: darkslateblue;
-        }
-
-
-    .list-group {
-        padding: 0;
-        overflow: hidden;
-    }
-
-    .list-group .list-group-item {
-        border-radius: 5px;
-        border-width: 1px 0 0 0;
-    }
-
-    .list-group-root > .list-group-item:first-child {
-        border-top-width: 0;
-    }
-
-    .list-group-root > .list-group > .list-group-item {
-        padding-left: 30px;
-    }
-
-    .list-group-root > .list-group > .list-group > .list-group-item {
-        padding-left: 45px;
-    }
-
-    .list-group-item .glyphicon {
-        margin-right: 5px;
-    }
-    .list-group-item-heading{
-        padding:5px;
-    }
-    
-</style>
-  </head>
+{{template "Head"}}
 
   <body>
-
-    <nav class="navbar navbar-default navbar-static-top">
-      <div class="container-fluid">
-        <div class="navbar-header">
-          <a class="navbar-brand" href="/"><img class="pull-left" src="/public/images/eduNetSystems-logo-inv.png"/> 
-            <strong> &nbsp eduNetSystems Content System</strong></a>
-        </div>
-        <ul class="nav navbar-nav">
-          <li class="active"><a href="/catalogs">Catalogs</a></li>
-          <li><a href="/about">About</a></li>
-        </ul>
-        <ul class="nav navbar-nav navbar-right">
-        {{if .Email}}
-            <li><a href="/login?changeuser=yes"><span class="glyphicon glyphicon-log-in"></span> Not {{.Name}}?</a></li>
-            <li><a href="/logout"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
-        {{else}}
-            <li><a href="/login"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
-        {{end}}
-        </ul>
-      </div>
-    </nav>
+    {{template "Nav" .}}
 
     <div class="container">
 
@@ -127,24 +16,14 @@
         <div class="list-group well">
             <div class="list-group-item-heading">
                 <button id="refreshCat" class="btn btn-xs btn-default pull-right" type="button"><span class="glyphicon glyphicon-refresh"></span></button>
-                <div class="text-center" id="catHeading">Catalogs Loading... <i class="glyphicon glyphicon-download"> </i> </div>
+                <div class="text-center" id="catHeading">Catalogs</div>
             </div>
             <div class="list-group-root"></div>
         </div>
+
     </div>
 
-    <footer class="text-center">
-        <div class="well">
-            <div class="container">
-                <div class="row">
-                    <div class="col-xs-12">
-                        <div>© 2016 <a href="http://www.edunetsystems.com/">eduNetSystems.com</a></div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </footer>
+    {{template "Footer"}}
 
     <!-- Delete Cat Modal *******************-->
       <div class="modal fade" id="catDeleteModal" role="dialog">
@@ -171,36 +50,12 @@
         </div>
       </div>
     <!-- END Delete Cat Modal ******************-->
-    <!-- Edit Cat Modal *******************-->
-      <div class="modal fade" id="catEditModal" role="dialog">
-        <div class="modal-dialog">
-        
-          <!-- Modal content-->
-          <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h2 class="modal-title"><span class="glyphicon glyphicon-alert"></span> Edit Catalog</h2>
-            </div>
-            <div class="modal-body">
-                <h4 class="modal-title">You can edit the catalog name here.</h4>
-                <br/>
-                <input id="editCatName" class="form-control" />
-                <p>Catalog ID: <strong id="catEditTxt" type="text"></strong></p>              
-            </div>
-            <div class="modal-footer">
-              <button id="catEditBtn" type="button" class="btn btn-danger" data-dismiss="modal">Save</button>
-              <button type="button" class="btn btn-success" data-dismiss="modal">Cancel</button>
-            </div>
-          </div>
-          
-        </div>
-      </div>
-    <!-- END Edit Cat Modal ******************-->
 
     <script type="text/JavaScript">
 
         $(document).ready(function(){
             localStorage.clear();
+            $('#catalogsNavBtn').addClass('active');
             //getCatalogs();
 
             //modal work
@@ -214,12 +69,8 @@
                 deleteCatalog(catID);
             });
             $('#refreshCat').on('click',function(){ 
-                $('#catHeading').html('<div class="text-center" id="catHeading">Catalogs Loading... <i class="glyphicon glyphicon-download"> </i> </div>');
                 $('.list-group-root').html('<p> </p>');
-                //Pause Solution here :(  Need to bind an on done or something.
-                setTimeout(function (){
-                    getCatalogs();
-                }, 1500);
+                getCatalogs();
             });
 
             //init page
@@ -233,7 +84,6 @@
                 localStorage.catalogs = JSON.stringify( ($.parseJSON(data)).results );   
                 //gotta JSON.parse the strigified json object in local storage.  
                 console.log('API hit Catalogs');
-                $('.list-group-root').html('');
                 populateCatalog();
             });
         }
@@ -259,6 +109,8 @@
                 var HTMLblock = catalogListGroupItem(catalogID,catalogName);
                 $('.list-group-root').append( HTMLblock );
                 catalogListGroupItemListeners(catalogID,catalogName);
+                //one step ahead
+                getBooks(catalogID);
             });
 
             $('#catHeading').html('Catalogs');
@@ -283,12 +135,11 @@
 
             $('.list-group-root').append(addCatBlock);
             
-            //Adding a new catalog here
+            //Adding a new catalog here ********************************************
             $('#catalogInput').on('keyup',function(e){
                 if(e.keyCode==13){
                     $('#catalogBtn').trigger('click');
                 }
-                
             });
             //Adding a new catalog here
             $('#catalogBtn').on('click',function(){
@@ -297,7 +148,11 @@
                 $.post("/api/makeCatalog",{CatalogName:newCat},function(data){
                     g = $.parseJSON(data);
                     console.log(g.result +":"+ g.reason+":"+ g.object.Title);
-                    $('#refreshCat').trigger('click');
+                    $('.list-group-root').html('<p> </p>');
+                    //best solution so far is to delay and wait for datastore
+                    setTimeout(function(){
+                        $('#refreshCat').trigger('click');
+                    },1500);
                 });
                 
             });
@@ -368,7 +223,7 @@
                 <div id="'+catalogID+'" name="'+catalogName+'">\
                     <a href="#cat-'+catalogID+'" class="list-group-item" data-toggle="collapse"><span class="glyphicon glyphicon-chevron-right chevy"></span>'+catalogName +' \
                         <div class="btn-group btn-group-sm pull-right" role="group">\
-                            <button id="edit-'+catalogID+'" class="btn btn-success" data-toggle="modal" data-target="#catEditModal" type="button"><span class="glyphicon glyphicon-pencil"></span></button>\
+                            <button id="edit-'+catalogID+'" class="btn btn-success" type="button"><span class="glyphicon glyphicon-pencil"></span></button>\
                             <button id="delete-'+catalogID+'" class="btn btn-danger " data-toggle="modal" data-target="#catDeleteModal" type="button"><span class="glyphicon glyphicon-remove"></span> </button>\
                         </div>\
                     </a>\
@@ -391,26 +246,11 @@
             return htmlBlock;
         }
         function catalogListGroupItemListeners(catalogID, catalogName){
-                                //set event listeners on each list group item
-            $('#'+catalogID).one('click','a',function(){
-                //only polulate books if catalog is clicked.
-                // but not everytime  TODO fix this --> mabye local storage
-                var catID = $(this).parent().attr('id');
-
-                if(!localStorage.getItem('booksFor'+catID)) {
-                    getBooks(catID);
-                }else{
-                   populateBooks(catalogID);
-                }
-            });
-
             // catalog edit button listener
             $('#edit-'+catalogID).one('click',function(e){
+                e.stopPropagation();
                 var catID = $(this).closest('a').parent().attr('id');
-                var catName = $(this).closest('a').parent().attr('name');
-                //populate modal 
-                $('#editCatName').val(catName).focus();
-                $('#catEditTxt').html(catID);
+                window.location = '/edit/Catalog/'+catID;
             });
             $('#delete-'+catalogID).one('click',function(e){
                 var catID = $(this).closest('a').parent().attr('id');
@@ -418,6 +258,7 @@
                 //populate modal 
                 $('#catDeleteName').html(catName);
                 $('#catDeleteTxt').html(catID);
+
             });
 
             $('#'+catalogID).on('click','a:first', function() {
@@ -450,6 +291,7 @@
                             
             });  
         };
+
 
     </script>
   </body>

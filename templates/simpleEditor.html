@@ -120,7 +120,7 @@
 
             var contentEditor = CKEDITOR.replace('JQ-Content',stdConfig);
             var keyTakeawaysEditor = CKEDITOR.replace('JQ-KeyTakeaways',stdConfig);
-
+            // code stolen to overried the save event
               CKEDITOR.plugins.registered['save'] = {
                   init: function (editor) {
                      var command = editor.addCommand('save',
