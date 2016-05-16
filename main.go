@@ -81,8 +81,8 @@ func init() {
 	r.GET("/api/getImage", IMAGE_API_GetImageFromCS)                    // <DEBUG> Duplicate of /image, *outdated*
 	r.GET("/image/browser", IMAGE_BrowserForm)                          // <user> image browser
 	r.GET("/image/uploader", IMAGE_PostUploadForm)                      // <user-internal><auth> image uploader
-	r.POST("/api/makeImage", IMAGE_API_PlaceImageIntoCS)                // <api><auth> image creator
-	r.POST("/api/deleteImage", IMAGE_API_RemoveImageFromCS)             // <api><auth> image deleter
+	r.POST("/api/create/image", IMAGE_API_PlaceImageIntoCS)             // <api><auth> image creator
+	r.POST("/api/delete/image", IMAGE_API_RemoveImageFromCS)            // <api><auth> image deleter
 	r.POST("/api/ckeditor/create", IMAGE_API_CKEDITOR_PlaceImageIntoCS) // <api><auth> ckEditor, image creator
 
 	// Module: API-Readers, Collection
@@ -109,22 +109,22 @@ func init() {
 	// Module: API-Writers
 	// Files: API_Writers.go
 	/************************************************/
-	r.POST("/api/makeCatalog", API_MakeCatalog)     // <api><auth> create datastore, catalog
-	r.POST("/api/makeBook", API_MakeBook)           // <api><auth> create datastore, book
-	r.POST("/api/makeChapter", API_MakeChapter)     // <api><auth> create datastore, chapter
-	r.POST("/api/makeSection", API_MakeSection)     // <api><auth> create datastore, section
-	r.POST("/api/makeObjective", API_MakeObjective) // <api><auth> create datastore, objective
-	r.POST("/api/makeExercise", API_MakeExercise)   // <api><auth> create datastore, exercise
+	r.POST("/api/create/catalog", API_MakeCatalog)     // <api><auth> create datastore, catalog
+	r.POST("/api/create/book", API_MakeBook)           // <api><auth> create datastore, book
+	r.POST("/api/create/chapter", API_MakeChapter)     // <api><auth> create datastore, chapter
+	r.POST("/api/create/section", API_MakeSection)     // <api><auth> create datastore, section
+	r.POST("/api/create/objective", API_MakeObjective) // <api><auth> create datastore, objective
+	r.POST("/api/create/exercise", API_MakeExercise)   // <api><auth> create datastore, exercise
 
 	// Module: API-Deleters
 	// Files: API_Deleters.go
 	/****************************************************/
-	r.POST("/api/deleteCatalog", API_DeleteCatalog)     // <api><auth> delete datastore, catalog
-	r.POST("/api/deleteBook", API_DeleteBook)           // <api><auth> delete datastore, book
-	r.POST("/api/deleteChapter", API_DeleteChapter)     // <api><auth> delete datastore, chapter
-	r.POST("/api/deleteSection", API_DeleteSection)     // <api><auth> delete datastore, section
-	r.POST("/api/deleteObjective", API_DeleteObjective) // <api><auth> delete datastore, objective
-	r.POST("/api/deleteExercise", API_DeleteExercise)   // <api><auth> delete datastore, exercise
+	r.POST("/api/delete/catalog/:ID", API_DeleteCatalog)     // <api><auth> delete datastore, catalog
+	r.POST("/api/delete/book/:ID", API_DeleteBook)           // <api><auth> delete datastore, book
+	r.POST("/api/delete/chapter/:ID", API_DeleteChapter)     // <api><auth> delete datastore, chapter
+	r.POST("/api/delete/section/:ID", API_DeleteSection)     // <api><auth> delete datastore, section
+	r.POST("/api/delete/objective/:ID", API_DeleteObjective) // <api><auth> delete datastore, objective
+	r.POST("/api/delete/exercise/:ID", API_DeleteExercise)   // <api><auth> delete datastore, exercise
 
 	// Module: Administration, Console and Commands
 	// Files: ADMIN_administration.go
