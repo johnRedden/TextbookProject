@@ -36,13 +36,17 @@
                 <h2 class="modal-title"><span class="glyphicon glyphicon-alert"></span> Delete Catalog</h2>
             </div>
             <div class="modal-body">
-                <h4 class="modal-title">All books in this catalog will be deleted. Are you sure you wish to delete the whole catalog?</h4>
+                <h4 class="modal-title">All books in this catalog will be deleted, including corresponding objectives. Are you sure you wish to delete the whole catalog?</h4>
                 <br/>
                 <p>Catalog Name: <strong id="catDeleteName" type="text"></strong></p>
-                <p>Catalog ID: <strong id="catDeleteTxt" type="text"></strong></p>              
+                <p>Catalog ID: <strong id="catDeleteTxt" type="text"></strong></p>
+                <div class="input-group">
+                    <label class="input-group-addon">Answer:</label>
+                    <input type="text" class="form-control" id="verify" placeholder="To delete type yes."/>
+                </div>                 
             </div>
             <div class="modal-footer">
-              <button id="catDeleteBtn" type="button" class="btn btn-danger" data-dismiss="modal">Catalog Delete</button>
+              <button id="catDeleteBtn" type="button" class="btn btn-danger" data-dismiss="modal">Delete Catalog</button>
               <button type="button" class="btn btn-success" data-dismiss="modal">Cancel</button>
             </div>
           </div>
@@ -66,7 +70,10 @@
             });
             $('#catDeleteBtn').on('click',function(){ 
                 var catID = $('#catDeleteTxt').html();
-                deleteCatalog(catID);
+                var ans = $('#verify').val();
+                if(ans==="yes")
+                    deleteCatalog(catID);
+                $('#verify').val('');
             });
             $('#refreshCat').on('click',function(){ 
                 $('.list-group-root').html('<p> </p>');
@@ -271,7 +278,7 @@
             $.post("/api/deleteCatalog",{ID:catID},function(data){
                 g = $.parseJSON(data);
                 console.log(g.result +":"+ g.reason);
-                                
+
                 if(g.result==="success"){
                     $('#'+catID).html('');
                 }

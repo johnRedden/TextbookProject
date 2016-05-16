@@ -1,78 +1,105 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <!-- Required meta tags always come first -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta http-equiv="x-ua-compatible" content="ie=edge">
-
-    <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-    <!-- JQuery -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
-    <!-- Latest compiled and minified JavaScript -->
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
-
-    <!-- CKEditor -->
-    <script src="http://cdn.ckeditor.com/4.5.3/full-all/ckeditor.js"></script>
-    <!-- Mathjax -->
-    <script type="text/javascript" async src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+{{template "Head" .}}
+<body>
+    {{template "Nav" }}
+            <!-- can do this using the api -->
+            <input id="JQ-BookID" type="hidden" value="{{.BookID}}" readonly>
+            <input id="JQ-ChapterID" type="hidden" value="{{.ChapterID}}" readonly>
+            <input id="JQ-SectionID" type="hidden" value="{{.SectionID}}" readonly>
+            <input id="JQ-ObjectiveID" type="hidden" value="{{.ObjectiveID}}" readonly>
     
-    <!-- Styling/Scripting -->
-    <style>
-        html {
-          position: relative;
-          min-height: 100%;
-        }
-        body{
-            font-size:large;
-            line-height: 1.5;
-            font-family: 'Merriweather', Georgia, 'Times New Roman', Times, serif;
-            /* Margin bottom by footer height */
-            margin-bottom: 60px;
-        }
-        .navbar { 
-            background: darkslategray;
-            /*box-shadow: 0px 5px 3px -3px #888;*/
-        }
+    <div class="container">
+    
+        <div class="well" id="objectiveInfo">
+            <p> Objective Editor Alpha 
+                <span class="btn-group btn-group-sm pull-right">
+                    <button type="button" class="btn btn-primary saveBtn" id="JQ-SubmitButton"><span id="saveGlyph" class="glyphicon glyphicon-ok"> </span> Saved</button>
+                    <button type="button" class="btn btn-success" id="JQ-BackBtn">Back</button>
+                    <button type="button" class="btn btn-danger" id="deleteObjectiveBtn">Delete</button>
+                </span>
+            </p>
+            <div class="input-group">
+                <label class="input-group-addon">Objective:</label>
+                <input type="text" class="form-control" id="JQ-ObjectiveTitle" placeholder="Objective" value="{{.ObjectiveTitle}}">
+            </div> 
+            <div class="input-group">
+                <label class="input-group-addon">Author:</label>
+                <input type="text" class="form-control" id="JQ-AuthorInput" placeholder="Author" value="{{.Author}}">
+            </div>  
+            <div class="input-group">
+                <label class="input-group-addon">Version:</label>
+                <input type="text" class="form-control" placeholder="Version" id="JQ-Version" value="{{.ObjectiveVersion}}">
+            </div>
+        </div>
 
-        .navbar-default .navbar-brand,
-        .navbar-default .navbar-nav > li > a {
-            color: white;
-        }
-        .navbar-default .navbar-brand:hover,
-        .navbar-default .navbar-nav > li > a:hover {
-            color: oldlace;
-        }
+        <div class="well">
+            <p> Content 
+                <span class="btn-group btn-group-sm pull-right">
+                    <button type="button" class="btn btn-primary saveBtn" id="JQ-SubmitButton"><span id="saveGlyph" class="glyphicon glyphicon-ok"> </span> Saved</button>
+                    <button type="button" class="btn btn-success previewBtn" id="JQ-PreviewButton">Preview</button>
+                </span>
+            </p>
+            <form class="goodBack">
+                <textarea name="Message" id="JQ-Content" cols="10" wrap="hard" autofocus placeholder="Enter new message.">{{html .Content}}</textarea>
+            </form>
+        </div>
 
+        <div class="well">
+            <p> Key Takeaways
+                <span class="btn-group btn-group-sm pull-right">
+                    <button type="button" class="btn btn-primary saveBtn" id="JQ-SubmitButton"><span id="saveGlyph" class="glyphicon glyphicon-ok"> </span> Saved</button>
+                    <button type="button" class="btn btn-success previewBtn" id="JQ-PreviewButton">Preview</button>
+                </span>
+            </p>
+            <form class="goodBack">
+                <textarea name="Message2" id="JQ-KeyTakeaways" wrap="hard" placeholder="KeyTakeaways">{{html .KeyTakeaways}}</textarea>
+            </form>
+        </div>
+
+    </div>
+
+    {{template "Footer"}}
+
+    <!-- Delete Objective Modal *******************-->
+      <div class="modal fade" id="deleteObjectiveModal" role="dialog">
+        <div class="modal-dialog">
         
-        footer {
-          position: absolute;
-          bottom: 0;
-          width: 100%;
-          /* Set the fixed height of the footer here */
-          height: 60px;
-        }
-        .well {
-            background: darkslategray;
-            color: white;
-        }
-        textarea{
-            width:100%;
-            height:100px;
-            padding:5px;
-        }
+          <!-- Modal content-->
+          <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h2 class="modal-title"><span class="glyphicon glyphicon-alert"></span> Delete Objective</h2>
+            </div>
+            <div class="modal-body">
+                <h4 class="modal-title">Deleting this objective cannot be undone.</h4>
+                <br/>
+                <p>Objective: <strong id="objName" type="text"></strong></p>
+                <p>Objective ID: <strong id="objID" type="text"></strong></p>
+                <div class="input-group">
+                    <label class="input-group-addon">Answer:</label>
+                    <input type="text" class="form-control" id="verify" placeholder="To delete type yes."/>
+                </div>              
+            </div>
+            <div class="modal-footer">
+              <button id="objDeleteBtn" type="button" class="btn btn-danger" data-dismiss="modal">Delete</button>
+              <button type="button" class="btn btn-success" data-dismiss="modal">Cancel</button>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    <!-- END Delete Cat Modal ******************-->
 
-        .input-group-addon { 
-            width: 130px;
-            text-align:left;
-        }
-        .input-group { width: 100%; }
+   <!-- 
+    <p>Results: <input id="JQ-Results" readonly></p><br>
+    <p>Book: <input id="JQ-BookTitle" value="{{.BookTitle}}" readonly></p><br>
+    <p>Chapter: <input id="JQ-ChapterTitle" value="{{.ChapterTitle}}" readonly></p><br>
+    <p>Section: <input id="JQ-SectionTitle" value="{{.SectionTitle}}" readonly></p><br> -->
 
-
-    </style>
     <script type="text/javascript">
         $(document).ready(function(){
+            var referrer =  document.referrer;
             console.log("Ready!")
             objectiveID = $("#JQ-ObjectiveID").val();
 
@@ -102,6 +129,9 @@
             $(".previewBtn").click(function(){
                 var url = '/preview?ID='+objectiveID;
                 window.open(url,'_blank');
+            });
+            $("#JQ-BackBtn").click(function(){
+                window.location = referrer;
             });
 
             $.wait = function( callback, seconds){
@@ -155,14 +185,15 @@
                 $('#deleteObjectiveModal').modal('show');
 
                 $('#objDeleteBtn').on('click',function(){
-                    console.log("hi")
-                    $.post("/api/deleteObjective",{ID:y},function(data){
-                         g = $.parseJSON(data);
-                        console.log(g.result +":"+ g.reason); 
-                        //go back to book... have the id here somewhere
-                        window.close(); 
-                    }); 
-
+                    var ans = $('#verify').val();
+                    if(ans==="yes"){
+                        $.post("/api/deleteObjective",{ID:y},function(data){
+                             g = $.parseJSON(data);
+                            console.log(g.result +":"+ g.reason); 
+                            //go back to where you came from you dirty dog!
+                            window.location = referrer; 
+                        });                         
+                    }
                 });
             });
 
@@ -179,123 +210,6 @@
             }
         });
     </script>
-</head>
-<body>
-    <nav class="navbar navbar-default navbar-static-top">
-      <div class="container-fluid">
-        <div class="navbar-header">
-          <a class="navbar-brand" href="/"><img class="pull-left" src="/public/images/eduNetSystems-logo-inv.png"/> 
-            <strong> &nbsp eduNetSystems Content System</strong></a>
-        </div>
-        <ul class="nav navbar-nav">
-          <li class=""><a href="/catalogs">Catalogs</a></li>
-          <li><a href="/about">About</a></li>
-        </ul>
-        <ul class="nav navbar-nav navbar-right">
 
-            <li><a href="/login"><span class="glyphicon glyphicon-log-in"></span> Login TBA</a></li>
-    
-        </ul>
-      </div>
-    </nav>
-            <!-- can do this using the api -->
-            <input id="JQ-BookID" type="hidden" value="{{.BookID}}" readonly>
-            <input id="JQ-ChapterID" type="hidden" value="{{.ChapterID}}" readonly>
-            <input id="JQ-SectionID" type="hidden" value="{{.SectionID}}" readonly>
-            <input id="JQ-ObjectiveID" type="hidden" value="{{.ObjectiveID}}" readonly>
-    <div class="container">
-    
-        <div class="well" id="objectiveInfo">
-            <p> Objective Editor Alpha 
-                <span class="btn-group btn-group-sm pull-right">
-                    <button type="button" class="btn btn-primary saveBtn" id="JQ-SubmitButton"><span id="saveGlyph" class="glyphicon glyphicon-ok"> </span> Saved</button>
-                    <button type="button" class="btn btn-success previewBtn" id="JQ-PreviewButton">Preview</button>
-                    <button type="button" class="btn btn-danger" id="deleteObjectiveBtn">Delete</button>
-                </span>
-            </p>
-            <div class="input-group">
-                <label class="input-group-addon">Objective:</label>
-                <input type="text" class="form-control" id="JQ-ObjectiveTitle" placeholder="Objective" value="{{.ObjectiveTitle}}">
-            </div> 
-            <div class="input-group">
-                <label class="input-group-addon">Author:</label>
-                <input type="text" class="form-control" id="JQ-AuthorInput" placeholder="Author" value="{{.Author}}">
-            </div>  
-            <div class="input-group">
-                <label class="input-group-addon">Version:</label>
-                <input type="text" class="form-control" placeholder="Version" id="JQ-Version" value="{{.ObjectiveVersion}}">
-            </div>
-        </div>
-
-        <div class="well">
-            <p> Content 
-                <span class="btn-group btn-group-sm pull-right">
-                    <button type="button" class="btn btn-primary saveBtn" id="JQ-SubmitButton"><span id="saveGlyph" class="glyphicon glyphicon-ok"> </span> Saved</button>
-                    <button type="button" class="btn btn-success previewBtn" id="JQ-PreviewButton">Preview</button>
-                </span>
-            </p>
-            <form class="goodBack">
-                <textarea name="Message" id="JQ-Content" cols="10" wrap="hard" autofocus placeholder="Enter new message.">{{html .Content}}</textarea>
-            </form>
-        </div>
-
-        <div class="well">
-            <p> Key Takeaways
-                <span class="btn-group btn-group-sm pull-right">
-                    <button type="button" class="btn btn-primary saveBtn" id="JQ-SubmitButton"><span id="saveGlyph" class="glyphicon glyphicon-ok"> </span> Saved</button>
-                    <button type="button" class="btn btn-success previewBtn" id="JQ-PreviewButton">Preview</button>
-                </span>
-            </p>
-            <form class="goodBack">
-                <textarea name="Message2" id="JQ-KeyTakeaways" wrap="hard" placeholder="KeyTakeaways">{{html .KeyTakeaways}}</textarea>
-            </form>
-        </div>
-
-    </div>
-
-    <footer class="text-center">
-        <div class="well">
-            <div class="container">
-                <div class="row">
-                    <div class="col-xs-12">
-                        <div>© 2016 <a href="http://www.edunetsystems.com/">eduNetSystems.com</a></div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </footer>
-
-    <!-- Delete Objective Modal *******************-->
-      <div class="modal fade" id="deleteObjectiveModal" role="dialog">
-        <div class="modal-dialog">
-        
-          <!-- Modal content-->
-          <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h2 class="modal-title"><span class="glyphicon glyphicon-alert"></span> Delete Objective</h2>
-            </div>
-            <div class="modal-body">
-                <h4 class="modal-title">Deleting this objective cannot be undone.</h4>
-                <br/>
-                <p>Objective: <strong id="objName" type="text"></strong></p>
-                <p>Objective ID: <strong id="objID" type="text"></strong></p>              
-            </div>
-            <div class="modal-footer">
-              <button id="objDeleteBtn" type="button" class="btn btn-danger" data-dismiss="modal">Delete</button>
-              <button type="button" class="btn btn-success" data-dismiss="modal">Cancel</button>
-            </div>
-          </div>
-          
-        </div>
-      </div>
-    <!-- END Delete Cat Modal ******************-->
-
-   <!-- 
-    <p>Results: <input id="JQ-Results" readonly></p><br>
-    <p>Book: <input id="JQ-BookTitle" value="{{.BookTitle}}" readonly></p><br>
-    <p>Chapter: <input id="JQ-ChapterTitle" value="{{.ChapterTitle}}" readonly></p><br>
-    <p>Section: <input id="JQ-SectionTitle" value="{{.SectionTitle}}" readonly></p><br> -->
 </body>
 </html>

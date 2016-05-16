@@ -73,10 +73,14 @@
                 <h2 class="modal-title"><span class="glyphicon glyphicon-alert"></span> Delete Item</h2>
             </div>
             <div class="modal-body">
-                <h4 class="modal-title">All dependent items will be deleted, including objectives!</h4>
+                <h4 class="modal-title">All dependent items will be deleted, including objectives. Are you sure you wish to delete this item?</h4>
                 <br/>
                 <p><span id="genDeleteType">Book: </span><span id="genDeleteName"></span></p>
-                <p><span>ID: </span><span id="genDeleteID"></span></p>           
+                <p><span>ID: </span><span id="genDeleteID"></span></p> 
+                <div class="input-group">
+                    <label class="input-group-addon">Answer:</label>
+                    <input type="text" class="form-control" id="verify" placeholder="To delete type yes."/>
+                </div>          
             </div>
             <div class="modal-footer">
               <button id="genModalDeleteBtn" type="button" class="btn btn-danger" data-dismiss="modal">Delete Item</button>
@@ -150,39 +154,44 @@
         $('#genModalDeleteBtn').on('click',function(){
             var choice = $('#genDeleteType').html();
             var tempID = $('#genDeleteID').html();
+            var ans = $('#verify').val();
+            if(ans==="yes"){
+                switch(choice[0]){
+                    case 'B':
+                        $.post("/api/deleteBook",{ID:tempID},function(data){
+                            g = $.parseJSON(data);
+                            console.log(g.result +":"+ g.reason);
+                            //$('#cats')[0].click(); //redirect to catalogs
+                            window.location = '/catalogs/';
+                        });
+                    case 'C': //deleteing chapters
+                        $.post("/api/deleteChapter",{ID:tempID},function(data){
+                            g = $.parseJSON(data);
+                            console.log(g.result +":"+ g.reason);
+                            $('.list-group-root').html('<a href="#" class="list-group-item" ><i class="glyphicon glyphicon-download"></i>Loading...</a>');
+                            //gotta wait for the datastore here
+                            setTimeout(function(){
+                                $('#refreshChapters').click();
+                            },1500);
+                        });
+                        break;
+                    case 'S': //deleting sections
+                        $.post("/api/deleteSection",{ID:tempID},function(data){
+                            g = $.parseJSON(data);
+                            console.log(g.result +":"+ g.reason);
+                            $('#cat-'+tempID).html('<a href="#" class="list-group-item" ><i class="glyphicon glyphicon-download"></i>Loading...</a>');
+                            //gotta wait for the datastore here
+                            setTimeout(function(){
+                                $('#refreshChapters').click();
+                            },1500);
+                        });
+                        break;
+                    default:
+                }
+                var ans = $('#verify').val('');
 
-            switch(choice[0]){
-                case 'B':
-                    $.post("/api/deleteBook",{ID:tempID},function(data){
-                        g = $.parseJSON(data);
-                        console.log(g.result +":"+ g.reason);
-                        //$('#cats')[0].click(); //redirect to catalogs
-                        window.location = '/catalogs/';
-                    });
-                case 'C': //deleteing chapters
-                    $.post("/api/deleteChapter",{ID:tempID},function(data){
-                        g = $.parseJSON(data);
-                        console.log(g.result +":"+ g.reason);
-                        $('.list-group-root').html('<a href="#" class="list-group-item" ><i class="glyphicon glyphicon-download"></i>Loading...</a>');
-                        //gotta wait for the datastore here
-                        setTimeout(function(){
-                            $('#refreshChapters').click();
-                        },1500);
-                    });
-                    break;
-                case 'S': //deleting sections
-                    $.post("/api/deleteSection",{ID:tempID},function(data){
-                        g = $.parseJSON(data);
-                        console.log(g.result +":"+ g.reason);
-                        $('#cat-'+tempID).html('<a href="#" class="list-group-item" ><i class="glyphicon glyphicon-download"></i>Loading...</a>');
-                        //gotta wait for the datastore here
-                        setTimeout(function(){
-                            $('#refreshChapters').click();
-                        },1500);
-                    });
-                    break;
-                default:
             }
+
         });
 
     });
@@ -347,7 +356,7 @@
         {{if eq .Permission 3}}
                 var HTMLblock = '<div class="list-group-item"> \
                                             <a href="/preview?ID='+objectiveID+'"  id="'+objectiveID+'" target="_blank"><i class="glyphicon glyphicon-new-window"></i>'+objectiveName+'</a>\
-                                            <a href="/edit?ID='+objectiveID+'"  class="btn btn-xs btn-info" role="button" target="_blank">Edit</a> \
+                                            <a href="/edit?ID='+objectiveID+'"  class="btn btn-xs btn-info" role="button" target="">Edit</a> \
                                         </div>';
         {{else}}
                 var HTMLblock = '<div class="list-group-item"> \
