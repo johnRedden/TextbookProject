@@ -42,7 +42,6 @@ import (
 func API_GetCatalogs(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	ctx := appengine.NewContext(req)
 	q := datastore.NewQuery("Catalogs")
-	q = q.Order("Title")
 	cataloglist := make([]Catalog, 0)
 	for t := q.Run(ctx); ; {
 		var x Catalog
