@@ -37,7 +37,7 @@ func init() {
 	r.GET("/", home)                     // <user> Root page
 	r.GET("/catalogs", getCatalogsPage)  // <user> Catalogs listing
 	r.GET("/select", selectBookFromForm) // <user> select objective based on information
-	r.GET("/toc.html/:ID", getSimpleTOC) // <user> user viewable toc for a book
+	r.GET("/toc/:ID", getSimpleTOC)      // <user> user viewable toc for a book
 	r.GET("/about", getAboutPage)        // <user> About Page
 	r.GET("/favicon.ico", favIcon)       // <user> favicon
 
@@ -53,19 +53,19 @@ func init() {
 	// Module: Structure Readers
 	// Files: main.go, STRUCT_Handlers.go
 	/*****************************************************/
-	r.GET("/read/exercise/:ID", getSimpleExerciseReader) // <user> read exercise given id
-	r.GET("/read/", getSimpleObjectiveReader)            // <user> read objective given id
-	r.GET("/preview", getObjectivePreview)               // <user> preview objective given id
+	r.GET("/read/exercise/:ID", getSimpleExerciseReader)   // <user> read exercise given id
+	r.GET("/read/objective/:ID", getSimpleObjectiveReader) // <user> read objective given id
+	r.GET("/preview", getObjectivePreview)                 // <user><OUTDATED> preview objective given id
 
 	// Module: Structure Modifiers
 	// Files: STRUCT_Handlers.go
 	/***********************************************/
-	r.GET("/edit/Catalog/:ID", getCatalogEditor)   // <user><auth> Modify Catalog Information
-	r.GET("/edit/Book/:ID", getBookEditor)         // <user><auth> Modify Book Information
-	r.GET("/edit/Chapter/:ID", getChapterEditor)   // <user><auth> Modify Chapter Information
-	r.GET("/edit/Section/:ID", getSectionEditor)   // <user><auth> Modify Section Information
-	r.GET("/edit/Exercise/:ID", getExerciseEditor) // <user><auth> Modify Exercise Information
-	r.GET("/edit", getSimpleObjectiveEditor)       // <user><auth> edit objective given id
+	r.GET("/edit/catalog/:ID", getCatalogEditor)           // <user><auth> Modify Catalog Information
+	r.GET("/edit/book/:ID", getBookEditor)                 // <user><auth> Modify Book Information
+	r.GET("/edit/chapter/:ID", getChapterEditor)           // <user><auth> Modify Chapter Information
+	r.GET("/edit/section/:ID", getSectionEditor)           // <user><auth> Modify Section Information
+	r.GET("/edit/exercise/:ID", getExerciseEditor)         // <user><auth> Modify Exercise Information
+	r.GET("/edit/objective/:ID", getSimpleObjectiveEditor) // <user><auth> edit objective given id
 
 	// Module: Structure Parser
 	// Files: PARSE_BookParser.go
@@ -94,7 +94,7 @@ func init() {
 	r.GET("/api/sections.json", API_GetSections)     // <api> read datastore, sections
 	r.GET("/api/objectives.json", API_GetObjectives) // <api> read datastore, objectives
 	r.GET("/api/exercises.json", API_GetExercises)   // <api> read datatore, exercises
-	r.GET("/toc", API_getTOC)                        // <api> xml toc for a book
+	r.GET("/api/toc.xml", API_getTOC)                // <api> xml toc for a book
 
 	// Module: API-Readers, Singular
 	// Files: API_Readers.go

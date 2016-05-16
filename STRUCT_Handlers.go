@@ -129,7 +129,7 @@ func getSimpleObjectiveEditor(res http.ResponseWriter, req *http.Request, params
 		return
 	}
 
-	ObjectiveID, numErr := strconv.Atoi(req.FormValue("ID"))
+	ObjectiveID, numErr := strconv.Atoi(params.ByName("ID"))
 	if numErr != nil || ObjectiveID == 0 {
 		http.Redirect(res, req, "/select?status=invalid_id", http.StatusTemporaryRedirect)
 	}
@@ -209,7 +209,7 @@ func getExerciseEditor(res http.ResponseWriter, req *http.Request, params httpro
 // Mandatory Options: ID
 // Optional Options:
 func getSimpleObjectiveReader(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	readID := req.FormValue("ID")
+	readID := params.ByName("ID")
 	ServeTemplateWithParams(res, req, "simpleReader.html", readID)
 }
 
