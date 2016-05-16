@@ -543,8 +543,8 @@ func (o Objective) sanitize() Objective {
 		Author:       strings.Replace(o.Author, "\n", "", -1),
 		Content:      template.HTML(strings.Replace(string(o.Content), "\n", "", -1)),
 		KeyTakeaways: template.HTML(strings.Replace(string(o.KeyTakeaways), "\n", "", -1)),
-		Parent:       s.Parent,
-		ID:           s.ID,
+		Parent:       o.Parent,
+		ID:           o.ID,
 	}
 }
 
@@ -553,7 +553,7 @@ func (e Exercise) sanitize() Exercise {
 		Instruction: strings.Replace(e.Instruction, "\n", "", -1),
 		Question:    template.HTML(strings.Replace(string(e.Question), "\n", "", -1)),
 		Solution:    template.HTML(strings.Replace(string(e.Solution), "\n", "", -1)),
-		Parent:      s.Parent,
-		ID:          s.ID,
+		Parent:      e.Parent,
+		ID:          e.ID,
 	}
 }
