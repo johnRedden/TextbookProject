@@ -276,6 +276,7 @@
             //Adding a new catalog here
             $('#chapterBtn').on('click',function(){
                 var newChap =  $('#chapterInput').val();
+                newChap = newChap.replace(/^\s+|\s+$/g, "").replace(/\s+/g, " "); // regex to replace space in middle
                 $.post("/api/create/chapter",{BookID:localStorage.bookID,ChapterName:newChap},function(data){
                     g = $.parseJSON(data);
                     console.log(g.result +":"+ g.reason+":"+ g.object.Title);
@@ -333,6 +334,8 @@
             //Adding a new catalog here
             $('#sectionBtn-'+chapterID).on('click',function(){
                 var newSectionName =  $('#sectionInput-'+chapterID).val();
+                console.log('new sect')
+                newSectionName = newSectionName.replace(/^\s+|\s+$/g, "").replace(/\s+/g, " "); // regex to replace space in middle
 
                 $('#cat-'+chapterID).html('<a href="#" class="list-group-item" ><i class="glyphicon glyphicon-download"></i>Loading...</a>');
                 $.post("/api/create/section",{ChapterID:chapterID,SectionName:newSectionName},function(data){
@@ -396,7 +399,7 @@
             //Adding a new catalog here
             $('#objectiveBtn-'+sectionID).on('click',function(){
                 var newObjectiveName =  $('#objectiveInput-'+sectionID).val();
-
+                newObjectiveName = newObjectiveName.replace(/^\s+|\s+$/g, "").replace(/\s+/g, " "); // regex to replace space in middle
                 $('#cat-'+sectionID).html('<a href="#" class="list-group-item" ><i class="glyphicon glyphicon-download"></i>Loading...</a>');
                 $.post("/api/create/objective",{SectionID:sectionID,ObjectiveName:newObjectiveName},function(data){
                     g = $.parseJSON(data);

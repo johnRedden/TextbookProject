@@ -20,6 +20,11 @@ indexes:
   - name: Parent
   - name: Title
 
+- kind: Exercises
+  properties:
+  - name: Parent
+  - name: Instruction
+
 - kind: Objectives
   properties:
   - name: Parent
@@ -29,8 +34,3 @@ indexes:
   properties:
   - name: Parent
   - name: Title
-
-- kind: Exercises
-  properties:
-  - name: Parent
-  - name: Instruction

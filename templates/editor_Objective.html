@@ -160,6 +160,7 @@
                      editor.ui.addButton('Save', { label: 'Save', command: 'save' });
                   }
               }
+              CKEDITOR.config.contentsCss = '/public/css/myeditor.css';
 
             // save button functionality  TODO: IF any input changes toggle!
             $('#objectiveInfo input').on('keyup',function(){

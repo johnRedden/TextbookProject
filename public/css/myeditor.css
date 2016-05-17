@@ -1,0 +1,10 @@
+    body{
+        font-size:large;
+        line-height: 1.5;
+        font-family: 'Merriweather', Georgia, 'Times New Roman', Times, serif;
+    }
+    .ens-example {
+        border-radius: 8px;
+        background: whitesmoke;
+        padding: 10px; 
+    }
