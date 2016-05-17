@@ -52,8 +52,38 @@
                 <textarea name="Message2" id="JQ-KeyTakeaways" wrap="hard" placeholder="KeyTakeaways">{{.KeyTakeaways}}</textarea>
             </form>
         </div>
+        <div class="well">
+            <div class="">
+                <p>Objective Exercises:</p>
+            </div>
+            <div class="form-group">
+                <button id="addExercise" class="btn btn-default btn-primary"><span class="glyphicon glyphicon-plus"></span> Add Exercise</button>
+            </div>
+        </div>
+        <script type="text/javascript">
+            
+            $('#addExercise').on('click',function(){
+                var newExercise =  "new Exercise";
+                
+                $.post("/api/create/exercise",{ObjectiveID:objectiveID},function(data){
+                    g = $.parseJSON(data);
+                    console.log(g.result +":"+ g.reason+":"+ g.object.ID);
+                    console.log(g);
+                    //$('.list-group-root').html('<a href="#" class="list-group-item" ><i class="glyphicon glyphicon-download"></i>Loading...</a>');
+                    // first wait for datastore
+                    setTimeout(function (){
+                        window.location = '/edit/exercise/'+g.object.ID;
+                    }, 2000);
+                });
+
+
+
+               // window.location = '/edit/exercise/'+objectiveID;
+            });
+        </script>
 
     </div>
+
 
     {{template "Footer"}}
 
