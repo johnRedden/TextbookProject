@@ -10,7 +10,6 @@ filename.go by Allen J. Mills
 import (
 	"github.com/julienschmidt/httprouter"
 	"google.golang.org/appengine"
-	"google.golang.org/appengine/datastore"
 	"net/http"
 	"strconv"
 	// "strings"
@@ -29,6 +28,12 @@ import (
 // Mandatory Options: ID
 // Optional Options:
 func getCatalogEditor(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	if validPerm, permErr := HasPermission(res, req, WritePermissions); !validPerm {
+		// User Must be at least Writer.
+		http.Error(res, permErr.Error(), http.StatusUnauthorized)
+		return
+	}
+
 	editID := params.ByName("ID")
 	i, parseErr := strconv.Atoi(editID)
 	HandleError(res, parseErr)
@@ -41,7 +46,21 @@ func getCatalogEditor(res http.ResponseWriter, req *http.Request, params httprou
 	itemToScreen, getErr := GetCatalogFromDatastore(req, int64(i))
 	HandleError(res, getErr)
 
-	ServeTemplateWithParams(res, req, "editor_Catalog.html", itemToScreen)
+	pu, _ := GetPermissionUserFromSession(appengine.NewContext(req))
+
+	screenOutput := struct {
+		Name       string
+		Email      string
+		Permission int
+		Catalog
+	}{
+		pu.Name,
+		pu.Email,
+		pu.Permission,
+		itemToScreen,
+	}
+
+	ServeTemplateWithParams(res, req, "editor_Catalog.html", screenOutput)
 }
 
 // Call: /edit/Book/:ID
@@ -52,6 +71,12 @@ func getCatalogEditor(res http.ResponseWriter, req *http.Request, params httprou
 // Mandatory Options: ID
 // Optional Options:
 func getBookEditor(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	if validPerm, permErr := HasPermission(res, req, WritePermissions); !validPerm {
+		// User Must be at least Writer.
+		http.Error(res, permErr.Error(), http.StatusUnauthorized)
+		return
+	}
+
 	editID := params.ByName("ID")
 	i, parseErr := strconv.Atoi(editID)
 	HandleError(res, parseErr)
@@ -64,7 +89,21 @@ func getBookEditor(res http.ResponseWriter, req *http.Request, params httprouter
 	itemToScreen, getErr := GetBookFromDatastore(req, int64(i))
 	HandleError(res, getErr)
 
-	ServeTemplateWithParams(res, req, "editor_Book.html", itemToScreen)
+	pu, _ := GetPermissionUserFromSession(appengine.NewContext(req))
+
+	screenOutput := struct {
+		Name       string
+		Email      string
+		Permission int
+		Book
+	}{
+		pu.Name,
+		pu.Email,
+		pu.Permission,
+		itemToScreen,
+	}
+
+	ServeTemplateWithParams(res, req, "editor_Book.html", screenOutput)
 }
 
 // Call: /edit/Chapter/:ID
@@ -75,6 +114,12 @@ func getBookEditor(res http.ResponseWriter, req *http.Request, params httprouter
 // Mandatory Options: ID
 // Optional Options:
 func getChapterEditor(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	if validPerm, permErr := HasPermission(res, req, WritePermissions); !validPerm {
+		// User Must be at least Writer.
+		http.Error(res, permErr.Error(), http.StatusUnauthorized)
+		return
+	}
+
 	editID := params.ByName("ID")
 	i, parseErr := strconv.Atoi(editID)
 	HandleError(res, parseErr)
@@ -87,7 +132,21 @@ func getChapterEditor(res http.ResponseWriter, req *http.Request, params httprou
 	itemToScreen, getErr := GetChapterFromDatastore(req, int64(i))
 	HandleError(res, getErr)
 
-	ServeTemplateWithParams(res, req, "editor_Chapter.html", itemToScreen)
+	pu, _ := GetPermissionUserFromSession(appengine.NewContext(req))
+
+	screenOutput := struct {
+		Name       string
+		Email      string
+		Permission int
+		Chapter
+	}{
+		pu.Name,
+		pu.Email,
+		pu.Permission,
+		itemToScreen,
+	}
+
+	ServeTemplateWithParams(res, req, "editor_Chapter.html", screenOutput)
 }
 
 // Call: /edit/Section/:ID
@@ -98,6 +157,12 @@ func getChapterEditor(res http.ResponseWriter, req *http.Request, params httprou
 // Mandatory Options: ID
 // Optional Options:
 func getSectionEditor(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	if validPerm, permErr := HasPermission(res, req, WritePermissions); !validPerm {
+		// User Must be at least Writer.
+		http.Error(res, permErr.Error(), http.StatusUnauthorized)
+		return
+	}
+
 	editID := params.ByName("ID")
 	i, parseErr := strconv.Atoi(editID)
 	HandleError(res, parseErr)
@@ -110,10 +175,24 @@ func getSectionEditor(res http.ResponseWriter, req *http.Request, params httprou
 	itemToScreen, getErr := GetSectionFromDatastore(req, int64(i))
 	HandleError(res, getErr)
 
-	ServeTemplateWithParams(res, req, "editor_Section.html", itemToScreen)
+	pu, _ := GetPermissionUserFromSession(appengine.NewContext(req))
+
+	screenOutput := struct {
+		Name       string
+		Email      string
+		Permission int
+		Section
+	}{
+		pu.Name,
+		pu.Email,
+		pu.Permission,
+		itemToScreen,
+	}
+
+	ServeTemplateWithParams(res, req, "editor_Section.html", screenOutput)
 }
 
-// Call: /edit
+// Call: /edit/objective/:ID
 // Description:
 // Our editor page for objectives given a valid objective id.
 // Mandatory:ID must be a well-formatted integer of an existing objective id.
@@ -129,46 +208,33 @@ func getSimpleObjectiveEditor(res http.ResponseWriter, req *http.Request, params
 		return
 	}
 
-	ObjectiveID, numErr := strconv.Atoi(params.ByName("ID"))
-	if numErr != nil || ObjectiveID == 0 {
-		http.Redirect(res, req, "/select?status=invalid_id", http.StatusTemporaryRedirect)
+	editID := params.ByName("ID")
+	i, parseErr := strconv.Atoi(editID)
+	HandleError(res, parseErr)
+
+	if i == 0 {
+		http.Error(res, "Invalid ID", http.StatusExpectationFailed)
+		return
 	}
-	ctx := appengine.NewContext(req)
 
-	objKey := MakeObjectiveKey(ctx, int64(ObjectiveID))
-	obj_temp := Objective{}
-	objectiveGetErr := datastore.Get(ctx, objKey, &obj_temp)
-	HandleError(res, objectiveGetErr)
+	itemToScreen, getErr := GetObjectiveFromDatastore(req, int64(i))
+	HandleError(res, getErr)
 
-	sect_temp := Section{}
-	sectionGetErr := datastore.Get(ctx, MakeSectionKey(ctx, obj_temp.Parent), &sect_temp)
-	HandleError(res, sectionGetErr)
+	pu, _ := GetPermissionUserFromSession(appengine.NewContext(req))
 
-	chap_temp := Chapter{}
-	chapterGetErr := datastore.Get(ctx, MakeChapterKey(ctx, sect_temp.Parent), &chap_temp)
-	HandleError(res, chapterGetErr)
+	screenOutput := struct {
+		Name       string
+		Email      string
+		Permission int
+		Objective
+	}{
+		pu.Name,
+		pu.Email,
+		pu.Permission,
+		itemToScreen,
+	}
 
-	book_temp := Book{}
-	bookGetErr := datastore.Get(ctx, MakeBookKey(ctx, chap_temp.Parent), &book_temp)
-	HandleError(res, bookGetErr)
-
-	ve := VIEW_Editor{}
-	ve.ObjectiveID = objKey.IntID()
-	ve.SectionID = obj_temp.Parent
-	ve.ChapterID = sect_temp.Parent
-	ve.BookID = chap_temp.Parent
-
-	ve.ObjectiveTitle = obj_temp.Title
-	ve.SectionTitle = sect_temp.Title
-	ve.ChapterTitle = chap_temp.Title
-	ve.BookTitle = book_temp.Title
-
-	ve.ObjectiveVersion = obj_temp.Version
-	ve.Content = obj_temp.Content
-	ve.KeyTakeaways = obj_temp.KeyTakeaways
-	ve.Author = obj_temp.Author
-
-	ServeTemplateWithParams(res, req, "simpleEditor.html", ve)
+	ServeTemplateWithParams(res, req, "editor_Objective.html", screenOutput)
 }
 
 // Call: /edit/Exercise/:ID
@@ -179,6 +245,12 @@ func getSimpleObjectiveEditor(res http.ResponseWriter, req *http.Request, params
 // Mandatory Options: ID
 // Optional Options:
 func getExerciseEditor(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	if validPerm, permErr := HasPermission(res, req, WritePermissions); !validPerm {
+		// User Must be at least Writer.
+		http.Error(res, permErr.Error(), http.StatusUnauthorized)
+		return
+	}
+
 	editID := params.ByName("ID")
 	i, parseErr := strconv.Atoi(editID)
 	HandleError(res, parseErr)
@@ -191,7 +263,21 @@ func getExerciseEditor(res http.ResponseWriter, req *http.Request, params httpro
 	itemToScreen, getErr := GetExerciseFromDatastore(req, int64(i))
 	HandleError(res, getErr)
 
-	ServeTemplateWithParams(res, req, "editor_exercise.html", itemToScreen)
+	pu, _ := GetPermissionUserFromSession(appengine.NewContext(req))
+
+	screenOutput := struct {
+		Name       string
+		Email      string
+		Permission int
+		Exercise
+	}{
+		pu.Name,
+		pu.Email,
+		pu.Permission,
+		itemToScreen,
+	}
+
+	ServeTemplateWithParams(res, req, "editor_exercise.html", screenOutput)
 }
 
 // ------------------------------------

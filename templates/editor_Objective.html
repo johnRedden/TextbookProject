@@ -2,12 +2,8 @@
 <html lang="en">
 {{template "Head" .}}
 <body>
-    {{template "Nav" }}
-            <!-- can do this using the api -->
-            <input id="JQ-BookID" type="hidden" value="{{.BookID}}" readonly>
-            <input id="JQ-ChapterID" type="hidden" value="{{.ChapterID}}" readonly>
-            <input id="JQ-SectionID" type="hidden" value="{{.SectionID}}" readonly>
-            <input id="JQ-ObjectiveID" type="hidden" value="{{.ObjectiveID}}" readonly>
+    {{template "Nav" .}}
+            <input id="JQ-ObjectiveID" type="hidden" value="{{.ID}}" readonly>
     
     <div class="container">
     
@@ -21,7 +17,7 @@
             </p>
             <div class="input-group">
                 <label class="input-group-addon">Objective:</label>
-                <input type="text" class="form-control" id="JQ-ObjectiveTitle" placeholder="Objective" value="{{.ObjectiveTitle}}">
+                <input type="text" class="form-control" id="JQ-ObjectiveTitle" placeholder="Objective" value="{{.Title}}">
             </div> 
             <div class="input-group">
                 <label class="input-group-addon">Author:</label>
@@ -29,7 +25,7 @@
             </div>  
             <div class="input-group">
                 <label class="input-group-addon">Version:</label>
-                <input type="text" class="form-control" placeholder="Version" id="JQ-Version" value="{{.ObjectiveVersion}}">
+                <input type="text" class="form-control" placeholder="Version" id="JQ-Version" value="{{.Version}}">
             </div>
         </div>
 
@@ -41,7 +37,7 @@
                 </span>
             </p>
             <form class="goodBack">
-                <textarea name="Message" id="JQ-Content" cols="10" wrap="hard" autofocus placeholder="Enter new message.">{{html .Content}}</textarea>
+                <textarea name="Message" id="JQ-Content" cols="10" wrap="hard" autofocus placeholder="Enter new message.">{{.Content}}</textarea>
             </form>
         </div>
 
@@ -53,7 +49,7 @@
                 </span>
             </p>
             <form class="goodBack">
-                <textarea name="Message2" id="JQ-KeyTakeaways" wrap="hard" placeholder="KeyTakeaways">{{html .KeyTakeaways}}</textarea>
+                <textarea name="Message2" id="JQ-KeyTakeaways" wrap="hard" placeholder="KeyTakeaways">{{.KeyTakeaways}}</textarea>
             </form>
         </div>
 
@@ -93,9 +89,9 @@
 
    <!-- 
     <p>Results: <input id="JQ-Results" readonly></p><br>
-    <p>Book: <input id="JQ-BookTitle" value="{{.BookTitle}}" readonly></p><br>
-    <p>Chapter: <input id="JQ-ChapterTitle" value="{{.ChapterTitle}}" readonly></p><br>
-    <p>Section: <input id="JQ-SectionTitle" value="{{.SectionTitle}}" readonly></p><br> -->
+    <p>Book: <input id="JQ-BookTitle" value=".BookTitle}}" readonly></p><br>
+    <p>Chapter: <input id="JQ-ChapterTitle" value=".ChapterTitle}}" readonly></p><br>
+    <p>Section: <input id="JQ-SectionTitle" value=".SectionTitle}}" readonly></p><br> -->
 
     <script type="text/javascript">
         $(document).ready(function(){
@@ -114,7 +110,7 @@
                 ktw = CKEDITOR.instances['JQ-KeyTakeaways'].getData();
                 authr = $("#JQ-AuthorInput").val();
 
-                $.post("/api/makeObjective",{SectionID:sectID,ObjectiveName:ObjeName,ID:objeID,Version:ver,Content:cont,KeyTakeaways:ktw,Author:authr},function(data){
+                $.post("/api/create/objective",{SectionID:sectID,ObjectiveName:ObjeName,ID:objeID,Version:ver,Content:cont,KeyTakeaways:ktw,Author:authr},function(data){
                     j = $.parseJSON(data);
                     console.log(j.result +":"+ j.reason)
                     if (j.code == 0){ // reset save button
@@ -187,7 +183,7 @@
                 $('#objDeleteBtn').on('click',function(){
                     var ans = $('#verify').val();
                     if(ans==="yes"){
-                        $.post("/api/deleteObjective",{ID:y},function(data){
+                        $.post("/api/delete/objective",{ID:y},function(data){
                              g = $.parseJSON(data);
                             console.log(g.result +":"+ g.reason); 
                             //go back to where you came from you dirty dog!

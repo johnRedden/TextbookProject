@@ -3,7 +3,7 @@
 {{template "Head"}}
 
 <body>
-{{template "Nav"}}
+{{template "Nav" .}}
 
     <div class="container">
 
@@ -126,14 +126,14 @@
                 var tempID = $('#editGenID').html();
                 switch(choice[0]){
                     case 'B':  //book info edit button
-                        $.post("/api/makeBook",{ID:tempID,BookName:genName, Author:genAuths},function(data){
+                        $.post("/api/create/book",{ID:tempID,BookName:genName, Author:genAuths},function(data){
                             g = $.parseJSON(data);
                             console.log(g.result +":"+ g.reason);
                             getBookInfo(localStorage.bookID);
                         });
                         break
                     case 'C':
-                        $.post("/api/makeChapter",{ID:tempID,ChapterName:genName},function(data){
+                        $.post("/api/create/chapter",{ID:tempID,ChapterName:genName},function(data){
                             g = $.parseJSON(data);
                             console.log(g.result +":"+ g.reason);
                             $('#refreshChapters').trigger('click');
@@ -142,7 +142,7 @@
                         break;
                     case 'S':
                         $('#cat-'+tempID).html('loading...');
-                        $.post("/api/makeSection",{ID:tempID,SectionName:genName},function(data){
+                        $.post("/api/create/section",{ID:tempID,SectionName:genName},function(data){
                             g = $.parseJSON(data);
                             console.log(g.result +":"+ g.reason);
                             $('#refreshChapters').trigger('click');
@@ -158,14 +158,14 @@
             if(ans==="yes"){
                 switch(choice[0]){
                     case 'B':
-                        $.post("/api/deleteBook",{ID:tempID},function(data){
+                        $.post("/api/delete/book",{ID:tempID},function(data){
                             g = $.parseJSON(data);
                             console.log(g.result +":"+ g.reason);
                             //$('#cats')[0].click(); //redirect to catalogs
                             window.location = '/catalogs/';
                         });
                     case 'C': //deleteing chapters
-                        $.post("/api/deleteChapter",{ID:tempID},function(data){
+                        $.post("/api/delete/chapter",{ID:tempID},function(data){
                             g = $.parseJSON(data);
                             console.log(g.result +":"+ g.reason);
                             $('.list-group-root').html('<a href="#" class="list-group-item" ><i class="glyphicon glyphicon-download"></i>Loading...</a>');
@@ -176,7 +176,7 @@
                         });
                         break;
                     case 'S': //deleting sections
-                        $.post("/api/deleteSection",{ID:tempID},function(data){
+                        $.post("/api/delete/section",{ID:tempID},function(data){
                             g = $.parseJSON(data);
                             console.log(g.result +":"+ g.reason);
                             $('#cat-'+tempID).html('<a href="#" class="list-group-item" ><i class="glyphicon glyphicon-download"></i>Loading...</a>');
@@ -276,7 +276,7 @@
             //Adding a new catalog here
             $('#chapterBtn').on('click',function(){
                 var newChap =  $('#chapterInput').val();
-                $.post("/api/makeChapter",{BookID:localStorage.bookID,ChapterName:newChap},function(data){
+                $.post("/api/create/chapter",{BookID:localStorage.bookID,ChapterName:newChap},function(data){
                     g = $.parseJSON(data);
                     console.log(g.result +":"+ g.reason+":"+ g.object.Title);
                     $('.list-group-root').html('<a href="#" class="list-group-item" ><i class="glyphicon glyphicon-download"></i>Loading...</a>');
@@ -335,7 +335,7 @@
                 var newSectionName =  $('#sectionInput-'+chapterID).val();
 
                 $('#cat-'+chapterID).html('<a href="#" class="list-group-item" ><i class="glyphicon glyphicon-download"></i>Loading...</a>');
-                $.post("/api/makeSection",{ChapterID:chapterID,SectionName:newSectionName},function(data){
+                $.post("/api/create/section",{ChapterID:chapterID,SectionName:newSectionName},function(data){
                     g = $.parseJSON(data);
                     console.log(g.result +":"+ g.reason);
                     //second place to wait for datastore
@@ -356,7 +356,7 @@
         {{if eq .Permission 3}}
                 var HTMLblock = '<div class="list-group-item"> \
                                             <a href="/preview?ID='+objectiveID+'"  id="'+objectiveID+'" target="_blank"><i class="glyphicon glyphicon-new-window"></i>'+objectiveName+'</a>\
-                                            <a href="/edit?ID='+objectiveID+'"  class="btn btn-xs btn-info" role="button" target="">Edit</a> \
+                                            <a href="/edit/objective/'+objectiveID+'"  class="btn btn-xs btn-info" role="button" target="">Edit</a> \
                                         </div>';
         {{else}}
                 var HTMLblock = '<div class="list-group-item"> \
@@ -398,7 +398,7 @@
                 var newObjectiveName =  $('#objectiveInput-'+sectionID).val();
 
                 $('#cat-'+sectionID).html('<a href="#" class="list-group-item" ><i class="glyphicon glyphicon-download"></i>Loading...</a>');
-                $.post("/api/makeObjective",{SectionID:sectionID,ObjectiveName:newObjectiveName},function(data){
+                $.post("/api/create/objective",{SectionID:sectionID,ObjectiveName:newObjectiveName},function(data){
                     g = $.parseJSON(data);
                     console.log(g.result +":"+ g.reason);
                     //third place to wait

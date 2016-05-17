@@ -329,7 +329,7 @@ S62:
 		commandsRan.add(fmt.Sprint("   : Objective.Content=", data))
 		pObjective.Content = template.HTML(data)
 		goto S62
-	case `<div objective-keytakeaways="">`:
+	case `<div objective-keyTakeaways="">`:
 		commandsRan.add(fmt.Sprint("   : Objective.KeyTakeaways=", data))
 		pObjective.KeyTakeaways = template.HTML(data)
 		goto S62
