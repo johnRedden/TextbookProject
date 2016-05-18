@@ -146,7 +146,7 @@ func IMAGE_API_CKEDITOR_PlaceImageIntoCS(res http.ResponseWriter, req *http.Requ
 // API - Post/Return/Delete Image to Cloud Storage
 /////
 
-// Call: /api/makeImage
+// Call: /api/create/image
 // Description:
 // This handler will take in an image in
 // Mandatory:upload and send it to cloud storage.
@@ -219,7 +219,7 @@ func IMAGE_API_GetImageFromCS(res http.ResponseWriter, req *http.Request, params
 	io.Copy(res, rdr)
 }
 
-// Call: /api/removeImage
+// Call: /api/delete/image
 // Description:
 // This handler will delete an image from cloud storages
 //

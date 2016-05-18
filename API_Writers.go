@@ -42,7 +42,7 @@ var (
 // Please read each call for expected input/output
 ////////
 
-// Call: /api/makeCatalog
+// Call: /api/create/catalog
 // Description:
 // This call is for the creation or update of a catalog. If given Mandatory:ID this call is in update mode. Mandatory:CatalogName must be a well-formed non-nil string. Mandatory:ID must be a well-formatted integer. Option:Version should be a well-formatted float value.
 //
@@ -99,7 +99,7 @@ func API_MakeCatalog(res http.ResponseWriter, req *http.Request, params httprout
 	fmt.Fprint(res, `{"result":"success","reason":"","code":0,"object":{"Title":"`, catalogForDatastore.Title, `","ID":"`, rk.IntID(), `"}}`)
 }
 
-// Call: /api/makeBook
+// Call: /api/create/book
 // Description:
 // This call will create or update book information. If Mandatory:ID is given, all parameters are set as update mode, otherwise Mandatory:CatalogName, Mandatory:BookName must be given. Option:Version should be a well-formatted float.
 //
@@ -159,7 +159,7 @@ func API_MakeBook(res http.ResponseWriter, req *http.Request, params httprouter.
 	fmt.Fprint(res, `{"result":"success","reason":"","code":0,"object":{"Title":"`, bookForDatastore.Title, `","ID":"`, rk.IntID(), `"}}`)
 }
 
-// Call: /api/makeChapter
+// Call: /api/create/chapter
 // Description:
 // This call will create or update chapter information. If Mandatory:ID is given, all parameters are set as update mode, otherwise Mandatory:BookID, Mandatory:ChapterName must be given. Option:Version should be a well-formatted float. Mandatory:BookID should be a well-formatted integer.
 //
@@ -212,7 +212,7 @@ func API_MakeChapter(res http.ResponseWriter, req *http.Request, params httprout
 	fmt.Fprint(res, `{"result":"success","reason":"","code":0,"object":{"Title":"`, chapterForDatastore.Title, `","ID":"`, rk.IntID(), `"}}`)
 }
 
-// Call: /api/makeSection
+// Call: /api/create/section
 // Description:
 // This call will create or update section information. If Mandatory:ID is given, all parameters are set as update mode, otherwise Mandatory:ChapterID, Mandatory:SectionName must be given. Option:Version should be a well-formatted float. Mandatory:ChapterID should be a well-formatted integer.
 //
@@ -265,7 +265,7 @@ func API_MakeSection(res http.ResponseWriter, req *http.Request, params httprout
 	fmt.Fprint(res, `{"result":"success","reason":"","code":0,"object":{"Title":"`, sectionForDatastore.Title, `","ID":"`, rk.IntID(), `"}}`)
 }
 
-// Call: /api/makeObjective
+// Call: /api/create/objective
 // Description:
 // This call will create or update objective information. If Mandatory:ID is given, all parameters are set as update mode, otherwise Mandatory:SectionID, Mandatory:ObjectiveName must be given. Option:Version should be a well-formatted float. Mandatory:SectionID should be a well-formatted integer.
 //
@@ -328,9 +328,9 @@ func API_MakeObjective(res http.ResponseWriter, req *http.Request, params httpro
 	fmt.Fprint(res, `{"result":"success","reason":"","code":0,"object":{"Title":"`, objectiveForDatastore.Title, `","ID":"`, rk.IntID(), `"}}`)
 }
 
-// Call: /api/makeExercise
+// Call: /api/create/exercise
 // Description:
-// This call will create or update objective information. If Mandatory:ID is given, all parameters are set as update mode, otherwise Mandatory:SectionID, Mandatory:ObjectiveName must be given. Option:Version should be a well-formatted float. Mandatory:SectionID should be a well-formatted integer.
+// This call will create or update exercise information. If Mandatory:ID is given, all parameters are set as update mode.
 //
 // Method: POST
 // Results: JSON

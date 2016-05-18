@@ -251,7 +251,7 @@ func API_GetExercises(res http.ResponseWriter, req *http.Request, params httprou
 	ServeTemplateWithParams(res, req, "Exercises.json", exerciselist)
 }
 
-// Call: /toc
+// Call: /api/toc.xml
 // Description:
 // This call will return an xml formatted view of an entire book by ID. ID must be a well-formatted integer id of an existing book.
 //

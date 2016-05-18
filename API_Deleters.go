@@ -43,7 +43,7 @@ var (
 // Please read each section for expected input/output
 /////////////
 
-// Call: /api/deleteCatalog
+// Call: /api/delete/catalog
 // Description:
 // This call will delete a catalog and all child structures.
 // ID should be a well-formed non-nil string of an existing catalog name.
@@ -92,7 +92,7 @@ func API_DeleteCatalog(res http.ResponseWriter, req *http.Request, params httpro
 	fmt.Fprint(res, `{"result":"success","reason":"","code":0}`)
 }
 
-// Call: /api/deleteBook
+// Call: /api/delete/book
 // Description:
 // This call will delete a book and all child structures.
 // ID should be a well-formatted integer of an existing book id.
@@ -137,7 +137,7 @@ func API_DeleteBook(res http.ResponseWriter, req *http.Request, params httproute
 	fmt.Fprint(res, `{"result":"success","reason":"","code":0}`)
 }
 
-// Call: /api/deleteChapter
+// Call: /api/delete/chapter
 // Description:
 // This call will delete a chapter and all child structures.
 // ID should be a well-formatted integer of an existing chapter id.
@@ -181,7 +181,7 @@ func API_DeleteChapter(res http.ResponseWriter, req *http.Request, params httpro
 	fmt.Fprint(res, `{"result":"success","reason":"","code":0}`)
 }
 
-// Call: /api/deleteSection
+// Call: /api/delete/section
 // Description:
 // This call will delete a section and all child structures.
 // ID should be a well-formatted integer of an existing section id.
@@ -221,7 +221,7 @@ func API_DeleteSection(res http.ResponseWriter, req *http.Request, params httpro
 	fmt.Fprint(res, `{"result":"success","reason":"","code":0}`)
 }
 
-// Call: /api/deleteObjective
+// Call: /api/delete/objective
 // Description:
 // This call will delete an objective and all child structures.
 // ID should be a well-formatted integer of an existing objective id.
@@ -252,7 +252,7 @@ func API_DeleteObjective(res http.ResponseWriter, req *http.Request, params http
 	fmt.Fprint(res, `{"result":"success","reason":"","code":0}`)
 }
 
-// Call: /api/deleteExercise
+// Call: /api/delete/exercise
 // Description:
 // This call will delete an Exercise and all child structures.
 // ID should be a well-formatted integer of an existing Exercise id.
