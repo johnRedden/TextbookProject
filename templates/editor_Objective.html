@@ -246,7 +246,7 @@
                             <a class="collapsed" data-toggle="collapse" data-target="#ex-'+exerciseID+'" href="#collapse1"></a>\
                             <strong>'+instruction+'</strong><br\> \
                             <div class="checkbox">\
-                                <label><input type="checkbox" value="'+exerciseID+'">'+question+'</label>\
+                                <label> <input type="checkbox" value="'+exerciseID+'"/>'+question+'</label>\
                             </div>\
                         </div>\
                         <div id="ex-'+exerciseID+'" class="panel-collapse collapse">\
@@ -258,7 +258,7 @@
                 
                 return exerciseHTML;
             }
-            
+            // this almost works
             function getObjectiveExercises(objectiveID){
 
                 $.get("/api/exercises.json?ObjectiveID="+objectiveID,function(data, status){
@@ -266,22 +266,35 @@
                     var promises = [];
 
                     $.each( g, function( key, val ){
-                        promises.push(getExercise(val.ID));
+                        promises.push( $.get("/api/exercise.xml?ID="+val.ID) );
                     });
                     // now we have an array of promises.
-                    console.log(promises);
-                    
+                    console.log(promises); //This is good
+                    //when they are ALL done... iterate through and populate the html in order (render mathjax after)
+                    $.when.apply(null, promises).done(function() {
+                      // Afterwards, do this.
+                        console.log('all done');
+                        $.each( promises, function( key, val ){
+                            //console.log(val);
+                            val.always(function(xml){
+                                var instr = $(xml).find("instruction").html();
+                                var question = $(xml).find("question").html();
+                                var ans = $(xml).find("solution").html();
+                                var exID = $(xml).find("id").html();
+                                $("#exerciseRoot").append(getExerciseHTML(exID,instr,question,ans));
+                            });
+                        });
+
+                    });
+
                 });
 
             }
-
-
-    
-
+            //function below not used
             function getExercise(exerciseID){
 
                 var promise = $.get("/api/exercise.xml?ID="+exerciseID,function(xml){
-                    //console.log(xml)
+                    console.log("chank")
                     //var instr = $(xml).find("instruction").html();
                     //var question = $(xml).find("question").html();
                     //var ans = $(xml).find("solution").html();

@@ -10,6 +10,11 @@
             /* Margin bottom by footer height */
             margin-bottom: 60px;
         }
+        input > label > p {
+            line-height: 3.0;
+            font-family: 'Merriweather', Georgia, 'Times New Roman', Times, serif;
+
+        }
 
         .navbar{ 
             background: darkslategray;
