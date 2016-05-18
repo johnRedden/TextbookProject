@@ -52,35 +52,16 @@
                 <textarea name="Message2" id="JQ-KeyTakeaways" wrap="hard" placeholder="KeyTakeaways">{{.KeyTakeaways}}</textarea>
             </form>
         </div>
+        
         <div class="well">
             <div class="">
                 <p>Objective Exercises:</p>
             </div>
             <div class="form-group">
+                <div id="exerciseRoot">Exercises Go Here</div>
                 <button id="addExercise" class="btn btn-default btn-primary"><span class="glyphicon glyphicon-plus"></span> Add Exercise</button>
             </div>
         </div>
-        <script type="text/javascript">
-            
-            $('#addExercise').on('click',function(){
-                var newExercise =  "new Exercise";
-                
-                $.post("/api/create/exercise",{ObjectiveID:objectiveID},function(data){
-                    g = $.parseJSON(data);
-                    console.log(g.result +":"+ g.reason+":"+ g.object.ID);
-                    console.log(g);
-                    //$('.list-group-root').html('<a href="#" class="list-group-item" ><i class="glyphicon glyphicon-download"></i>Loading...</a>');
-                    // first wait for datastore
-                    setTimeout(function (){
-                        window.location = '/edit/exercise/'+g.object.ID;
-                    }, 2000);
-                });
-
-
-
-               // window.location = '/edit/exercise/'+objectiveID;
-            });
-        </script>
 
     </div>
 
@@ -128,6 +109,8 @@
             var referrer =  document.referrer;
             console.log("Ready!")
             objectiveID = $("#JQ-ObjectiveID").val();
+
+
 
             $(".saveBtn").click(function(){
                 console.log("Click Called!!")
@@ -235,6 +218,54 @@
                 }
 
             }
+
+
+    // Mr. Allen Mills --- exercises work here  HELP!  ***********************************
+            $('#addExercise').on('click',function(){
+                var newExercise =  "new Exercise";
+                
+                $.post("/api/create/exercise",{ObjectiveID:objectiveID},function(data){
+                    g = $.parseJSON(data);
+                    console.log(g.result +":"+ g.reason+":"+ g.object.ID);
+                    console.log(g);
+                    //$('.list-group-root').html('<a href="#" class="list-group-item" ><i class="glyphicon glyphicon-download"></i>Loading...</a>');
+                    // first wait for datastore
+                    setTimeout(function (){
+                        window.location = '/edit/exercise/'+g.object.ID;
+                    }, 1500);
+                });
+
+               // window.location = '/edit/exercise/'+objectiveID;
+            });
+
+
+            function getObjectiveExercises(objectiveID){
+                $.get("/api/exercises.json?ObjectiveID="+objectiveID,function(data, status){
+                    localStorage.setItem('objExercises', JSON.stringify( ($.parseJSON(data)).results ));
+                    populateObjectiveExercises();
+                });
+            }
+            function populateObjectiveExercises(){
+                var j = JSON.parse(localStorage.getItem('objExercises'));
+                console.log(j);
+                $.each( j, function( key, val ){
+                    //console.log(val.ID);
+                    getExercise(val.ID);
+                });
+            }
+            function getExercise(exerciseID){
+                console.log(exerciseID);
+                $.get("/api/exercise.xml?ID="+exerciseID,function(xml){
+                    var question = $(xml).find("question").html();
+                    console.log(xml);
+                    console.log(question);
+                    $("#exerciseRoot").append('<div>'+question+'</div>');
+                });
+            }
+
+            getObjectiveExercises(objectiveID);
+
+
         });
     </script>
 
