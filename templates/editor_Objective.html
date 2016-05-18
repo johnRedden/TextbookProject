@@ -53,16 +53,17 @@
             </form>
         </div>
         
-        <div class="well">
-            <div class="">
+        
+            <div class="well">
                 <p>Objective Exercises:</p>
-            </div>
-            <div class="form-group">
-                <div id="exerciseRoot">Exercises Go Here</div>
-                <button id="addExercise" class="btn btn-default btn-primary"><span class="glyphicon glyphicon-plus"></span> Add Exercise</button>
-            </div>
-        </div>
+            
+                <div class="form-group">
+                    <div id="exerciseRoot" class="panel-group" ></div>
+                    <button id="addExercise" class="btn btn-default btn-primary"><span class="glyphicon glyphicon-plus"></span> Add Exercise</button>
+                </div>
 
+            </div>
+      
     </div>
 
 
@@ -221,6 +222,7 @@
 
 
     // Mr. Allen Mills --- exercises work here  HELP!  ***********************************
+
             $('#addExercise').on('click',function(){
                 var newExercise =  "new Exercise";
                 
@@ -237,30 +239,58 @@
 
                // window.location = '/edit/exercise/'+objectiveID;
             });
-
-
+            function getExerciseHTML(exerciseID,instruction,question,answer){
+                var exerciseHTML ='\
+                    <div class="panel panel-default" id="'+exerciseID+'">\
+                        <div class="panel-heading">\
+                            <a class="collapsed" data-toggle="collapse" data-target="#ex-'+exerciseID+'" href="#collapse1"></a>\
+                            <strong>'+instruction+'</strong><br\> \
+                            <div class="checkbox">\
+                                <label><input type="checkbox" value="'+exerciseID+'">'+question+'</label>\
+                            </div>\
+                        </div>\
+                        <div id="ex-'+exerciseID+'" class="panel-collapse collapse">\
+                            <div class="panel-body"><strong>Answer: </strong>\
+                                '+answer+'\
+                            </div>\
+                        </div>\
+                    </div>';
+                
+                return exerciseHTML;
+            }
+            
             function getObjectiveExercises(objectiveID){
+
                 $.get("/api/exercises.json?ObjectiveID="+objectiveID,function(data, status){
-                    localStorage.setItem('objExercises', JSON.stringify( ($.parseJSON(data)).results ));
-                    populateObjectiveExercises();
+                    var g = ($.parseJSON(data)).results;
+                    var promises = [];
+
+                    $.each( g, function( key, val ){
+                        promises.push(getExercise(val.ID));
+                    });
+                    // now we have an array of promises.
+                    console.log(promises);
+                    
                 });
+
             }
-            function populateObjectiveExercises(){
-                var j = JSON.parse(localStorage.getItem('objExercises'));
-                console.log(j);
-                $.each( j, function( key, val ){
-                    //console.log(val.ID);
-                    getExercise(val.ID);
-                });
-            }
+
+
+    
+
             function getExercise(exerciseID){
-                console.log(exerciseID);
-                $.get("/api/exercise.xml?ID="+exerciseID,function(xml){
-                    var question = $(xml).find("question").html();
-                    console.log(xml);
-                    console.log(question);
-                    $("#exerciseRoot").append('<div>'+question+'</div>');
+
+                var promise = $.get("/api/exercise.xml?ID="+exerciseID,function(xml){
+                    //console.log(xml)
+                    //var instr = $(xml).find("instruction").html();
+                    //var question = $(xml).find("question").html();
+                    //var ans = $(xml).find("solution").html();
+                    //$("#exerciseRoot").append(getExerciseHTML(exerciseID,instr,question,ans));
+                    
                 });
+
+                return promise;
+                
             }
 
             getObjectiveExercises(objectiveID);
