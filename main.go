@@ -262,6 +262,30 @@ func HandleErrorWithLog(res http.ResponseWriter, e error, tag string, ctx contex
 	}
 }
 
+var (
+	errorMessages = map[int]string{
+		400: "Expected information missing. Ensure that all form information has values.",
+		401: "You must login to complete this action.",
+		406: "Incoming information invalid. Please try again.",
+		500: "Internal Server Error. Try again in 30 seconds. If issue persists, please report bug.",
+	}
+)
+
+func HandleErrorIntoPage(res http.ResponseWriter, req *http.Request, e error, action string) bool {
+	if e != nil {
+		screenOutput := struct {
+			Recommend template.HTML
+			MoreInfo  string
+		}{
+			template.HTML(action),
+			e.Error(),
+		}
+		ServeTemplateWithParams(res, req, "error.gohtml", screenOutput)
+		return true
+	}
+	return false
+}
+
 // Internal Function
 // Passes along any information to templates and then executes them.
 func ServeTemplateWithParams(res http.ResponseWriter, req *http.Request, templateName string, params interface{}) {

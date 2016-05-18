@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Error: {{.Code}}</title>
+    <title>Error</title>
 <script type="text/javascript">
     function clickswap(e) {
         a = document.querySelector("#" + e);
@@ -73,6 +73,7 @@
 <nav>
 <a href="/">Go Home</a>
 <a href="/login">Login and Return</a>
+<a href="https://github.com/johnRedden/TextbookProject/issues/new?title=[Bug Report] Please add a descriptive title&body=Describe where the bug occurred and copy the text that shows when 'More Information' is clicked.">Github Bug Reporting</a>
 <button id="MInfo" onclick="clickswap(`MInfo`)">More Information</button>
 <div id="ErrDisc" hide="yes"><p>
     {{.MoreInfo}}
@@ -81,7 +82,6 @@
 </nav>
 
 <!-- Expects Struct
-    Code int
     Recommend string
     MoreInfo string
  -->
