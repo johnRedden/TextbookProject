@@ -512,10 +512,10 @@ func API_GetExercise(res http.ResponseWriter, req *http.Request, params httprout
 		return
 	}
 	fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8"?><exercise>`)
-	fmt.Fprintf(res, `<instruction>`, Exercise_to_Output.Instruction, `</instruction>`)
-	fmt.Fprintf(res, `<question>`, Exercise_to_Output.Question, `</question>`)
-	fmt.Fprintf(res, `<solution>`, Exercise_to_Output.Solution, `</solution>`)
-	fmt.Fprintf(res, `<parent>`, Exercise_to_Output.Parent, `</parent>`)
-	fmt.Fprintf(res, `<id>`, Exercise_to_Output.ID, `</id>`)
+	fmt.Fprintf(res, `<instruction>%s</instruction>`, Exercise_to_Output.Instruction)
+	fmt.Fprint(res, `<question>`+Exercise_to_Output.Question+`</question>`)
+	fmt.Fprint(res, `<solution>`+Exercise_to_Output.Solution+`</solution>`)
+	fmt.Fprintf(res, `<parent>%d</parent>`, Exercise_to_Output.Parent)
+	fmt.Fprintf(res, `<id>%d</id>`, Exercise_to_Output.ID)
 	fmt.Fprint(res, `</exercise>`)
 }
