@@ -361,6 +361,30 @@ func removeFileFromGCS(ctx context.Context, filename string) error {
 
 // Internal Function
 // Description:
+// This function will remove a list of files from GCS
+//
+// Returns:
+//      failure?(error) - Error if deletion fails.
+func RemoveFilesFromGCS(ctx context.Context, files []string) error {
+	if len(files) < 1 {
+		return nil
+	}
+	client, clientErr := storage.NewClient(ctx)
+	if clientErr != nil {
+		return clientErr
+	}
+	defer client.Close()
+	bucket := client.Bucket(GCS_BucketID)
+	for _, f := range files {
+		if err := bucket.Object(f).Delete(ctx); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// Internal Function
+// Description:
 // This function will retrive filenames from GCS per a storage Query
 //
 // Returns:
@@ -384,4 +408,11 @@ func getFileFromGCS(ctx context.Context, q *storage.Query) ([]string, error) {
 		results = append(results, elem.Name)
 	}
 	return results, nil
+}
+
+func GetFilesFromGCS_WithPrefix(ctx context.Context, prefix string) []string {
+	q := storage.Query{}
+	q.Prefix = prefix
+	r, _ := getFileFromGCS(ctx, &q)
+	return r
 }

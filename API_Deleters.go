@@ -60,33 +60,50 @@ func API_DeleteCatalog(res http.ResponseWriter, req *http.Request, params httpro
 		return
 	}
 
-	catalogKey, _ := strconv.ParseInt(req.FormValue("ID"), 10, 64)
-	if catalogKey == 0 {
+	catalogID, convErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
+	if convErr != nil || catalogID == 0 {
 		fmt.Fprint(res, `{"result":"failure","reason":"Invalid ID","code":400}`)
 		return
 	}
 
-	keyCollection := make([]*datastore.Key, 0) // From here on out, we will use the batch version of delete to ensure all or none of the objects are deleted.
-
+	// Initalize Variables
 	ctx := appengine.NewContext(req)
-	keyCollection = append(keyCollection, MakeCatalogKey(ctx, catalogKey))
+	keyCollection := make([]*datastore.Key, 0)
+	fileCollection := make([]string, 0)
 
-	for _, bookNameKey := range Get_Name_ID_From_Parent(ctx, catalogKey, "Books") {
-		keyCollection = append(keyCollection, MakeBookKey(ctx, bookNameKey.ID))
-		for _, chaptNameKey := range Get_Name_ID_From_Parent(ctx, bookNameKey.ID, "Chapters") {
-			keyCollection = append(keyCollection, MakeChapterKey(ctx, chaptNameKey.ID))
-			for _, sectNameKey := range Get_Name_ID_From_Parent(ctx, chaptNameKey.ID, "Sections") {
-				keyCollection = append(keyCollection, MakeSectionKey(ctx, sectNameKey.ID))
-				for _, objeNameKey := range Get_Name_ID_From_Parent(ctx, sectNameKey.ID, "Objectives") {
-					keyCollection = append(keyCollection, MakeObjectiveKey(ctx, objeNameKey.ID))
+	// Add Parent(Catalog) to collection
+	keyCollection = append(keyCollection, MakeCatalogKey(ctx, catalogID))
+
+	for _, bk := range Get_Child_Key_From_Parent(ctx, catalogID, "Books") {
+		keyCollection = append(keyCollection, bk)
+
+		for _, chK := range Get_Child_Key_From_Parent(ctx, bk.IntID(), "Chapters") {
+			keyCollection = append(keyCollection, chK)
+
+			for _, sk := range Get_Child_Key_From_Parent(ctx, chK.IntID(), "Sections") {
+				keyCollection = append(keyCollection, sk)
+
+				for _, ok := range Get_Child_Key_From_Parent(ctx, sk.IntID(), "Objectives") {
+					keyCollection = append(keyCollection, ok)
+					fileCollection = append(fileCollection, GetFilesFromGCS_WithPrefix(ctx, fmt.Sprint(ok.IntID()))...)
+
+					for _, ek := range Get_Child_Key_From_Parent(ctx, ok.IntID(), "Exercises") {
+						keyCollection = append(keyCollection, ek)
+						fileCollection = append(fileCollection, GetFilesFromGCS_WithPrefix(ctx, fmt.Sprint(ek.IntID()))...)
+					}
 				}
 			}
 		}
 	}
 
-	remvErr := datastore.DeleteMulti(ctx, keyCollection)
-	if remvErr != nil {
-		fmt.Fprint(res, `{"result":"failure","reason":"Internal Error:`+remvErr.Error()+`","code":500}`)
+	if err := datastore.DeleteMulti(ctx, keyCollection); err != nil {
+		fmt.Fprint(res, `{"result":"failure","reason":"Internal Error: Datastore Failure","code":500}`)
+		return
+	}
+
+	if err := RemoveFilesFromGCS(ctx, fileCollection); err != nil {
+		fmt.Fprint(res, `{"result":"failure","reason":"Internal Error: Cloudstore Failure","code":500}`)
+		return
 	}
 
 	fmt.Fprint(res, `{"result":"success","reason":"","code":0}`)
@@ -109,29 +126,46 @@ func API_DeleteBook(res http.ResponseWriter, req *http.Request, params httproute
 		return
 	}
 
-	bookKey, convErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
-	if convErr != nil {
+	bookID, convErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
+	if convErr != nil || bookID == 0 {
 		fmt.Fprint(res, `{"result":"failure","reason":"Invalid ID","code":400}`)
 		return
 	}
 
-	keyCollection := make([]*datastore.Key, 0) // From here on out, we will use the batch version of delete to ensure all or none of the objects are deleted.
-
+	// Initalize Variables
 	ctx := appengine.NewContext(req)
-	keyCollection = append(keyCollection, MakeBookKey(ctx, bookKey))
-	for _, chaptNameKey := range Get_Name_ID_From_Parent(ctx, bookKey, "Chapters") {
-		keyCollection = append(keyCollection, MakeChapterKey(ctx, chaptNameKey.ID))
-		for _, sectNameKey := range Get_Name_ID_From_Parent(ctx, chaptNameKey.ID, "Sections") {
-			keyCollection = append(keyCollection, MakeSectionKey(ctx, sectNameKey.ID))
-			for _, objeNameKey := range Get_Name_ID_From_Parent(ctx, sectNameKey.ID, "Objectives") {
-				keyCollection = append(keyCollection, MakeObjectiveKey(ctx, objeNameKey.ID))
+	keyCollection := make([]*datastore.Key, 0)
+	fileCollection := make([]string, 0)
+
+	// Add Parent(Book) to collection
+	keyCollection = append(keyCollection, MakeBookKey(ctx, bookID))
+
+	for _, chK := range Get_Child_Key_From_Parent(ctx, bookID, "Chapters") {
+		keyCollection = append(keyCollection, chK)
+
+		for _, sk := range Get_Child_Key_From_Parent(ctx, chK.IntID(), "Sections") {
+			keyCollection = append(keyCollection, sk)
+
+			for _, ok := range Get_Child_Key_From_Parent(ctx, sk.IntID(), "Objectives") {
+				keyCollection = append(keyCollection, ok)
+				fileCollection = append(fileCollection, GetFilesFromGCS_WithPrefix(ctx, fmt.Sprint(ok.IntID()))...)
+
+				for _, ek := range Get_Child_Key_From_Parent(ctx, ok.IntID(), "Exercises") {
+					keyCollection = append(keyCollection, ek)
+					fileCollection = append(fileCollection, GetFilesFromGCS_WithPrefix(ctx, fmt.Sprint(ek.IntID()))...)
+				}
 			}
 		}
 	}
 
-	remvErr := datastore.DeleteMulti(ctx, keyCollection)
-	if remvErr != nil {
-		fmt.Fprint(res, `{"result":"failure","reason":"Internal Error:`+remvErr.Error()+`","code":500}`)
+	if err := datastore.DeleteMulti(ctx, keyCollection); err != nil {
+		fmt.Fprint(res, `{"result":"failure","reason":"Internal Error: Datastore Failure","code":500}`)
+		return
+	}
+
+	if err := RemoveFilesFromGCS(ctx, fileCollection); err != nil {
+		fmt.Fprint(res, `{"result":"failure","reason":"Internal Error: Cloudstore Failure","code":500}`)
+		return
 	}
 
 	fmt.Fprint(res, `{"result":"success","reason":"","code":0}`)
@@ -154,28 +188,42 @@ func API_DeleteChapter(res http.ResponseWriter, req *http.Request, params httpro
 		return
 	}
 
-	chaptKey, convErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
-	if convErr != nil {
+	chaptID, convErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
+	if convErr != nil || chaptID == 0 {
 		fmt.Fprint(res, `{"result":"failure","reason":"Invalid ID","code":400}`)
 		return
 	}
 
-	keyCollection := make([]*datastore.Key, 0) // From here on out, we will use the batch version of delete to ensure all or none of the objects are deleted.
-
+	// Initalize Variables
 	ctx := appengine.NewContext(req)
-	keyCollection = append(keyCollection, MakeChapterKey(ctx, chaptKey))
+	keyCollection := make([]*datastore.Key, 0)
+	fileCollection := make([]string, 0)
 
-	for _, sectNameKey := range Get_Name_ID_From_Parent(ctx, chaptKey, "Sections") {
-		keyCollection = append(keyCollection, MakeSectionKey(ctx, sectNameKey.ID))
+	// Add Parent(Chapter) to collection
+	keyCollection = append(keyCollection, MakeChapterKey(ctx, chaptID))
 
-		for _, objeNameKey := range Get_Name_ID_From_Parent(ctx, sectNameKey.ID, "Objectives") {
-			keyCollection = append(keyCollection, MakeObjectiveKey(ctx, objeNameKey.ID))
+	for _, sk := range Get_Child_Key_From_Parent(ctx, chaptID, "Sections") {
+		keyCollection = append(keyCollection, sk)
+
+		for _, ok := range Get_Child_Key_From_Parent(ctx, sk.IntID(), "Objectives") {
+			keyCollection = append(keyCollection, ok)
+			fileCollection = append(fileCollection, GetFilesFromGCS_WithPrefix(ctx, fmt.Sprint(ok.IntID()))...)
+
+			for _, ek := range Get_Child_Key_From_Parent(ctx, ok.IntID(), "Exercises") {
+				keyCollection = append(keyCollection, ek)
+				fileCollection = append(fileCollection, GetFilesFromGCS_WithPrefix(ctx, fmt.Sprint(ek.IntID()))...)
+			}
 		}
 	}
 
-	remvErr := datastore.DeleteMulti(ctx, keyCollection)
-	if remvErr != nil {
-		fmt.Fprint(res, `{"result":"failure","reason":"Internal Error:`+remvErr.Error()+`","code":500}`)
+	if err := datastore.DeleteMulti(ctx, keyCollection); err != nil {
+		fmt.Fprint(res, `{"result":"failure","reason":"Internal Error: Datastore Failure","code":500}`)
+		return
+	}
+
+	if err := RemoveFilesFromGCS(ctx, fileCollection); err != nil {
+		fmt.Fprint(res, `{"result":"failure","reason":"Internal Error: Cloudstore Failure","code":500}`)
+		return
 	}
 
 	fmt.Fprint(res, `{"result":"success","reason":"","code":0}`)
@@ -198,24 +246,38 @@ func API_DeleteSection(res http.ResponseWriter, req *http.Request, params httpro
 		return
 	}
 
-	sectKey, convErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
-	if convErr != nil {
+	sectID, convErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
+	if convErr != nil || sectID == 0 {
 		fmt.Fprint(res, `{"result":"failure","reason":"Invalid ID","code":400}`)
 		return
 	}
 
-	keyCollection := make([]*datastore.Key, 0) // From here on out, we will use the batch version of delete to ensure all or none of the objects are deleted.
-
+	// Initalize Variables
 	ctx := appengine.NewContext(req)
-	keyCollection = append(keyCollection, MakeSectionKey(ctx, sectKey))
+	keyCollection := make([]*datastore.Key, 0)
+	fileCollection := make([]string, 0)
 
-	for _, objeNameKey := range Get_Name_ID_From_Parent(ctx, sectKey, "Objectives") {
-		keyCollection = append(keyCollection, MakeObjectiveKey(ctx, objeNameKey.ID))
+	// Add Parent(Section) to collection
+	keyCollection = append(keyCollection, MakeSectionKey(ctx, sectID))
+
+	for _, ok := range Get_Child_Key_From_Parent(ctx, sectID, "Objectives") {
+		keyCollection = append(keyCollection, ok)
+		fileCollection = append(fileCollection, GetFilesFromGCS_WithPrefix(ctx, fmt.Sprint(ok.IntID()))...)
+
+		for _, ek := range Get_Child_Key_From_Parent(ctx, ok.IntID(), "Exercises") {
+			keyCollection = append(keyCollection, ek)
+			fileCollection = append(fileCollection, GetFilesFromGCS_WithPrefix(ctx, fmt.Sprint(ek.IntID()))...)
+		}
 	}
 
-	remvErr := datastore.DeleteMulti(ctx, keyCollection)
-	if remvErr != nil {
-		fmt.Fprint(res, `{"result":"failure","reason":"Internal Error:`+remvErr.Error()+`","code":500}`)
+	if err := datastore.DeleteMulti(ctx, keyCollection); err != nil {
+		fmt.Fprint(res, `{"result":"failure","reason":"Internal Error: Datastore Failure","code":500}`)
+		return
+	}
+
+	if err := RemoveFilesFromGCS(ctx, fileCollection); err != nil {
+		fmt.Fprint(res, `{"result":"failure","reason":"Internal Error: Cloudstore Failure","code":500}`)
+		return
 	}
 
 	fmt.Fprint(res, `{"result":"success","reason":"","code":0}`)
@@ -238,15 +300,34 @@ func API_DeleteObjective(res http.ResponseWriter, req *http.Request, params http
 		return
 	}
 
-	objKey, convErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
-	if convErr != nil {
+	objID, convErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
+	if convErr != nil || objID == 0 {
 		fmt.Fprint(res, `{"result":"failure","reason":"Invalid ID","code":400}`)
 		return
 	}
 
-	remvErr := RemoveObjectiveFromDatastore(req, objKey)
-	if remvErr != nil {
-		fmt.Fprint(res, `{"result":"failure","reason":"Internal Error","code":500}`)
+	// Initalize Variables
+	ctx := appengine.NewContext(req)
+	keyCollection := make([]*datastore.Key, 0)
+	fileCollection := make([]string, 0)
+
+	// Add Parent(Objective) to collection
+	keyCollection = append(keyCollection, MakeObjectiveKey(ctx, objID))
+	fileCollection = append(fileCollection, GetFilesFromGCS_WithPrefix(ctx, fmt.Sprint(objID))...)
+
+	for _, ek := range Get_Child_Key_From_Parent(ctx, objID, "Exercises") {
+		keyCollection = append(keyCollection, ek)
+		fileCollection = append(fileCollection, GetFilesFromGCS_WithPrefix(ctx, fmt.Sprint(ek.IntID()))...)
+	}
+
+	if err := datastore.DeleteMulti(ctx, keyCollection); err != nil {
+		fmt.Fprint(res, `{"result":"failure","reason":"Internal Error: Datastore Failure","code":500}`)
+		return
+	}
+
+	if err := RemoveFilesFromGCS(ctx, fileCollection); err != nil {
+		fmt.Fprint(res, `{"result":"failure","reason":"Internal Error: Cloudstore Failure","code":500}`)
+		return
 	}
 
 	fmt.Fprint(res, `{"result":"success","reason":"","code":0}`)
@@ -275,10 +356,16 @@ func API_DeleteExercise(res http.ResponseWriter, req *http.Request, params httpr
 		return
 	}
 
+	// Remove this exercise from datastore.
 	remvErr := RemoveExerciseFromDatastore(req, exerID)
 	if remvErr != nil {
 		fmt.Fprint(res, `{"result":"failure","reason":"Internal Error","code":500}`)
 	}
+
+	// Clear this exercises images, if any.
+	ctx := appengine.NewContext(req)
+	imagesToDelete := GetFilesFromGCS_WithPrefix(ctx, req.FormValue("ID"))
+	RemoveFilesFromGCS(ctx, imagesToDelete)
 
 	fmt.Fprint(res, `{"result":"success","reason":"","code":0}`)
 }
