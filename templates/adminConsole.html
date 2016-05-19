@@ -3,15 +3,17 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
     <script type="text/javascript">
         $(document).ready(function() {
+
+            messageField = $("#JQ-Response-Field")
+
             $("#JQ-Form1_Button").click(function(){
+                // Change User Permission
                 form1email = $("#JQ-Form1_Input")
                 form1select = $("#JQ-Form1_Select")
-                form1message = $("#JQ-Form1_Message")
 
                 console.log("Form1 Called, Information gathered")
                 if (form1email.val()==""){
-                    form1message.val("Email Required!")
-                    $.wait(function(){form1message.val("")},3);
+                    messageField.append("Email Required!\n")
                     return
                 }
                 console.log("Form1 Posting")
@@ -20,88 +22,74 @@
                     console.log("Form1 Parsed")
                     form1select.val("NONE")
                     form1email.val("")
-                    form1message.val(j.Status +"   "+j.Reason)
+                    messageField.append(j.Status +"   "+j.Reason+"\n")
                 });
-                $.wait(function(){form1message.val("")},3);
             });
 
             $("#JQ-Form2_Button").click(function(){
+                // Check User Permission
                 form2email = $("#JQ-Form2_Input")
-                form2message = $("#JQ-Form2_Message")
-
                 console.log("Form2 Called, Information gathered")
                 if (form2email.val()==""){
-                    form2message.val("Email Required!")
-                    $.wait(function(){form2message.val("")},3);
+                    messageField.append("Check User Permission: Email Required!\n")
                     return
                 }
                 console.log("Form2 Posting")
                 $.get("/admin/getUsrPerm?UEmail="+form2email.val(),function(data){
                     j = $.parseJSON(data);
-                    console.log("Form2 Parsed")
-                    
+
                     if (j.Status == "Success") {
-                        form2message.val(form2email.val() + " : " + j.Response)
+                        messageField.append(form2email.val() + " : " + j.Response+"\n")
                     } else {
-                        form2message.val(j.Status +"   "+j.Reason)
+                        messageField.append(j.Status +"   "+j.Reason+"\n")
                     }
                     form2email.val("")
                 });
-
-                $.wait(function(){form2message.val("")},3);
             });
 
             $("#JQ-Form4_Button").click(function(){
-                form4email = $("#JQ-Form4_Input")
-                form4message = $("#JQ-Form4_Message")
-
+                // Force Logout
+                form4email = $("#JQ-Form4_Input").val()
                 console.log("Form4 Called, Information gathered")
-                if (form4email.val()==""){
-                    form4message.val("Email Required!")
-                    $.wait(function(){form4message.val("")},3);
+                if (form4email==""){
+                    messageField.append("Force Logout: Email Required!\n")
                     return
                 }
                 console.log("Form4 Posting")
-                $.post("/admin/forceUsrLogout",{UEmail:form4email.val()},function(data){
-                    j = $.parseJSON(data);
-                    console.log("Form4 Parsed")
-                    
+                $.postEmailTo(form4email,"/admin/forceUsrLogout",function(j){
                     if (j.Status == "Success") {
-                        form4message.val(form4email.val() + " : " + j.Response)
+                        messageField.append(form4email + " : " + j.Response+"\n")
                     } else {
-                        form4message.val(j.Status +"   "+j.Reason)
+                        messageField.append(j.Status +"   "+j.Reason+"\n")
                     }
-                    form4email.val("")
                 });
-
-                $.wait(function(){form4message.val("")},3);
             });
 
             $("#JQ-Form5_Button").click(function(){
-                form5email = $("#JQ-Form5_Input")
-                form5message = $("#JQ-Form5_Message")
+                // Delete User
+                form5email = $("#JQ-Form5_Input").val()
 
                 console.log("Form5 Called, Information gathered")
-                if (form5email.val()==""){
-                    form5message.val("Email Required!")
-                    $.wait(function(){form5message.val("")},3);
+                if (form5email==""){
+                    messageField.append("Delete User: Email Required!\n")
                     return
                 }
                 console.log("Form5 Posting")
-                $.post("/admin/deleteUsr",{UEmail:form5email.val()},function(data){
-                    j = $.parseJSON(data);
-                    console.log("Form5 Parsed")
-                    
+                $.postEmailTo(form5email,"/admin/deleteUsr",function(j){
                     if (j.Status == "Success") {
-                        form5message.val(form5email.val() + " : " + j.Response)
+                        messageField.append(form5email + " : " + j.Response+"\n")
                     } else {
-                        form5message.val(j.Status +"   "+j.Reason)
+                        messageField.append(j.Status +"   "+j.Reason+"\n")
                     }
-                    form5email.val("")
                 });
-
-                $.wait(function(){form5message.val("")},3);
             });
+
+            $.postEmailTo = function(email,postAddr,callback){
+                $.post(postAddr,{UEmail:email},function(data){
+                    j = $.parseJSON(data)
+                    callback(j)
+                });
+            }
 
             $.wait = function( callback, seconds){
                 return window.setTimeout( callback, seconds * 1000 );
@@ -109,69 +97,122 @@
         });
     </script>
 
-    <!-- Minified Style Sheet for Admin Console. -->
-    <style type="text/css"> * { box-sizing: border-box;} *[centered] { margin: 0 auto;position: relative;width: 100%;} .centerbutton { width: 20%;display: block;margin: 0 auto;} div[formbox] { margin: 2px;border: 1px solid black;padding: 2px;} div[formbox] input[readonly] { text-align: center;border-color: transparent;color: red;position: relative;width: 100%;} div[formbox] input { position: relative;width: 100%;} div[label] { text-align: center;font-size: 1.2em;width: 75%;margin: 0 auto;} div[flexer] { width: 80vw;display: flex;flex-wrap: wrap;border: 3px solid gray;justify-content: space-between;} div[flexer] div { width: 48%;} div[flexer] div[important] { width: 100%;} @media screen and (max-width: 600px) { div[label],div[formbox] input[readonly] { text-align: left;} *[centered],.centerbutton,div[label] { margin: unset;} } @media screen and (max-width: 400px) { div[flexer]{ display: block;width: 100%;} div[flexer] div{ width: 100%;} div[formbox] input { width: 100%;} div[formbox] select { width: 40%;} div[formbox] button { width: 40%;} } </style>
+  <!-- Minified Style Sheet for Admin Console. -->
+  <style type="text/css">
+    * {
+      box-sizing: border-box;
+    }
+
+    *[foot] {
+      position: relative;
+      width: 100%;
+      height: 25%;
+    }
+
+    *[head] {
+      position: relative;
+      width: 100%;
+      height: 75%;
+    }
+
+    div[formbox] {
+      margin: 2px;
+      border: 1px solid black;
+      padding: 2px;
+      width: 48.5%;
+    }
+
+    div[formbox] input {
+      width: 100%;
+      margin: 10px auto;
+      position: relative;
+    }
+
+    @media screen and (min-width: 301px) {
+      div[flexer] {
+        width: 90vw;
+        display: flex;
+        flex-wrap: wrap;
+        border: 3px solid gray;
+        justify-content: space-between;
+      }
+      div[formbox][important] {
+        width: 100%;
+      }
+      div[formbox] div[label] {
+        font-size: 1.2em;
+        width: 100%;
+      }
+      button[centered] {
+        margin: 0 auto;
+        display: block;
+      }
+    }
+
+    @media screen and (max-width: 300px) {
+      button,
+      select,
+      textarea,
+      div[formbox] {
+        width: 100%;
+      }
+    }
+  </style>
 </head><body>
 
 <h1>Administration Console</h1>
 <h3>Welcome, {{.}}</h3>
-
 <div flexer>
+  <!-- Head -->
+  <div head flexer>
+    
     <div id="JQ-Form1" important formbox>
-        <div label>Change User's Permission</div>
-        <div centered>
-            <input id="JQ-Form1_Input" placeholder="Email Address" type="text"></input>
-            <select id="JQ-Form1_Select">
-                <option value="Admin">Administrator</option>
-                <option value="Write">Writer</option>
-                <option value="Read">Reader</option>
-                <option value="NONE" selected>SELECT ONE</option>
-            </select>
-        <button id="JQ-Form1_Button">Submit</button>
-        </div>
-        <input id="JQ-Form1_Message" clearAfter readonly></input>
+      <div label>Change User's Permission</div>
+      <input id="JQ-Form1_Input" placeholder="Email Address" type="text" />
+      <select id="JQ-Form1_Select">
+        <option value="Admin">Administrator</option>
+        <option value="Write">Writer</option>
+        <option value="Edit">Editor</option>
+        <option value="Read">Reader</option>
+        <option value="NONE" selected>SELECT ONE</option>
+      </select>
+      <button id="JQ-Form1_Button">Submit</button>
     </div>
 
     <div id="JQ-Form2" formbox>
-        <div label>Check User's Permission</div>
-        <div centered>
-            <input id="JQ-Form2_Input" placeholder="Email Address" type="text"></input>
-            <button id="JQ-Form2_Button">Submit</button>
-        </div>
-        <input id="JQ-Form2_Message" clearAfter readonly></input>
+      <div label>Check User's Permission</div>
+      <input id="JQ-Form2_Input" placeholder="Email Address" type="text" />
+      <button id="JQ-Form2_Button">Submit</button>
     </div>
 
     <div id="JQ-Form3" formbox>
-        <div label>Email Lookup</div>
-        <div centered>
-            <input id="JQ-FormNil_Input" placeholder="Username" type="text"></input>
-            <button id="JQ-FormNil_Button" disabled>Submit</button>
-        </div>
-        <input id="JQ-FormNil_Message" clearAfter readonly></input>
+      <div label>Email Lookup</div>
+      <input id="JQ-Form3_Input" placeholder="Username" type="text" />
+      <button id="JQ-Form3_Button" disabled>Submit</button>
     </div>
 
     <div id="JQ-Form4" formbox>
-        <div label>Force Logout</div>
-        <div centered>
-            <input id="JQ-Form4_Input" placeholder="Username" type="text"></input>
-            <button id="JQ-Form4_Button">Submit</button>
-        </div>
-        <input id="JQ-Form4_Message" clearAfter readonly></input>
+      <div label>Force Logout</div>
+      <input id="JQ-Form4_Input" placeholder="Username" type="text" />
+      <button id="JQ-Form4_Button">Submit</button>
     </div>
 
     <div id="JQ-Form5" formbox>
-        <div label>Delete User</div>
-        <div centered>
-            <input id="JQ-Form5_Input" placeholder="Username" type="text"></input>
-            <button id="JQ-Form5_Button">Submit</button>
-        </div>
-        <input id="JQ-Form5_Message" clearAfter readonly></input>
+      <div label>Delete User</div>
+      <input id="JQ-Form5_Input" placeholder="Username" type="text" />
+      <button id="JQ-Form5_Button">Submit</button>
     </div>
 
     <div id="JQ-Form6" formbox>
-        <div label>Memory Console</div>
-        <button class="centerbutton" id="JQ-FormNil_Button" disabled>Goto</button>
+      <div label>Memory Console</div>
+      <button centered id="JQ-Form6_Button" disabled>Goto</button>
     </div>
+  <!-- End Head -->
+  </div>
 
+  <!-- Footer -->
+  <textarea foot id="JQ-Response-Field">
+  </textarea>
 </div>
+
 </body></html>
