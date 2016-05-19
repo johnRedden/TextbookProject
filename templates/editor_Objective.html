@@ -59,7 +59,13 @@
             
                 <div class="form-group">
                     <div id="exerciseRoot" class="panel-group" ></div>
-                    <button id="addExercise" class="btn btn-default btn-primary"><span class="glyphicon glyphicon-plus"></span> Add Exercise</button>
+                    <div class="input-group">
+                        <input id="exerciseInput" type="text" class="form-control" placeholder="Add Exercise Instruction."/>
+                        <span class="input-group-btn">
+                            <button id="addExerciseBtn" class="btn btn-primary" type="button"><span class="glyphicon glyphicon-plus"></span> Add Exercise</button>
+                        </span>
+                    </div>
+                    <p class="text-center"> </p>
                 </div>
 
             </div>
@@ -221,20 +227,23 @@
             }
 
 
-    // Mr. Allen Mills --- exercises work here  HELP!  ***********************************
 
-            $('#addExercise').on('click',function(){
-                var newExercise =  "new Exercise";
+
+    // Mr. Allen Mills --- exercises work here  HELP!  ***********************************
+            $('#exerciseInput').on('keyup',function(e){
+                if(e.keyCode==13){
+                    $('#addExerciseBtn').trigger('click');
+                }
+            });
+            $('#addExerciseBtn').on('click',function(){
+                var newInstruction =  $('#exerciseInput').val();
+                $('#exerciseInput').val('');
                 
-                $.post("/api/create/exercise",{ObjectiveID:objectiveID},function(data){
+                $.post("/api/create/exercise",{ObjectiveID:objectiveID,Instruction:newInstruction},function(data){
                     g = $.parseJSON(data);
                     console.log(g.result +":"+ g.reason+":"+ g.object.ID);
-                    console.log(g);
-                    //$('.list-group-root').html('<a href="#" class="list-group-item" ><i class="glyphicon glyphicon-download"></i>Loading...</a>');
-                    // first wait for datastore
-                    setTimeout(function (){
-                        window.location = '/edit/exercise/'+g.object.ID;
-                    }, 1500);
+ 
+                    $("#exerciseRoot").append(getExerciseHTML(g.object.ID,newInstruction,"New Exercise",""));
                 });
 
                // window.location = '/edit/exercise/'+objectiveID;
@@ -244,10 +253,11 @@
                     <div class="panel panel-default" id="'+exerciseID+'">\
                         <div class="panel-heading">\
                             <a class="collapsed" data-toggle="collapse" data-target="#ex-'+exerciseID+'" href="#collapse1"></a>\
-                            <strong>'+instruction+'</strong><br\> \
-                            <div class="checkbox">\
+                            <a href="/edit/exercise/'+exerciseID+'"  class="btn btn-xs btn-info" role="button" target="">Edit </a>\
+                            <strong>'+instruction+'</strong><br/> \
+                            <span class="checkbox">\
                                 <label> <input type="checkbox" value="'+exerciseID+'"/>'+question+'</label>\
-                            </div>\
+                            </span>\
                         </div>\
                         <div id="ex-'+exerciseID+'" class="panel-collapse collapse">\
                             <div class="panel-body"><strong>Answer: </strong>\
@@ -260,6 +270,7 @@
             }
             // this almost works
             function getObjectiveExercises(objectiveID){
+                $("#exerciseRoot").html('');
 
                 $.get("/api/exercises.json?ObjectiveID="+objectiveID,function(data, status){
                     var g = ($.parseJSON(data)).results;
@@ -284,8 +295,9 @@
                                 $("#exerciseRoot").append(getExerciseHTML(exID,instr,question,ans));
                             });
                         });
-
                     });
+
+                    
 
                 });
 

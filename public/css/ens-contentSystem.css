@@ -88,7 +88,7 @@
     }
     .input-group { width: 100%; }
 
-        .panel-heading a:after {
+        .panel-heading a:not(.btn):after {
             font-family:'Glyphicons Halflings';
             content:"\e114";
             float: right;
