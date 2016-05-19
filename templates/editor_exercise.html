@@ -1,45 +1,101 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <title>Textbook Project: Edit Exercise</title>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+{{template "Head" .}}
+<body>
+    {{template "Nav" .}}
+    <div class="container" >
+        <div class="well" id="exerciseInfo">
+            <p> Exercise Editor
+                <span class="btn-group btn-group-sm pull-right">
+                    <button type="button" class="btn btn-primary saveBtn"><span id="saveGlyph" class="glyphicon glyphicon-ok"> </span> Saved</button>
+                    <button type="button" class="btn btn-success" id="JQ-BackBtn">Back</button>
+                    <button type="button" class="btn btn-danger" id="deleteExerciseBtn">Delete</button>
+                </span>
+            </p>
+            <div class="input-group">
+                <label class="input-group-addon">Instruction:</label>
+                <input type="text" class="form-control" id="JQ-Instruction" placeholder="Objective" value="{{.Instruction}}">
+            </div> 
+        </div>
 
-    <!-- Bootstrap -->
-    <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
-    <!-- JQuery -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
-    <!-- CKEditor -->
-    <script src="http://cdn.ckeditor.com/4.5.3/full-all/ckeditor.js"></script>
-    <!-- Mathjax -->
-    <script type="text/javascript" async src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+        <div class="well">
+            <p> Question 
+                <span class="btn-group btn-group-sm pull-right">
+                    <button type="button" class="btn btn-primary saveBtn"><span id="saveGlyph" class="glyphicon glyphicon-ok"> </span> Saved</button>
+                    <button type="button" class="btn btn-success previewBtn" id="JQ-PreviewButton">Preview</button>
+                </span>
+            </p>
+            <form class="">
+                <textarea name="Message" id="JQ-Question" cols="10" wrap="hard" autofocus placeholder="Enter new message.">{{.Question}}</textarea>
+            </form>
+        </div>
+        <div class="well">
+            <p> Answer
+                <span class="btn-group btn-group-sm pull-right">
+                    <button type="button" class="btn btn-primary saveBtn"><span id="saveGlyph" class="glyphicon glyphicon-ok"> </span> Saved</button>
+                    <button type="button" class="btn btn-success previewBtn" id="JQ-PreviewButton">Preview</button>
+                </span>
+            </p>
+            <form class="">
+                <textarea name="Message2" id="JQ-Answer" wrap="hard" placeholder="KeyTakeaways">{{.Solution}}</textarea>
+            </form>
+        </div>
 
+
+<input id="JQ-ID" readonly style="display: none;" value="{{.ID}}" />
+<input id="JQ-OID" readonly style="display: none;" value="{{.Parent}}" />
+
+
+<label for="JQ-Results">Results:</label>
+<input id="JQ-Results" readonly />
+
+    </div>
+
+  {{template "Footer"}}
     <script type="text/javascript">
     $(document).ready(function(){
-        exerciseID = {{.ID}}
-        var stdConfig = {
+        var referrer =  document.referrer;
+        exerciseID = {{.ID}};
+
+            var stdConfig = {
                     extraPlugins: 'mathjax',
                     mathJaxLib: 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML',
                     filebrowserImageBrowseUrl: '/image/browser?action=browseImageURL&oid='+exerciseID,
                     filebrowserImageUploadUrl: '/api/ckeditor/create?action=uploadImageURL&oid='+exerciseID,
                     filebrowserBrowseUrl: '/image/browser?action=browseURL&oid='+exerciseID,
-                    filebrowserUploadUrl: '/api/ckeditor/create?action=uploadURL&oid='+exerciseID
+                    filebrowserUploadUrl: '/api/ckeditor/create?action=uploadURL&oid='+exerciseID,
+                    removePlugins: 'forms'
                 };
-        var questionEditor = CKEDITOR.replace('JQ-Question',stdConfig);
-        var solutionEditor = CKEDITOR.replace('JQ-Solution',stdConfig);
 
-        $("#JQ-SubmitButton").click(function(){
+            // code stolen to overried the save event
+              CKEDITOR.plugins.registered['save'] = {
+                  init: function (editor) {
+                     var command = editor.addCommand('save',
+                     {
+                          modes: { wysiwyg: 1, source: 1 },
+                          exec: function (editor) { // Add here custom function for the save button
+                            //alert('You clicked the save button in CKEditor toolbar!');
+                            $('.saveBtn').trigger('click');
+                          }
+                     });
+                     editor.ui.addButton('Save', { label: 'Save', command: 'save' });
+                  }
+              }
+              CKEDITOR.config.contentsCss = '/public/css/myeditor.css';
+
+        var questionEditor = CKEDITOR.replace('JQ-Question',stdConfig);
+        var answerEditor = CKEDITOR.replace('JQ-Answer',stdConfig);
+
+        $(".saveBtn").click(function(){
             console.log("Save Called!")
             params = {
                 ID: $("#JQ-ID").val(),
                 ObjectiveID: $("#JQ-OID").val(),
                 Instruction: $("#JQ-Instruction").val(),
                 Question:CKEDITOR.instances['JQ-Question'].getData(),
-                Solution:CKEDITOR.instances['JQ-Solution'].getData(),
+                Solution:CKEDITOR.instances['JQ-Answer'].getData(),
             }
-            console.log("Posting: ")
-            console.log(params)
+
             $.post("/api/create/exercise",params,function(data){
                 j = $.parseJSON(data);
                 console.log(j.result +":"+ j.reason)
@@ -48,35 +104,35 @@
                 } else {
                     $("#JQ-Results").val(j.reason)
                 }
+                toggleSaveBtn('saved');
             })
         });
+
+        $('#JQ-BackBtn').on('click',function(){
+            window.location = referrer;
+        });
+
+        $('#exerciseInfo input').on('keyup',function(){
+            toggleSaveBtn();
+        })
+        questionEditor.on('change',function(){
+            toggleSaveBtn();
+        });
+        answerEditor.on('change',function(){
+            toggleSaveBtn();
+        });
+        function toggleSaveBtn(status){
+            if(status==="saved"){
+                $('.saveBtn').removeClass('btn-danger').addClass('btn-primary').html('<span id="saveGlyph" class="glyphicon glyphicon-ok"> </span> Saved');
+            }else{
+                $('.saveBtn').removeClass('btn-primary').addClass('btn-danger').html('<span id="saveGlyph" class="glyphicon glyphicon-exclamation-sign"> </span> Save');
+            }
+
+        }
+
+
+
     });
     </script>
-</head>
-<body>
-
-<h1>Exercise Editor</h1>
-
-<div>
-    Instruction: <input id="JQ-Instruction" value="{{.Instruction}}" placeholder="Exercise Instruction" />
-</div>
-
-<div>
-    Question:
-    <textarea id="JQ-Question">{{.Question}}</textarea>
-</div>
-
-<div>
-    Solution:
-    <textarea id="JQ-Solution">{{.Solution}}</textarea>
-</div>
-
-<input id="JQ-ID" readonly style="display: none;" value="{{.ID}}" />
-<input id="JQ-OID" readonly style="display: none;" value="{{.Parent}}" />
-
-<button id="JQ-SubmitButton">Submit</button>
-<label for="JQ-Results">Results:</label>
-<input id="JQ-Results" readonly />
-
 </body>
 </html>

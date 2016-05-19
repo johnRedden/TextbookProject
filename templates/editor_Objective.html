@@ -238,11 +238,11 @@
             $('#addExerciseBtn').on('click',function(){
                 var newInstruction =  $('#exerciseInput').val();
                 $('#exerciseInput').val('');
-                
+                console.log(objectiveID);
                 $.post("/api/create/exercise",{ObjectiveID:objectiveID,Instruction:newInstruction},function(data){
                     g = $.parseJSON(data);
                     console.log(g.result +":"+ g.reason+":"+ g.object.ID);
- 
+                    console.log(g);
                     $("#exerciseRoot").append(getExerciseHTML(g.object.ID,newInstruction,"New Exercise",""));
                 });
 
@@ -282,18 +282,19 @@
                     // now we have an array of promises.
                     console.log(promises); //This is good
                     //when they are ALL done... iterate through and populate the html in order (render mathjax after)
-                    $.when.apply(null, promises).done(function() {
+                    $.when.apply(null, promises).always(function() {
                       // Afterwards, do this.
                         console.log('all done');
                         $.each( promises, function( key, val ){
-                            //console.log(val);
-                            val.always(function(xml){
+                            //console.log(val.responseText);
+                            var xml = val.responseText;
+                            //val.always(function(xml){ // already have what I want at this point!!
                                 var instr = $(xml).find("instruction").html();
                                 var question = $(xml).find("question").html();
                                 var ans = $(xml).find("solution").html();
                                 var exID = $(xml).find("id").html();
                                 $("#exerciseRoot").append(getExerciseHTML(exID,instr,question,ans));
-                            });
+                            //});
                         });
                     });
 
@@ -301,21 +302,6 @@
 
                 });
 
-            }
-            //function below not used
-            function getExercise(exerciseID){
-
-                var promise = $.get("/api/exercise.xml?ID="+exerciseID,function(xml){
-                    console.log("chank")
-                    //var instr = $(xml).find("instruction").html();
-                    //var question = $(xml).find("question").html();
-                    //var ans = $(xml).find("solution").html();
-                    //$("#exerciseRoot").append(getExerciseHTML(exerciseID,instr,question,ans));
-                    
-                });
-
-                return promise;
-                
             }
 
             getObjectiveExercises(objectiveID);
