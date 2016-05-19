@@ -17,7 +17,7 @@
         }
 
         .navbar{ 
-            background: darkslategray;
+            background: #233B3B;
             
             /*box-shadow: 0px 5px 3px -3px #888;*/
         }
@@ -38,6 +38,10 @@
           width: 100%;
           /* Set the fixed height of the footer here */
           height: 60px;
+
+        }
+        footer > .well{
+            background-color: #233B3B;
         }
         .well {
             background: darkslategray;
