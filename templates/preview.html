@@ -1,10 +1,27 @@
 <!DOCTYPE html>
 <html>
 <head>
+    
+    <!-- Required meta tags always come first -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+
     <title>eduNetSystems Preview</title>
 
-    <!-- Bootstrap -->
-    <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <!-- JQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <!-- Mathjax -->
+    <script type="text/javascript" async src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+    <!-- CKEditor -->
+    <script src="http://cdn.ckeditor.com/4.5.3/full-all/ckeditor.js"></script>
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="/public/css/ens-contentSystem.css">
+    <script src="/public/css/ens-contentSystem.js"></script>
 
     <style type="text/css">
     body{
@@ -28,17 +45,35 @@
         border-color: darkgrey;
         border-style: solid;
         border-width: 1px;
+    }
+    .objective, .keytakeaways, .exercises {
+        border-radius: 5px;
+        background: whitesmoke;
+        padding: 10px; 
 
     }
+    .objective > strong, .keytakeaways > strong, .exercises > strong {
+        color: firebrick;
+    }
+        .panel-heading a:not(.btn):after {
+            font-family:'Glyphicons Halflings';
+            content:"\e114";
+            float: right;
+            color: grey;
+        }
+        .panel-heading a.collapsed:after {
+            content:"\e080";
+        }
+        .well > .form-group > .panel-group > .panel {
+            color: black;
+        }
     </style>
-    <!-- JQuery -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
-    <!-- Mathjax -->
-    <script type="text/javascript" async src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML"></script>
-    </script>
+
+
 </head>
 <body>
     <div class="container" id="ENScontent">
+    <input id="JQ-ObjectiveID" type="hidden" value="{{.ID}}" readonly>
 
         <div class="pull-right">
             <div class="btn-group btn-group-xs" data-toggle="buttons-radio">
@@ -47,26 +82,34 @@
               <button id="font-size-large-btn" class="btn"><span class="font-size-large glyphicon glyphicon-font"></span></button>
             </div>
         </div>
-
-        <h3 class="objective">Objective: {{.Title}}</h3>
+        <hr/>
+        <h3 class="objective"><strong>Objective:</strong> {{.Title}}</h3>
+        
         <div class="text-justify">{{.Content}}</div>
 
         <hr/>
-        <div class="text-center"><strong>Key Takeaways</strong></div>
+        <div class="keytakeaways"><strong>Key Takeaways:</strong></div>
         <div class="">{{.KeyTakeaways}}</div>
         <hr/>
+
+        <div class="exercises"><strong>Exercises:</strong></div>
+        <p class="text-center"> </p> 
+        <div id="exerciseRoot" class="panel-group" >Exercises go here.</div>
+        <p class="text-center"> </p> 
 
         <div id="ObjectiveInfo">
             <span>Authors: {{.Author}} - </span>
             <span>Version: {{.Version}}</span>
 
         </div>
-
         <footer>© eduNetSystems.com</footer>
     </div>
 
+
     <script type="text/javascript">
         $(document).on('ready',function(){
+            objectiveID = $("#JQ-ObjectiveID").val();
+
             $('#font-size-small-btn').click(function() {
                 $('body').removeClass("font-size-large");
                 $('body').removeClass("font-size-medium");
@@ -85,6 +128,62 @@
                 $('body').addClass("font-size-large");
             });
 
+//exercise Work
+            function getExerciseHTML(exerciseID,instruction,question,answer){
+                var exerciseHTML ='\
+                    <div class="panel panel-default" id="'+exerciseID+'">\
+                        <div class="panel-heading">\
+                            <a class="collapsed" data-toggle="collapse" data-target="#ex-'+exerciseID+'" href="#collapse1"></a>\
+                            <span class="pull-right ans">Answer &nbsp</span>\
+                            <strong>'+instruction+'</strong><br/> \
+                            <span class="checkbox">\
+                                <label> <input type="checkbox" value="'+exerciseID+'"/>'+question+'</label>\
+                            </span>\
+                        </div>\
+                        <div id="ex-'+exerciseID+'" class="panel-collapse collapse">\
+                            <div class="panel-body"><strong>Answer: </strong>\
+                                '+answer+'\
+                            </div>\
+                        </div>\
+                    </div>';
+                
+                return exerciseHTML;
+            }
+            // this almost works
+            function getObjectiveExercises(objectiveID){
+                $("#exerciseRoot").html('');
+
+                $.get("/api/exercises.json?ObjectiveID="+objectiveID,function(data, status){
+                    var g = ($.parseJSON(data)).results;
+                    var promises = [];
+
+                    $.each( g, function( key, val ){
+                        promises.push( $.get("/api/exercise.xml?ID="+val.ID) );
+                    });
+                    // now we have an array of promises.
+                    console.log(promises); //This is good
+                    //when they are ALL done... iterate through and populate the html in order (render mathjax after)
+                    $.when.apply(null, promises).always(function() {
+                      // Afterwards, do this.
+                        console.log('all done');
+                        $.each( promises, function( key, val ){
+                            //console.log(val.responseText);
+                            var xml = val.responseText;
+                            var instr = $(xml).find("instruction").html();
+                            var question = $(xml).find("question").html();
+                            var ans = $(xml).find("solution").html();
+                            var exID = $(xml).find("id").html();
+                            $("#exerciseRoot").append(getExerciseHTML(exID,instr,question,ans));
+                           
+                        });
+                    });
+                    MathJax.Hub.Queue(["Typeset",MathJax.Hub,"exerciseRoot"]);
+                    
+                });
+
+            }
+
+            getObjectiveExercises(objectiveID);
 
         });
     </script>

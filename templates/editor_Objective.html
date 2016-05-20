@@ -52,26 +52,24 @@
                 <textarea name="Message2" id="JQ-KeyTakeaways" wrap="hard" placeholder="KeyTakeaways">{{.KeyTakeaways}}</textarea>
             </form>
         </div>
+                
+        <div class="well">
+            <p>Objective Exercises:</p>
         
-        
-            <div class="well">
-                <p>Objective Exercises:</p>
-            
-                <div class="form-group">
-                    <div id="exerciseRoot" class="panel-group" ></div>
-                    <div class="input-group">
-                        <input id="exerciseInput" type="text" class="form-control" placeholder="Add Exercise Instruction."/>
-                        <span class="input-group-btn">
-                            <button id="addExerciseBtn" class="btn btn-primary" type="button"><span class="glyphicon glyphicon-plus"></span> Add Exercise</button>
-                        </span>
-                    </div>
-                    <p class="text-center"> </p>
+            <div class="form-group">
+                <div id="exerciseRoot" class="panel-group" ></div>
+                <div class="input-group">
+                    <input id="exerciseInput" type="text" class="form-control" placeholder="Add Exercise Instruction."/>
+                    <span class="input-group-btn">
+                        <button id="addExerciseBtn" class="btn btn-primary" type="button"><span class="glyphicon glyphicon-plus"></span> Add Exercise</button>
+                    </span>
                 </div>
-
+                <p class="text-center"> </p>
             </div>
+
+        </div>
       
     </div>
-
 
     {{template "Footer"}}
 
@@ -114,23 +112,17 @@
     <script type="text/javascript">
         $(document).ready(function(){
             var referrer =  document.referrer;
-            console.log("Ready!")
             objectiveID = $("#JQ-ObjectiveID").val();
 
-
-
             $(".saveBtn").click(function(){
-                console.log("Click Called!!")
                 sectID = $("#JQ-SectionID").val()
                 ObjeName = $("#JQ-ObjectiveTitle").val()
-                objeID = $("#JQ-ObjectiveID").val()
-                
                 ver = $("#JQ-Version").val()
                 cont = CKEDITOR.instances['JQ-Content'].getData();
                 ktw = CKEDITOR.instances['JQ-KeyTakeaways'].getData();
                 authr = $("#JQ-AuthorInput").val();
 
-                $.post("/api/create/objective",{SectionID:sectID,ObjectiveName:ObjeName,ID:objeID,Version:ver,Content:cont,KeyTakeaways:ktw,Author:authr},function(data){
+                $.post("/api/create/objective",{SectionID:sectID,ObjectiveName:ObjeName,ID:objectiveID,Version:ver,Content:cont,KeyTakeaways:ktw,Author:authr},function(data){
                     j = $.parseJSON(data);
                     console.log(j.result +":"+ j.reason)
                     if (j.code == 0){ // reset save button
@@ -139,7 +131,7 @@
                         // say something
                     }
                 });
-                $.wait(function(){$("#JQ-Results").val("")},3)
+                //$.wait(function(){$("#JQ-Results").val("")},3)
             });
 
             $(".previewBtn").click(function(){
@@ -150,10 +142,7 @@
                 window.location = referrer;
             });
 
-            $.wait = function( callback, seconds){
-               return window.setTimeout( callback, seconds * 1000 );
-            }
-
+//CKeditor Stuff ***************************************
             var stdConfig = {
                     extraPlugins: 'mathjax',
                     mathJaxLib: 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML',
@@ -161,13 +150,13 @@
                     filebrowserImageUploadUrl: '/api/ckeditor/create?action=uploadImageURL&oid='+objectiveID,
                     filebrowserBrowseUrl: '/image/browser?action=browseURL&oid='+objectiveID,
                     filebrowserUploadUrl: '/api/ckeditor/create?action=uploadURL&oid='+objectiveID,
-                    removePlugins: 'forms'
+                    removePlugins: 'forms',
                 };
 
             var contentEditor = CKEDITOR.replace('JQ-Content',stdConfig);
             var keyTakeawaysEditor = CKEDITOR.replace('JQ-KeyTakeaways',stdConfig);
             // code stolen to overried the save event
-              CKEDITOR.plugins.registered['save'] = {
+            CKEDITOR.plugins.registered['save'] = {
                   init: function (editor) {
                      var command = editor.addCommand('save',
                      {
@@ -179,8 +168,9 @@
                      });
                      editor.ui.addButton('Save', { label: 'Save', command: 'save' });
                   }
-              }
-              CKEDITOR.config.contentsCss = '/public/css/myeditor.css';
+            }
+            CKEDITOR.config.contentsCss = '/public/css/myeditor.css';
+//*********************************************************
 
             // save button functionality  TODO: IF any input changes toggle!
             $('#objectiveInfo input').on('keyup',function(){
@@ -189,22 +179,20 @@
             contentEditor.on('change',function(){
                 toggleSaveBtn();
             });
-
             keyTakeawaysEditor.on('change',function(){
                 toggleSaveBtn();
             });
-            $('#deleteObjectiveBtn').on('click',function(){
-                var x = $("#JQ-ObjectiveTitle").val();
-                var y = $("#JQ-ObjectiveID").val();
 
-                $('#objName').html(x);
-                $('#objID').html(y);
+            $('#deleteObjectiveBtn').on('click',function(){
+
+                $('#objName').html($("#JQ-ObjectiveTitle").val());
+                $('#objID').html(objectiveID);
                 $('#deleteObjectiveModal').modal('show');
 
                 $('#objDeleteBtn').on('click',function(){
                     var ans = $('#verify').val();
                     if(ans==="yes"){
-                        $.post("/api/delete/objective",{ID:y},function(data){
+                        $.post("/api/delete/objective",{ID:objectiveID},function(data){
                              g = $.parseJSON(data);
                             console.log(g.result +":"+ g.reason); 
                             //go back to where you came from you dirty dog!
@@ -227,9 +215,7 @@
             }
 
 
-
-
-    // Mr. Allen Mills --- exercises work here  HELP!  ***********************************
+    // Exercises Work  ***********************************
             $('#exerciseInput').on('keyup',function(e){
                 if(e.keyCode==13){
                     $('#addExerciseBtn').trigger('click');
@@ -237,13 +223,13 @@
             });
             $('#addExerciseBtn').on('click',function(){
                 var newInstruction =  $('#exerciseInput').val();
+                var newQuestion = 'New Question';
                 $('#exerciseInput').val('');
-                console.log(objectiveID);
-                $.post("/api/create/exercise",{ObjectiveID:objectiveID,Instruction:newInstruction},function(data){
+                
+                $.post("/api/create/exercise",{ObjectiveID:objectiveID,Instruction:newInstruction,Question:newQuestion},function(data){
                     g = $.parseJSON(data);
                     console.log(g.result +":"+ g.reason+":"+ g.object.ID);
-                    console.log(g);
-                    $("#exerciseRoot").append(getExerciseHTML(g.object.ID,newInstruction,"New Exercise",""));
+                    $("#exerciseRoot").append(getExerciseHTML(g.object.ID,newInstruction,newQuestion,""));
                 });
 
                // window.location = '/edit/exercise/'+objectiveID;
@@ -253,6 +239,7 @@
                     <div class="panel panel-default" id="'+exerciseID+'">\
                         <div class="panel-heading">\
                             <a class="collapsed" data-toggle="collapse" data-target="#ex-'+exerciseID+'" href="#collapse1"></a>\
+                            <span class="pull-right ans">Answer &nbsp</span>\
                             <a href="/edit/exercise/'+exerciseID+'"  class="btn btn-xs btn-info" role="button" target="">Edit </a>\
                             <strong>'+instruction+'</strong><br/> \
                             <span class="checkbox">\
@@ -288,18 +275,16 @@
                         $.each( promises, function( key, val ){
                             //console.log(val.responseText);
                             var xml = val.responseText;
-                            //val.always(function(xml){ // already have what I want at this point!!
-                                var instr = $(xml).find("instruction").html();
-                                var question = $(xml).find("question").html();
-                                var ans = $(xml).find("solution").html();
-                                var exID = $(xml).find("id").html();
-                                $("#exerciseRoot").append(getExerciseHTML(exID,instr,question,ans));
-                            //});
+                            var instr = $(xml).find("instruction").html();
+                            var question = $(xml).find("question").html();
+                            var ans = $(xml).find("solution").html();
+                            var exID = $(xml).find("id").html();
+                            $("#exerciseRoot").append(getExerciseHTML(exID,instr,question,ans));
+                           
                         });
                     });
                     MathJax.Hub.Queue(["Typeset",MathJax.Hub,"exerciseRoot"]);
                     
-
                 });
 
             }
