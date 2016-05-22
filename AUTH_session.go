@@ -15,6 +15,7 @@ import (
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/user"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -61,14 +62,14 @@ func MaintainSession(res http.ResponseWriter, req *http.Request) error {
 		}
 
 		// Verify that a copy of the local memory exits.
-		if _, memErr := FromMemcache(ctx, u.Email); memErr != nil { // We can count on our local memory still being valid.
+		if _, memErr := FromMemcache(ctx, strings.ToLower(u.Email)); memErr != nil { // We can count on our local memory still being valid.
 			// No Memory? Probably timed out.
 			return ErrTimedOut
 		}
 
 		// If yes, reset those timers.
 		UpdateCookie(res, req, CookieKey, StorageDuration)
-		UpdateMemcache(ctx, u.Email, StorageDuration)
+		UpdateMemcache(ctx, strings.ToLower(u.Email), StorageDuration)
 		return nil
 	} else {
 		// No user? Not logged in.
@@ -86,7 +87,7 @@ func CreateSession(res http.ResponseWriter, req *http.Request, dataToMemchache s
 	ctx := appengine.NewContext(req)
 	if u := user.Current(ctx); u != nil {
 		ToCookie(res, CookieKey, u.ID, StorageDuration)
-		return ToMemcache(ctx, u.Email, dataToMemchache, StorageDuration)
+		return ToMemcache(ctx, strings.ToLower(u.Email), dataToMemchache, StorageDuration)
 	} else {
 		return ErrNotLoggedIn
 	}

@@ -12,6 +12,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"google.golang.org/appengine"
 	"net/http"
+	"strings"
 )
 
 // Call: /admin
@@ -53,7 +54,7 @@ func ADMIN_POST_ELEVATEUSER(res http.ResponseWriter, req *http.Request, params h
 		return
 	}
 
-	uEmail := req.FormValue("UEmail")
+	uEmail := strings.ToLower(req.FormValue("UEmail"))
 
 	actualPermLevel := func(incomingPerm string) int {
 		switch incomingPerm {
@@ -118,7 +119,7 @@ func ADMIN_GET_USERPERM(res http.ResponseWriter, req *http.Request, params httpr
 		return
 	}
 
-	uEmail := req.FormValue("UEmail")
+	uEmail := strings.ToLower(req.FormValue("UEmail"))
 
 	ctx := appengine.NewContext(req)
 	pl, getErr := GetPermissionLevelFromDatastore(ctx, uEmail)
@@ -146,7 +147,7 @@ func ADMIN_POST_DELETEUSER(res http.ResponseWriter, req *http.Request, params ht
 		return
 	}
 
-	uEmail := req.FormValue("UEmail")
+	uEmail := strings.ToLower(req.FormValue("UEmail"))
 
 	ctx := appengine.NewContext(req)
 
@@ -175,7 +176,7 @@ func ADMIN_POST_ForceUserLogout(res http.ResponseWriter, req *http.Request, para
 		return
 	}
 
-	uEmail := req.FormValue("UEmail")
+	uEmail := strings.ToLower(req.FormValue("UEmail"))
 
 	ctx := appengine.NewContext(req)
 

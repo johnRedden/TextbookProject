@@ -85,7 +85,7 @@ func MakePermissionUser(name string, permission int, u *user.User) PermissionUse
 	return PermissionUser{
 		Name:       name,
 		Permission: permission,
-		Email:      u.Email,
+		Email:      strings.ToLower(u.Email),
 		ID:         u.ID,
 	}
 }
@@ -100,7 +100,7 @@ func MakePermissionUser(name string, permission int, u *user.User) PermissionUse
 func GetPermissionUserFromSession(ctx context.Context) (PermissionUser, error) {
 	u := user.Current(ctx)
 	if u != nil {
-		if mVal, err := FromMemcache(ctx, u.Email); err == nil {
+		if mVal, err := FromMemcache(ctx, strings.ToLower(u.Email)); err == nil {
 			if pVal, mErr := MarshallPermissionUser(mVal); mErr == nil {
 				return pVal, nil
 			} else {
@@ -235,7 +235,7 @@ func AUTH_Login_GET(res http.ResponseWriter, req *http.Request, params httproute
 		// User has an oauth key.
 		// Likely returned from ouath.
 		u := user.Current(ctx)
-		pu, getErr := GetPermissionUserFromDatastore(ctx, u.Email)
+		pu, getErr := GetPermissionUserFromDatastore(ctx, strings.ToLower(u.Email))
 		if getErr != nil {
 			// They do not have a registered permission user.
 			// Kick them over to register.
@@ -288,7 +288,7 @@ func AUTH_Register_GET(res http.ResponseWriter, req *http.Request, params httpro
 		http.Redirect(res, req, GetLoginURL(ctx, "/register?redirect="+req.FormValue("redirect")), http.StatusTemporaryRedirect)
 		return
 	}
-	ServeTemplateWithParams(res, req, "registerUser.html", u.Email)
+	ServeTemplateWithParams(res, req, "registerUser.html", strings.ToLower(u.Email))
 }
 
 // Call: /register
@@ -318,7 +318,7 @@ func AUTH_Register_POST(res http.ResponseWriter, req *http.Request, params httpr
 
 	// Permissions Module
 	perms := ReadPermissions // Default Permissions.
-	if pl, getErr := GetPermissionLevelFromDatastore(ctx, u.Email); getErr == nil {
+	if pl, getErr := GetPermissionLevelFromDatastore(ctx, strings.ToLower(u.Email)); getErr == nil {
 		perms = pl // use the already determined permission level.
 	} else {
 		// Ensure that user is not a new administrator.
@@ -326,12 +326,12 @@ func AUTH_Register_POST(res http.ResponseWriter, req *http.Request, params httpr
 			perms = AdminPermissions
 		}
 	}
-	putLErr := PutPermissionLevelToDatastore(ctx, u.Email, perms)
+	putLErr := PutPermissionLevelToDatastore(ctx, strings.ToLower(u.Email), perms)
 	HandleError(res, putLErr)
 
 	// Make user and add them to the datastore.
 	permU := MakePermissionUser(uName, perms, u)
-	putErr := PutPermissionUserToDatastore(ctx, u.Email, &permU)
+	putErr := PutPermissionUserToDatastore(ctx, strings.ToLower(u.Email), &permU)
 	HandleError(res, putErr)
 
 	// Now we make that session
