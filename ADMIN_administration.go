@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"github.com/julienschmidt/httprouter"
 	"google.golang.org/appengine"
+	"google.golang.org/appengine/datastore"
 	"net/http"
 	"strings"
 )
@@ -187,4 +188,58 @@ func ADMIN_POST_ForceUserLogout(res http.ResponseWriter, req *http.Request, para
 	}
 
 	fmt.Fprint(res, `{"Status":"Success","Reason":"","Code":0}`)
+}
+
+// Call: /admin/getEmailsofUSR
+// Description:
+// This call will return a list of Emails that are of username.
+//
+// Method: POST
+// Results: JSON
+// Mandatory Options: Usr
+// Optional Options:
+// Codes:
+//      0 - Success, All actions completed
+//    500 - Failure, Internal Services Error
+func ADMIN_POST_RetriveUserEmails(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	if validPerm, permErr := HasPermission(res, req, AdminPermissions); !validPerm {
+		// User Must be at least Admin.
+		http.Error(res, permErr.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	usr := req.FormValue("Usr")
+	if usr == "" {
+		fmt.Fprint(res, `{"Status":"Failure","Reason":"User Name cannot be Empty.","Code":406}`)
+		return
+	}
+
+	q := datastore.NewQuery("Users")
+	q = q.Project("Name Email")
+	collectedEmails := make([]string, 0)
+
+	ctx := appengine.NewContext(req)
+	for t := q.Run(ctx); ; { // standard query run.
+		var tval struct{ Name, Email string }
+		_, qErr := t.Next(&tval)
+
+		if qErr == datastore.Done {
+			break
+		} else if qErr != nil {
+			break
+		}
+		if strings.HasPrefix(tval.Name, usr) {
+			collectedEmails = append(collectedEmails, tval.Email)
+		}
+	}
+
+	fmt.Fprint(res, `{"Status":"Success","Reason":"","Code":0,`)
+	fmt.Fprint(res, `"results":[`)
+	for i, v := range collectedEmails {
+		if i != 0 {
+			fmt.Fprint(res, `,`)
+		}
+		fmt.Fprint(res, `"`, v, `"`)
+	}
+	fmt.Fprint(res, `]}`)
 }
