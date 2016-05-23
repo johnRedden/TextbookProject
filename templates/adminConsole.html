@@ -1,6 +1,7 @@
 <!DOCTYPE html><html><head>
     <title>ADMIN CONSOLE</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.2/css/font-awesome.min.css">
     <script type="text/javascript">
         $(document).ready(function() {
 
@@ -28,37 +29,34 @@
 
             $("#JQ-Form2_Button").click(function(){
                 // Check User Permission
-                form2email = $("#JQ-Form2_Input")
-                console.log("Form2 Called, Information gathered")
-                if (form2email.val()==""){
+                f2e = $("#JQ-Form2_Input").val()
+                $("#JQ-Form2_Input").val("")
+                if (f2e==""){
                     messageField.append("Check User Permission: Email Required!\n")
                     return
                 }
-                console.log("Form2 Posting")
-                $.get("/admin/getUsrPerm?UEmail="+form2email.val(),function(data){
+                $.get("/admin/getUsrPerm?UEmail="+f2e,function(data){
                     j = $.parseJSON(data);
 
                     if (j.Status == "Success") {
-                        messageField.append(form2email.val() + " : " + j.Response+"\n")
+                        messageField.append(f2e + " : " + j.Response+"\n")
                     } else {
                         messageField.append(j.Status +"   "+j.Reason+"\n")
                     }
-                    form2email.val("")
                 });
             });
 
             $("#JQ-Form4_Button").click(function(){
                 // Force Logout
-                form4email = $("#JQ-Form4_Input").val()
-                console.log("Form4 Called, Information gathered")
-                if (form4email==""){
+                f4e = $("#JQ-Form4_Input").val()
+                $("#JQ-Form4_Input").val("")
+                if (f4e==""){
                     messageField.append("Force Logout: Email Required!\n")
                     return
                 }
-                console.log("Form4 Posting")
-                $.postEmailTo(form4email,"/admin/forceUsrLogout",function(j){
+                $.postEmailTo(f4e,"/admin/forceUsrLogout",function(j){
                     if (j.Status == "Success") {
-                        messageField.append(form4email + " : " + j.Response+"\n")
+                        messageField.append(f4e + " : " + j.Response+"\n")
                     } else {
                         messageField.append(j.Status +"   "+j.Reason+"\n")
                     }
@@ -67,17 +65,15 @@
 
             $("#JQ-Form5_Button").click(function(){
                 // Delete User
-                form5email = $("#JQ-Form5_Input").val()
-
-                console.log("Form5 Called, Information gathered")
-                if (form5email==""){
+                f5e = $("#JQ-Form5_Input").val()
+                $("#JQ-Form5_Input").val("")
+                if (f5e==""){
                     messageField.append("Delete User: Email Required!\n")
                     return
                 }
-                console.log("Form5 Posting")
-                $.postEmailTo(form5email,"/admin/deleteUsr",function(j){
+                $.postEmailTo(f5e,"/admin/deleteUsr",function(j){
                     if (j.Status == "Success") {
-                        messageField.append(form5email + " : " + j.Response+"\n")
+                        messageField.append(f5e + " : " + j.Response+"\n")
                     } else {
                         messageField.append(j.Status +"   "+j.Reason+"\n")
                     }
@@ -94,7 +90,24 @@
             $.wait = function( callback, seconds){
                 return window.setTimeout( callback, seconds * 1000 );
             }
+
+            messageField.val("Console Ready!\n")
         });
+        function cM(idMessage) {
+          a=document.querySelector(idMessage)
+          a.value=""
+        }
+        function tC(idMessage,idControls) {
+          a=document.querySelector(idMessage)
+          b=document.querySelector(idControls)
+          if(a.getAttribute("inverse")=="yes") {
+            a.setAttribute("inverse", "no");
+            b.setAttribute("inverse", "no");
+            return
+          }
+          a.setAttribute("inverse", "yes");
+          b.setAttribute("inverse", "yes");
+        }
     </script>
 
   <!-- Minified Style Sheet for Admin Console. -->
@@ -128,13 +141,58 @@
       position: relative;
     }
 
-    @media screen and (min-width: 301px) {
+    textarea {
+      resize: vertical;
+      border: none;
+      position: relative;
+      width: 100%;
+      left: 0px;
+      top: 0px;
+    }
+
+    div[controls] {
+      position: absolute;
+      right: 0;
+      top: 0;
+      margin-top: 4px;
+      margin-right: 4px;
+      display: inline-flex;
+      flex-direction: column;
+    }
+    div[controls] a{
+      text-decoration: none;
+      color: black;
+    }
+    textarea[inverse="yes"],div[controls][inverse="yes"] a i{
+      background-color: #233B3B;
+      color:white;
+    }
+
+    ul {
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: none;
+    }
+    li a {
+      padding: 14px 16px;
+      text-decoration: none;
+    }
+
+    @media screen and (min-width: 310px) {
       div[flexer] {
         width: 90vw;
         display: flex;
         flex-wrap: wrap;
-        border: 3px solid gray;
+        /*border: 3px solid gray;*/
         justify-content: space-between;
+      }
+      .binder {
+        border: 3px solid #233B3B;
+      }
+      div[foot]{
+        border-top: 3px solid #233B3B;
       }
       div[formbox][important] {
         width: 100%;
@@ -147,22 +205,58 @@
         margin: 0 auto;
         display: block;
       }
+
+      header {
+        display: block;
+        position: relative;
+        width: 90vw;
+        margin-bottom: 0;
+        padding: 10px 0 3px 5px;
+        color: white;
+        background-color: #233B3B;
+      }
+      li {
+        float: left;
+      }
+      li a {
+        color: white;
+        text-align: center;
+        display: inline-block;
+      }
+      li a:hover {
+      background-color: #111;
+    }
     }
 
-    @media screen and (max-width: 300px) {
+    @media screen and (max-width: 309.9px) {
       button,
       select,
       textarea,
       div[formbox] {
         width: 100%;
       }
+      li a {
+        display: block;
+        color: inherit;
+        border-left: 3px solid #233B3B;
+      }
+      li a:hover {
+        color: white;
+        background-color: #233B3B;
+      }
     }
   </style>
 </head><body>
 
-<h1>Administration Console</h1>
-<h3>Welcome, {{.}}</h3>
-<div flexer>
+<header>
+  <h1>Administration Console</h1>
+  <h3>Welcome, {{.}}</h3>
+  <ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="#">Memory Console</a></li>
+  </ul>
+</header>
+<div class="binder" flexer>
   <!-- Head -->
   <div head flexer>
     
@@ -193,26 +287,26 @@
 
     <div id="JQ-Form4" formbox>
       <div label>Force Logout</div>
-      <input id="JQ-Form4_Input" placeholder="Username" type="text" />
+      <input id="JQ-Form4_Input" placeholder="Email Address" type="text" />
       <button id="JQ-Form4_Button">Submit</button>
     </div>
 
     <div id="JQ-Form5" formbox>
       <div label>Delete User</div>
-      <input id="JQ-Form5_Input" placeholder="Username" type="text" />
+      <input id="JQ-Form5_Input" placeholder="Email Address" type="text" />
       <button id="JQ-Form5_Button">Submit</button>
-    </div>
-
-    <div id="JQ-Form6" formbox>
-      <div label>Memory Console</div>
-      <button centered id="JQ-Form6_Button" disabled>Goto</button>
     </div>
   <!-- End Head -->
   </div>
 
   <!-- Footer -->
-  <textarea foot id="JQ-Response-Field">
-  </textarea>
+  <div foot>
+    <textarea id="JQ-Response-Field" placeholder="Response Field" rows="10" readonly></textarea>
+    <div id="JS-Response-Controls" controls>
+      <a href="#clear" title="Clear Messages" onclick="cM(`#JQ-Response-Field`)"><i class="fa fa-fw fa-eraser"></i></a>
+      <a href="#contrast" title="Toggle Contrast Mode" onclick="tC(`#JQ-Response-Field`,`#JS-Response-Controls`)"><i class="fa fa-fw fa-adjust"></i></a>
+    </div>
+  </div>
 </div>
 
 </body></html>
