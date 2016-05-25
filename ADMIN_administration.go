@@ -208,33 +208,33 @@ func ADMIN_POST_RetriveUserEmails(res http.ResponseWriter, req *http.Request, pa
 		return
 	}
 
-	usr := req.FormValue("Usr")
+	usr := strings.ToLower(req.FormValue("Usr"))
 	if usr == "" {
 		fmt.Fprint(res, `{"Status":"Failure","Reason":"User Name cannot be Empty.","Code":406}`)
 		return
 	}
 
 	q := datastore.NewQuery("Users")
-	q = q.Project("Name Email")
 	collectedEmails := make([]string, 0)
 
 	ctx := appengine.NewContext(req)
 	for t := q.Run(ctx); ; { // standard query run.
-		var tval struct{ Name, Email string }
+		var tval PermissionUser
 		_, qErr := t.Next(&tval)
 
 		if qErr == datastore.Done {
 			break
 		} else if qErr != nil {
-			break
+			fmt.Fprint(res, `{"Status":"Failure","Reason":"`, qErr.Error(), `","Code":500}`)
+			return
 		}
-		if strings.HasPrefix(tval.Name, usr) {
+		if strings.Contains(strings.ToLower(tval.Name), usr) {
 			collectedEmails = append(collectedEmails, tval.Email)
 		}
 	}
 
 	fmt.Fprint(res, `{"Status":"Success","Reason":"","Code":0,`)
-	fmt.Fprint(res, `"results":[`)
+	fmt.Fprint(res, `"Results":[`)
 	for i, v := range collectedEmails {
 		if i != 0 {
 			fmt.Fprint(res, `,`)

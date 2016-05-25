@@ -4,44 +4,69 @@
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.2/css/font-awesome.min.css">
     <script type="text/javascript">
         $(document).ready(function() {
-
-            messageField = $("#JQ-Response-Field")
-
             $("#JQ-Form1_Button").click(function(){
+                console.log("F1 Clicked")
                 // Change User Permission
                 form1email = $("#JQ-Form1_Input")
                 form1select = $("#JQ-Form1_Select")
 
-                console.log("Form1 Called, Information gathered")
                 if (form1email.val()==""){
-                    messageField.append("Email Required!\n")
-                    return
+                  console.log("F1 Nil Found")
+                 $.addMessage("Email Required!")
+                  return
                 }
-                console.log("Form1 Posting")
-                $.post("/admin/changeUsrPerm",{UEmail:form1email.val(),NewPermLevel:form1select.val()},function(data){
+                $.post("/admin/changeUsrPerm",{UEmail:form1email.val(),NewPermLevel:form1select.val()},function(data){ 
                     j = $.parseJSON(data);
-                    console.log("Form1 Parsed")
+                    console.log("F1 Data Return")
+                    console.log(j)
                     form1select.val("NONE")
                     form1email.val("")
-                    messageField.append(j.Status +"   "+j.Reason+"\n")
+                    $.addMessage(j.Status +"   "+j.Reason)
                 });
             });
 
             $("#JQ-Form2_Button").click(function(){
                 // Check User Permission
+                console.log("F2 Clicked")
                 f2e = $("#JQ-Form2_Input").val()
                 $("#JQ-Form2_Input").val("")
                 if (f2e==""){
-                    messageField.append("Check User Permission: Email Required!\n")
+                    console.log("F2 Nil Found")
+                    $.addMessage("Check User Permission: Email Required!")
                     return
                 }
                 $.get("/admin/getUsrPerm?UEmail="+f2e,function(data){
                     j = $.parseJSON(data);
-
+                    console.log("F2 Data Return")
+                    console.log(j)
                     if (j.Status == "Success") {
-                        messageField.append(f2e + " : " + j.Response+"\n")
+                        $.addMessage(f2e + " : " + j.Response)
                     } else {
-                        messageField.append(j.Status +"   "+j.Reason+"\n")
+                        $.addMessage(j.Status +"   "+j.Reason)
+                    }
+                });
+            });
+
+            $("#JQ-Form3_Button").click(function(){
+                // Name Lookup
+                f3u = $("#JQ-Form3_Input").val()
+                $("#JQ-Form3_Input").val("")
+                if (f3u==""){
+                    $.addMessage("Email Lookup: Name Required!")
+                    return
+                }
+
+                $.post("/admin/getUsrEmails",{Usr:f3u},function(data){
+                    j = $.parseJSON(data)
+                    console.log("F3 Data Return")
+                    console.log(j)
+                    if (j.Status == "Success") {
+                        j.Results.forEach(function(i){
+                          $.addMessage("    " +i)
+                        });
+                        $.addMessage(f3u + " : Results")
+                    } else {
+                        $.addMessage(j.Status +"   "+j.Reason)
                     }
                 });
             });
@@ -51,14 +76,16 @@
                 f4e = $("#JQ-Form4_Input").val()
                 $("#JQ-Form4_Input").val("")
                 if (f4e==""){
-                    messageField.append("Force Logout: Email Required!\n")
+                    $.addMessage("Force Logout: Email Required!")
                     return
                 }
                 $.postEmailTo(f4e,"/admin/forceUsrLogout",function(j){
+                    console.log("F4 Data Return")
+                    console.log(j)
                     if (j.Status == "Success") {
-                        messageField.append(f4e + " : " + j.Response+"\n")
+                        $.addMessage(f4e + " : " + j.Response)
                     } else {
-                        messageField.append(j.Status +"   "+j.Reason+"\n")
+                        $.addMessage(j.Status +"   "+j.Reason)
                     }
                 });
             });
@@ -68,14 +95,16 @@
                 f5e = $("#JQ-Form5_Input").val()
                 $("#JQ-Form5_Input").val("")
                 if (f5e==""){
-                    messageField.append("Delete User: Email Required!\n")
+                    $.addMessage("Delete User: Email Required!")
                     return
                 }
                 $.postEmailTo(f5e,"/admin/deleteUsr",function(j){
+                    console.log("F5 Data Return")
+                    console.log(j)
                     if (j.Status == "Success") {
-                        messageField.append(f5e + " : " + j.Response+"\n")
+                        $.addMessage(f5e + " : " + j.Response)
                     } else {
-                        messageField.append(j.Status +"   "+j.Reason+"\n")
+                        $.addMessage(j.Status +"   "+j.Reason)
                     }
                 });
             });
@@ -91,9 +120,17 @@
                 return window.setTimeout( callback, seconds * 1000 );
             }
 
-            messageField.val("Console Ready!\n")
+            $.addMessage = function(message) {
+              prev = $("#JQ-Response-Field").val()
+              next = message+"\n"
+              $("#JQ-Response-Field").val(next+prev)
+            }
+
+            $("#JQ-Response-Field").val("Console Ready!\n")
         });
-        function cM(idMessage) {
+    </script>
+    <script type="text/javascript">
+      function cM(idMessage) {
           a=document.querySelector(idMessage)
           a.value=""
         }
@@ -282,7 +319,7 @@
     <div id="JQ-Form3" formbox>
       <div label>Email Lookup</div>
       <input id="JQ-Form3_Input" placeholder="Username" type="text" />
-      <button id="JQ-Form3_Button" disabled>Submit</button>
+      <button id="JQ-Form3_Button">Submit</button>
     </div>
 
     <div id="JQ-Form4" formbox>
