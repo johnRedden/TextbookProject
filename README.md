@@ -1,5 +1,5 @@
 # Textbook Project
-### [EduNet Systems](http://www.edunetsystems.com/)
+### [EduNetSystems](http://www.edunetsystems.com/)
 
 In this section we've used Google Cloud Storage: 
 *Warning*, If you have not installed and setup GCS this project will not deploy/serve for you.
