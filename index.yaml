@@ -17,20 +17,44 @@ indexes:
 
 - kind: Chapters
   properties:
+  - name: Order
+  - name: Title
+
+- kind: Chapters
+  properties:
   - name: Parent
+  - name: Order
   - name: Title
 
 - kind: Exercises
   properties:
+  - name: Order
+  - name: Instruction
+
+- kind: Exercises
+  properties:
   - name: Parent
+  - name: Order
   - name: Instruction
 
 - kind: Objectives
   properties:
+  - name: Order
+  - name: Title
+
+- kind: Objectives
+  properties:
   - name: Parent
+  - name: Order
+  - name: Title
+
+- kind: Sections
+  properties:
+  - name: Order
   - name: Title
 
 - kind: Sections
   properties:
   - name: Parent
+  - name: Order
   - name: Title

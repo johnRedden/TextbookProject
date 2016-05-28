@@ -108,7 +108,6 @@ func API_GetBooks(res http.ResponseWriter, req *http.Request, params httprouter.
 func API_GetChapters(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	ctx := appengine.NewContext(req)
 	q := datastore.NewQuery("Chapters")
-	q = q.Order("Order").Order("Title")
 
 	queryBookID := req.FormValue("BookID")
 	if queryBookID != "" { // Ensure that a BookID was indeed sent.
@@ -116,6 +115,9 @@ func API_GetChapters(res http.ResponseWriter, req *http.Request, params httprout
 		HandleError(res, numErr)
 		q = q.Filter("Parent =", int64(i))
 	}
+
+	q = q.Order("Order")
+	q = q.Order("Title")
 
 	chapterList := make([]Chapter, 0)
 	for t := q.Run(ctx); ; {
@@ -146,7 +148,6 @@ func API_GetChapters(res http.ResponseWriter, req *http.Request, params httprout
 func API_GetSections(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	ctx := appengine.NewContext(req)
 	q := datastore.NewQuery("Sections")
-	q = q.Order("Order").Order("Title")
 
 	queryChapterID := req.FormValue("ChapterID")
 	if queryChapterID != "" { // Ensure that a ChapterID was indeed sent.
@@ -154,6 +155,8 @@ func API_GetSections(res http.ResponseWriter, req *http.Request, params httprout
 		HandleError(res, numErr)
 		q = q.Filter("Parent =", int64(i))
 	}
+
+	q = q.Order("Order").Order("Title")
 
 	sectionList := make([]Section, 0)
 	for t := q.Run(ctx); ; {
@@ -184,7 +187,6 @@ func API_GetSections(res http.ResponseWriter, req *http.Request, params httprout
 func API_GetObjectives(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	ctx := appengine.NewContext(req)
 	q := datastore.NewQuery("Objectives")
-	q = q.Order("Order").Order("Title")
 
 	querySectionID := req.FormValue("SectionID")
 	if querySectionID != "" { // Ensure that a BookID was indeed sent.
@@ -192,6 +194,8 @@ func API_GetObjectives(res http.ResponseWriter, req *http.Request, params httpro
 		HandleError(res, numErr)
 		q = q.Filter("Parent =", int64(i))
 	}
+
+	q = q.Order("Order").Order("Title")
 
 	objectiveList := make([]Objective, 0)
 	for t := q.Run(ctx); ; {
@@ -224,7 +228,6 @@ func API_GetObjectives(res http.ResponseWriter, req *http.Request, params httpro
 func API_GetExercises(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	ctx := appengine.NewContext(req)
 	q := datastore.NewQuery("Exercises")
-	q = q.Order("Order").Order("Instruction")
 
 	if req.FormValue("ObjectiveID") != "" {
 		i, numErr := strconv.Atoi(req.FormValue("ObjectiveID"))
@@ -235,6 +238,8 @@ func API_GetExercises(res http.ResponseWriter, req *http.Request, params httprou
 	if req.FormValue("IKind") != "" {
 		q = q.Filter("Instruction =", req.FormValue("IKind"))
 	}
+
+	q = q.Order("Order").Order("Instruction")
 
 	exerciselist := make([]Exercise, 0)
 	for t := q.Run(ctx); ; {
