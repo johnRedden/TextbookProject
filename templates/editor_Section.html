@@ -21,6 +21,10 @@
                 <label class="input-group-addon">Version:</label>
                 <input type="text" class="form-control" id="JQ-Version" placeholder="Version" value="{{.Version}}">
             </div>  
+            <div class="input-group">
+                <label class="input-group-addon">Order:</label>
+                <input type="text" class="form-control" id="JQ-Order" placeholder="Order" value="{{.Order}}">
+            </div>  
         </div>
 
         <div class="well">
@@ -83,6 +87,7 @@
                 SectionName: $("#JQ-Title").val(),
                 Version: $("#JQ-Version").val(),
                 Description:CKEDITOR.instances['JQ-Description'].getData(),
+                Order: $("#JQ-Order").val(),
             }
             console.log("Posting: ")
             console.log(params)

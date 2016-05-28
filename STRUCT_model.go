@@ -35,6 +35,7 @@ type Chapter struct { // Chapter has an ancestor in Book. Chapter only has meani
 	Title       string
 	Version     float64       `datastore:",noindex"`
 	Description template.HTML `datastore:",noindex"`
+	Order       int
 
 	Parent int64 // key.intID for Book
 	ID     int64 `datastore:"-"` // self.ID assigned when pulled from datastore.
@@ -44,6 +45,7 @@ type Section struct {
 	Title       string
 	Version     float64       `datastore:",noindex"`
 	Description template.HTML `datastore:",noindex"`
+	Order       int
 
 	Parent int64 // key.intID for Chapter
 	ID     int64 `datastore:"-"`
@@ -53,6 +55,7 @@ type Objective struct {
 	Title   string
 	Version float64 `datastore:",noindex"`
 	Author  string  //or array of strings
+	Order   int
 
 	Content      template.HTML `datastore:",noindex"`
 	KeyTakeaways template.HTML `datastore:",noindex"` // or array of strings
@@ -65,31 +68,8 @@ type Exercise struct {
 	Instruction string
 	Question    template.HTML `datastore:",noindex"`
 	Solution    template.HTML `datastore:",noindex"`
+	Order       int
 
 	Parent int64
 	ID     int64 `datastore:"-"`
-}
-
-// This is the key; the editor page for the book.
-// This struct technically contains Objective but for the sake of verbosity
-//  all included datapoints are spelled out here.
-// This struct will be the data submitted to the editor so a template for the editor
-// should access this information through {{.DataPoint}}
-// Any form that will have submission should include hidden fields for any ID.
-// Please submit all form data with the same name as the datapoint.
-type VIEW_Editor struct {
-	BookID      int64
-	ChapterID   int64
-	SectionID   int64
-	ObjectiveID int64
-
-	BookTitle      string
-	ChapterTitle   string
-	SectionTitle   string
-	ObjectiveTitle string
-
-	ObjectiveVersion float64
-	Content          template.HTML
-	KeyTakeaways     template.HTML
-	Author           string
 }

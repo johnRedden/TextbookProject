@@ -16,6 +16,10 @@
                 <label class="input-group-addon">Instruction:</label>
                 <input type="text" class="form-control" id="JQ-Instruction" placeholder="Objective" value="{{.Instruction}}">
             </div> 
+            <div class="input-group">
+                <label class="input-group-addon">Order:</label>
+                <input type="text" class="form-control" id="JQ-Order" placeholder="Order" value="{{.Order}}">
+            </div>  
         </div>
 
         <div class="well">
@@ -124,6 +128,7 @@
                 Instruction: $("#JQ-Instruction").val(),
                 Question:CKEDITOR.instances['JQ-Question'].getData(),
                 Solution:CKEDITOR.instances['JQ-Answer'].getData(),
+                Order: $("#JQ-Order").val(),
             }
 
             $.post("/api/create/exercise",params,function(data){

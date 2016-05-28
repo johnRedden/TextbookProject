@@ -206,6 +206,10 @@ func API_MakeChapter(res http.ResponseWriter, req *http.Request, params httprout
 		chapterForDatastore.Description = template.HTML(req.FormValue("Description"))
 	}
 
+	if orderI, convErr := strconv.Atoi(req.FormValue("Order")); convErr == nil {
+		chapterForDatastore.Order = orderI
+	}
+
 	rk, putErr := PutChapterIntoDatastore(req, chapterForDatastore)
 	HandleError(res, putErr)
 
@@ -257,6 +261,10 @@ func API_MakeSection(res http.ResponseWriter, req *http.Request, params httprout
 
 	if req.FormValue("Description") != "" {
 		sectionForDatastore.Description = template.HTML(req.FormValue("Description"))
+	}
+
+	if orderI, convErr := strconv.Atoi(req.FormValue("Order")); convErr == nil {
+		sectionForDatastore.Order = orderI
 	}
 
 	rk, putErr := PutSectionIntoDatastore(req, sectionForDatastore)
@@ -322,6 +330,10 @@ func API_MakeObjective(res http.ResponseWriter, req *http.Request, params httpro
 		objectiveForDatastore.Author = req.FormValue("Author")
 	}
 
+	if orderI, convErr := strconv.Atoi(req.FormValue("Order")); convErr == nil {
+		objectiveForDatastore.Order = orderI
+	}
+
 	rk, putErr := PutObjectiveIntoDatastore(req, objectiveForDatastore)
 	HandleErrorWithLog(res, putErr, "api/makeObjective Error: (PUT) ", ctx)
 
@@ -367,6 +379,10 @@ func API_MakeExercise(res http.ResponseWriter, req *http.Request, params httprou
 
 	if req.FormValue("Solution") != "" {
 		exerciseForDatastore.Solution = template.HTML(req.FormValue("Solution"))
+	}
+
+	if orderI, convErr := strconv.Atoi(req.FormValue("Order")); convErr == nil {
+		exerciseForDatastore.Order = orderI
 	}
 
 	rk, putErr := PutExerciseIntoDatastore(req, exerciseForDatastore)

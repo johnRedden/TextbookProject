@@ -8,7 +8,8 @@
         "SectionID":{{$e.Parent}},
         "Version":{{$e.Version}},
         "Author":"{{$e.Author}}",
-        "ID":{{$e.ID}}
+        "ID":{{$e.ID}},
+        "Order":{{$e.Order}}
         }{{end}}
     ]
 }

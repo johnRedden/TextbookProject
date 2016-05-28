@@ -6,7 +6,8 @@
     {{end}}   {
         "Instruction":"{{$e.Instruction}}",
         "ObjectiveID":{{$e.Parent}},
-        "ID":{{$e.ID}}
+        "ID":{{$e.ID}},
+        "Order":{{$e.Order}}
         }{{end}}
     ]
 }
