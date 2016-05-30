@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
-{{template "Head" .}}
+<head>
+{{template "Head"}}
+</head>
 <body>
     {{template "Nav" .}}
     <div class="container" >
@@ -91,34 +93,8 @@
         var referrer =  document.referrer;
         exerciseID = {{.ID}};
 
-            var stdConfig = {
-                    extraPlugins: 'mathjax',
-                    mathJaxLib: 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML',
-                    filebrowserImageBrowseUrl: '/image/browser?action=browseImageURL&oid='+exerciseID,
-                    filebrowserImageUploadUrl: '/api/ckeditor/create?action=uploadImageURL&oid='+exerciseID,
-                    filebrowserBrowseUrl: '/image/browser?action=browseURL&oid='+exerciseID,
-                    filebrowserUploadUrl: '/api/ckeditor/create?action=uploadURL&oid='+exerciseID,
-                    removePlugins: 'forms'
-                };
-
-            // code stolen to overried the save event
-              CKEDITOR.plugins.registered['save'] = {
-                  init: function (editor) {
-                     var command = editor.addCommand('save',
-                     {
-                          modes: { wysiwyg: 1, source: 1 },
-                          exec: function (editor) { // Add here custom function for the save button
-                            //alert('You clicked the save button in CKEditor toolbar!');
-                            $('.saveBtn').trigger('click');
-                          }
-                     });
-                     editor.ui.addButton('Save', { label: 'Save', command: 'save' });
-                  }
-              }
-              CKEDITOR.config.contentsCss = '/public/css/myeditor.css';
-
-        var questionEditor = CKEDITOR.replace('JQ-Question',stdConfig);
-        var answerEditor = CKEDITOR.replace('JQ-Answer',stdConfig);
+        var questionEditor = CKEDITOR.replace('JQ-Question',stdImageConfig(exerciseID));
+        var answerEditor = CKEDITOR.replace('JQ-Answer',stdImageConfig(exerciseID));
 
         $(".saveBtn").click(function(){
             console.log("Save Called!")

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-{{template "Head" .}}
+{{template "Head"}}
 <head>
 <body>
     {{template "Nav" .}}
@@ -109,11 +109,6 @@
       </div>
     <!-- END Delete Modal ******************-->
 
-   <!-- 
-    <p>Results: <input id="JQ-Results" readonly></p><br>
-    <p>Book: <input id="JQ-BookTitle" value=".BookTitle}}" readonly></p><br>
-    <p>Chapter: <input id="JQ-ChapterTitle" value=".ChapterTitle}}" readonly></p><br>
-    <p>Section: <input id="JQ-SectionTitle" value=".SectionTitle}}" readonly></p><br> -->
 
     <script type="text/javascript">
         $(document).ready(function(){
@@ -121,7 +116,8 @@
             objectiveID = $("#JQ-ObjectiveID").val();
 
             $(".saveBtn").click(function(){
-                sectID = $("#JQ-SectionID").val()
+                sectID = $("#JQ-SectionID").val();
+                console.log(sectID)
                 ObjeName = $("#JQ-ObjectiveTitle").val()
                 ver = $("#JQ-Version").val()
                 cont = CKEDITOR.instances['JQ-Content'].getData();
@@ -149,33 +145,8 @@
             });
 
 //CKeditor Stuff ***************************************
-            var stdConfig = {
-                    extraPlugins: 'mathjax',
-                    mathJaxLib: 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML',
-                    filebrowserImageBrowseUrl: '/image/browser?action=browseImageURL&oid='+objectiveID,
-                    filebrowserImageUploadUrl: '/api/ckeditor/create?action=uploadImageURL&oid='+objectiveID,
-                    filebrowserBrowseUrl: '/image/browser?action=browseURL&oid='+objectiveID,
-                    filebrowserUploadUrl: '/api/ckeditor/create?action=uploadURL&oid='+objectiveID,
-                    removePlugins: 'forms',
-                };
-
-            var contentEditor = CKEDITOR.replace('JQ-Content',stdConfig);
-            var keyTakeawaysEditor = CKEDITOR.replace('JQ-KeyTakeaways',stdConfig);
-            // code stolen to overried the save event
-            CKEDITOR.plugins.registered['save'] = {
-                  init: function (editor) {
-                     var command = editor.addCommand('save',
-                     {
-                          modes: { wysiwyg: 1, source: 1 },
-                          exec: function (editor) { // Add here custom function for the save button
-                            //alert('You clicked the save button in CKEditor toolbar!');
-                            $('.saveBtn').trigger('click');
-                          }
-                     });
-                     editor.ui.addButton('Save', { label: 'Save', command: 'save' });
-                  }
-            }
-            CKEDITOR.config.contentsCss = '/public/css/myeditor.css';
+            var contentEditor = CKEDITOR.replace('JQ-Content',stdImageConfig(objectiveID));
+            var keyTakeawaysEditor = CKEDITOR.replace('JQ-KeyTakeaways',stdImageConfig(objectiveID));
 //*********************************************************
 
             // save button functionality  TODO: IF any input changes toggle!
