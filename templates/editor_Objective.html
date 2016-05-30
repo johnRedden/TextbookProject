@@ -203,22 +203,22 @@
                 var newQuestion = 'New Question';
                 $('#exerciseInput').val('');
                 
-                $.post("/api/create/exercise",{ObjectiveID:objectiveID,Instruction:newInstruction,Question:newQuestion},function(data){
+                $.post("/api/create/exercise",{ObjectiveID:objectiveID,Instruction:newInstruction,Question:newQuestion,Order:localStorage.nextExerciseNumber},function(data){
                     g = $.parseJSON(data);
                     console.log(g.result +":"+ g.reason+":"+ g.object.ID);
-                    $("#exerciseRoot").append(getExerciseHTML(g.object.ID,newInstruction,newQuestion,""));
+                    $("#exerciseRoot").append(getExerciseHTML(g.object.ID,newInstruction,newQuestion,"",localStorage.nextExerciseNumber));
                 });
 
                // window.location = '/edit/exercise/'+objectiveID;
             });
-            function getExerciseHTML(exerciseID,instruction,question,answer){
+            function getExerciseHTML(exerciseID,instruction,question,answer,number){
                 var exerciseHTML ='\
                     <div class="panel panel-default" id="'+exerciseID+'">\
                         <div class="panel-heading">\
                             <a class="collapsed" data-toggle="collapse" data-target="#ex-'+exerciseID+'" href="#collapse1"></a>\
                             <span class="pull-right ans">Answer &nbsp</span>\
                             <a href="/edit/exercise/'+exerciseID+'"  class="btn btn-xs btn-info" role="button" target="">Edit </a>\
-                            <strong>'+instruction+'</strong><br/> \
+                            <strong>'+number+'. '+instruction+'</strong><br/> \
                             <span class="checkbox">\
                                 <label> <input type="checkbox" value="'+exerciseID+'"/>'+question+'</label>\
                             </span>\
@@ -238,35 +238,28 @@
 
                 $.get("/api/exercises.json?ObjectiveID="+objectiveID,function(data, status){
                     var g = ($.parseJSON(data)).results;
+                    localStorage.numberOfExercises = g.length;
+                    localStorage.nextExerciseNumber = 1;
                     var promises = [];
-                    function exerciseHandler(data,status,jqXHR){
-                        var txt = jqXHR.reponseText;
-                        //console.log(data);
-                    }
 
                     $.each( g, function( key, val ){
                         var x = $.get("/api/exercise.xml?ID="+val.ID);
-                        //console.log(x)
-                        //x.always(exerciseHandler);
                         promises.push( x );
                     });
                     // now we have an array of promises.
-                    //console.log(promises); //This is good
-                    $.when.apply(null,promises).always(exerciseHandler);
                     //when they are ALL done... iterate through and populate the html in order (render mathjax after)
                     $.when.apply(null, promises).always(function(data,status,jqXHR) {
-                         //console.log(promises[1].responseText)
-                      // Afterwards, do this.
-                        console.log(jqXHR);
                         
                         $.each( promises, function( key, val ){
-                            console.log(val);
+                            //console.log(val);
                             var xml = val.responseText;
                             var instr = $(xml).find("instruction").html();
                             var question = $(xml).find("question").html();
                             var ans = $(xml).find("solution").html();
                             var exID = $(xml).find("id").html();
-                            $("#exerciseRoot").append(getExerciseHTML(exID,instr,question,ans));
+                            var exNumber = $(xml).find("order").html();
+                            $("#exerciseRoot").append(getExerciseHTML(exID,instr,question,ans,exNumber));
+                            localStorage.nextExerciseNumber = parseInt(exNumber)+1;
                            
                         });
                         
