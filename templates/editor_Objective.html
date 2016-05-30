@@ -239,18 +239,28 @@
                 $.get("/api/exercises.json?ObjectiveID="+objectiveID,function(data, status){
                     var g = ($.parseJSON(data)).results;
                     var promises = [];
+                    function exerciseHandler(data,status,jqXHR){
+                        var txt = jqXHR.reponseText;
+                        //console.log(data);
+                    }
 
                     $.each( g, function( key, val ){
-                        promises.push( $.get("/api/exercise.xml?ID="+val.ID) );
+                        var x = $.get("/api/exercise.xml?ID="+val.ID);
+                        //console.log(x)
+                        //x.always(exerciseHandler);
+                        promises.push( x );
                     });
                     // now we have an array of promises.
-                    console.log(promises); //This is good
+                    //console.log(promises); //This is good
+                    $.when.apply(null,promises).always(exerciseHandler);
                     //when they are ALL done... iterate through and populate the html in order (render mathjax after)
-                    $.when.apply(null, promises).always(function() {
+                    $.when.apply(null, promises).always(function(data,status,jqXHR) {
+                         //console.log(promises[1].responseText)
                       // Afterwards, do this.
-                        console.log('all done');
+                        console.log(jqXHR);
+                        
                         $.each( promises, function( key, val ){
-                            //console.log(val.responseText);
+                            console.log(val);
                             var xml = val.responseText;
                             var instr = $(xml).find("instruction").html();
                             var question = $(xml).find("question").html();
@@ -259,6 +269,7 @@
                             $("#exerciseRoot").append(getExerciseHTML(exID,instr,question,ans));
                            
                         });
+                        
                     });
                     MathJax.Hub.Queue(["Typeset",MathJax.Hub,"exerciseRoot"]);
                     
