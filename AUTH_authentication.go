@@ -10,85 +10,14 @@ AUTH_authentication.go by Allen J. Mills
 */
 
 import (
-	"errors"
 	"fmt"
 	"github.com/julienschmidt/httprouter"
 	"golang.org/x/net/context"
 	"google.golang.org/appengine"
-	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/user"
 	"net/http"
-	"strconv"
 	"strings"
 )
-
-var (
-	// ErrPermissionUserMarshall, this error is thrown when there is an incorrect number of values to unmarshal into a Permission User
-	ErrPermissionUserMarshall = errors.New("MarshallPermissionUser: Cannot Unmarshal String, Too Few Values")
-
-	// ErrInvalidPermission, this error is thrown when a user fails a minimum permission level check.
-	ErrInvalidPermission = errors.New("Permission Error: User Does Not Have Required Permission Level!")
-)
-
-//// --------------------------
-// Permission User,
-// A user with a permission value.
-// Has a true name.
-////
-
-// Type: PermissionUser
-// An appengine/user.User with Name and Permission
-type PermissionUser struct {
-	Name       string
-	Permission int
-	ID         string
-	Email      string
-}
-
-// Method: ToString
-// Converts a permission user into a marshalled string
-func (u PermissionUser) ToString() string {
-	return fmt.Sprintf("%s�%s�%d�%s", u.Name, u.Email, u.Permission, u.ID)
-}
-
-// Internal Function
-// Description:
-// Function takes a stringed permission user and unmarshalls the values back into their original struct.
-//
-// Returns:
-//      user(PermissionUser) - Unpacked PermissionUser
-//      failure?(error) - Any errors are stored here if exists.
-func MarshallPermissionUser(p string) (PermissionUser, error) {
-	data := strings.Split(p, "�")
-	if len(data) < 4 {
-		return PermissionUser{}, ErrPermissionUserMarshall
-	}
-	permLevel, convErr := strconv.Atoi(data[2])
-	if convErr != nil {
-		return PermissionUser{}, convErr
-	}
-	return PermissionUser{
-		Name:       data[0],
-		Email:      data[1],
-		Permission: permLevel,
-		ID:         data[3],
-	}, nil
-}
-
-// Internal Function
-// Description:
-// Given an appengine/user.User, a name, and a permission level, will create a valid permission user.
-//
-// Returns:
-//      user(PermissionUser) - Prepared PermissionUser
-func MakePermissionUser(name string, permission int, u *user.User) PermissionUser {
-	return PermissionUser{
-		Name:       name,
-		Permission: permission,
-		Email:      strings.ToLower(u.Email),
-		ID:         u.ID,
-	}
-}
 
 // Internal Function
 // Description:
@@ -111,91 +40,6 @@ func GetPermissionUserFromSession(ctx context.Context) (PermissionUser, error) {
 		}
 	}
 	return PermissionUser{}, ErrNotLoggedIn
-}
-
-//// --------------------------
-// Permission User, Datastore
-// This collection of functions handle the insertion,
-// retrieval, and deletion of PermissionUsers from
-// datastore.
-// All PermissionUsers exist on table Users
-////
-
-func PutPermissionUserToDatastore(ctx context.Context, keyname string, pu *PermissionUser) error {
-	userkey := datastore.NewKey(ctx, "Users", keyname, 0, nil)
-	_, putErr := datastore.Put(ctx, userkey, pu)
-	return putErr
-}
-func GetPermissionUserFromDatastore(ctx context.Context, keyname string) (PermissionUser, error) {
-	userkey := datastore.NewKey(ctx, "Users", keyname, 0, nil)
-	pu := PermissionUser{}
-	getErr := datastore.Get(ctx, userkey, &pu)
-	return pu, getErr
-}
-func RemovePermissionUserFromDatastore(ctx context.Context, keyname string) error {
-	userkey := datastore.NewKey(ctx, "Users", keyname, 0, nil)
-	return datastore.Delete(ctx, userkey)
-}
-
-//// --------------------------
-// Permission Levels
-// This collection details the different levels
-// of permissions a user can hold, verification
-// that a user meets a minimum permission requirement
-// and insertion, retrieval, and deletion of permission
-// levels into datastore.
-// Permission Levels in datastore are on table Permissions
-////
-
-const (
-	// Permission Levels.
-	// These are const integers. Please refer to them always by name, never number.
-	ReadPermissions  = iota
-	EditPermissions  = iota
-	WritePermissions = iota
-	AdminPermissions = iota
-)
-
-// Internal Function
-// Description:
-// Given a response, request, and minimum permission level.
-// This function will return a boolean if the current user
-// does or does not meet the requirement.
-//
-// Returns:
-//      valid?(bool) - True/False if user meets requirement
-//      failure?(error) - Any errors are stored here if exists.
-func HasPermission(res http.ResponseWriter, req *http.Request, minimumRequiredPermission int) (bool, error) {
-	if sessErr := MaintainSession(res, req); sessErr != nil { // Must have a session
-		return false, sessErr
-	} else {
-		ctx := appengine.NewContext(req)
-		if u, permissionErr := GetPermissionUserFromSession(ctx); permissionErr != nil { // Must have a valid permission user.
-			return false, permissionErr
-		} else {
-			if u.Permission < minimumRequiredPermission { // That permission user must be at least the minimum.
-				return false, ErrInvalidPermission
-			}
-		}
-	}
-	return true, nil
-}
-
-func PutPermissionLevelToDatastore(ctx context.Context, keyname string, permLevel int) error {
-	permkey := datastore.NewKey(ctx, "Permissions", keyname, 0, nil)
-	toDatastore := &struct{ PL int }{permLevel}
-	_, putErr := datastore.Put(ctx, permkey, toDatastore)
-	return putErr
-}
-func GetPermissionLevelFromDatastore(ctx context.Context, keyname string) (int, error) {
-	permkey := datastore.NewKey(ctx, "Permissions", keyname, 0, nil)
-	pl := struct{ PL int }{}
-	getErr := datastore.Get(ctx, permkey, &pl)
-	return pl.PL, getErr
-}
-func RemovePermissionLevelFromDatastore(ctx context.Context, keyname string) error {
-	permkey := datastore.NewKey(ctx, "Permissions", keyname, 0, nil)
-	return datastore.Delete(ctx, permkey)
 }
 
 //// --------------------------
