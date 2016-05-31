@@ -15,13 +15,13 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
     <!-- Mathjax -->
     <script type="text/javascript" async src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML"></script>
-    <!-- CKEditor -->
-    <script src="http://cdn.ckeditor.com/4.5.3/full-all/ckeditor.js"></script>
+
     <!-- Latest compiled and minified JavaScript -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 
+    <script type="text/javascript" src="/public/js/printThis.js"></script>
+
     <link rel="stylesheet" href="/public/css/ens-contentSystem.css">
-    <script src="/public/css/ens-contentSystem.js"></script>
 
     <style type="text/css">
     body{
@@ -83,16 +83,23 @@
             </div>
         </div>
         <hr/>
-        <h3 class="objective"><strong>Objective:</strong> {{.Title}}</h3>
-        
-        <div class="text-justify">{{.Content}}</div>
+        <div class="objective"><strong>Objective:</strong> {{.Title}}
+            <button id="print-objective" class="btn btn-default btn-sm pull-right"><span class="glyphicon glyphicon-print"></span></button>
+        </div>
+        <br/>
+        <div id="objective-content" class="text-justify">{{.Content}}</div>
 
         <hr/>
-        <div class="keytakeaways"><strong>Key Takeaways:</strong></div>
-        <div class="">{{.KeyTakeaways}}</div>
+        <div class="keytakeaways"><strong>Key Takeaways:</strong>
+            <button id="print-keytakeaways" class="btn btn-default btn-sm pull-right"><span class="glyphicon glyphicon-print"></span></button>
+        </div>
+        <div id="keytakeaways">{{.KeyTakeaways}}</div>
         <hr/>
 
-        <div class="exercises"><strong>Exercises:</strong></div>
+        <div class="exercises"><strong>Exercises:</strong>
+            <button id="toggle-all" class="btn btn-default btn-sm">Select All</button>
+            <button id="print-selected" class="btn btn-default btn-sm pull-right"><span class="glyphicon glyphicon-print"></span></button>
+        </div>
         <p class="text-center"> </p> 
         <div id="exerciseRoot" class="panel-group" >Exercises go here.</div>
         <p class="text-center"> </p> 
@@ -100,8 +107,8 @@
         <div id="ObjectiveInfo">
             <span>Authors: {{.Author}} - </span>
             <span>Version: {{.Version}}</span>
-
         </div>
+        <div id="printableDiv" class="hidden"> </div>
         <footer>© eduNetSystems.com</footer>
     </div>
 
@@ -127,17 +134,85 @@
                 $('body').removeClass("font-size-medium");
                 $('body').addClass("font-size-large");
             });
+            //todo streamline this button
+            $('#toggle-all').click(function() {
+                if($(this).html()==="Select All"){
+                    $('#exerciseRoot input[type="checkbox"]').prop('checked', true);
+                    $(this).html('Deselect All');
+                }else{
+                    $('#exerciseRoot input[type="checkbox"]').prop('checked', false);
+                    $(this).html('Select All');
+                }
+            });
+            //print functionality
+            $('#print-objective').click(function(){
+                $('#printableDiv').html($('.objective').html());
+                var c = $('#objective-content').html();
+                $('#printableDiv').append(c+'<br/><br/>');
+       
+                $('#printableDiv').printThis({
+                        importCSS: false,      
+                        importStyle: true,    
+                        printContainer: true,     
+                        pageTitle: "ENS Content System",             
+                        removeInline: false,    
+                        printDelay: 150,    
+                        header: null,        
+                        formValues: true      
+                });
+                
+            });
+            $('#print-keytakeaways').click(function(){
+                $('#printableDiv').html($('.objective').html()+'<br/>Key Takeaways:<br/>');
+                var c = $('#keytakeaways').html();
+                $('#printableDiv').append(c+'<br/><br/>');
+       
+                $('#printableDiv').printThis({
+                        importCSS: false,      
+                        importStyle: true,    
+                        printContainer: true,     
+                        pageTitle: "ENS Content System",             
+                        removeInline: false,    
+                        printDelay: 150,    
+                        header: null,        
+                        formValues: true      
+                });
+                
+            });
+            $('#print-selected').click(function(){
+                $('#printableDiv').html($('.objective').html()+'<br/><br/>');
+                var c = $('#exerciseRoot input[type="checkbox"]:checked');
+                $.each( c, function( key, val ){
+                    var id = $(val).attr('value');
+                    var n = $('#'+id).find('.num').html();
+                    var q = $('#'+id).find('.question').html();
+                    var i = $('#'+id).find('.instr').html();
+                    $('#printableDiv').append('#'+n+' '+i +'<br/>'+q+'<br/><br/>');
 
+                    console.log($(val).attr('value'));
+                });
+                $('#printableDiv').printThis({
+                        importCSS: false,      
+                        importStyle: true,    
+                        printContainer: true,     
+                        pageTitle: "Printing!!",             
+                        removeInline: false,    
+                        printDelay: 150,    
+                        header: null,        
+                        formValues: true      
+                });
+                
+            });
 //exercise Work
-            function getExerciseHTML(exerciseID,instruction,question,answer){
+            function getExerciseHTML(exerciseID,instruction,question,answer,number){
                 var exerciseHTML ='\
                     <div class="panel panel-default" id="'+exerciseID+'">\
                         <div class="panel-heading">\
                             <a class="collapsed" data-toggle="collapse" data-target="#ex-'+exerciseID+'" href="#collapse1"></a>\
                             <span class="pull-right ans">Answer &nbsp</span>\
-                            <strong>'+instruction+'</strong><br/> \
+                            <strong><span class="num">'+number+'.</span> <span class="instr">'+instruction+'</span></strong><br/> \
                             <span class="checkbox">\
-                                <label> <input type="checkbox" value="'+exerciseID+'"/>'+question+'</label>\
+                                <label> <input type="checkbox" value="'+exerciseID+'"/><span class="question"'+question+'</span></label>\
                             </span>\
                         </div>\
                         <div id="ex-'+exerciseID+'" class="panel-collapse collapse">\
@@ -173,7 +248,8 @@
                             var question = $(xml).find("question").html();
                             var ans = $(xml).find("solution").html();
                             var exID = $(xml).find("id").html();
-                            $("#exerciseRoot").append(getExerciseHTML(exID,instr,question,ans));
+                            var exNumber = $(xml).find("order").html();
+                            $("#exerciseRoot").append(getExerciseHTML(exID,instr,question,ans,exNumber));
                            
                         });
                     });

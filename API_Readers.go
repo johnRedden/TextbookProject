@@ -431,7 +431,7 @@ func API_GetChapter(res http.ResponseWriter, req *http.Request, params httproute
 	fmt.Fprintf(res, `<parentid>%d</parentid>`, Chapter_to_Output.Parent)
 	fmt.Fprintf(res, `<id>%d</id>`, Chapter_to_Output.ID)
 	fmt.Fprint(res, `<description>`+Chapter_to_Output.Description+`</description>`)
-	fmt.Fprintf(res, `<order>%d</order`, Chapter_to_Output.Order)
+	fmt.Fprintf(res, `<order>%d</order>`, Chapter_to_Output.Order)
 	fmt.Fprint(res, `</chapter>`)
 }
 
@@ -463,7 +463,7 @@ func API_GetSection(res http.ResponseWriter, req *http.Request, params httproute
 	fmt.Fprintf(res, `<parentid>%d</parentid>`, Section_to_Output.Parent)
 	fmt.Fprintf(res, `<id>%d</id>`, Section_to_Output.ID)
 	fmt.Fprint(res, `<description>`+Section_to_Output.Description+`</description>`)
-	fmt.Fprintf(res, `<order>%d</order`, Section_to_Output.Order)
+	fmt.Fprintf(res, `<order>%d</order>`, Section_to_Output.Order)
 	fmt.Fprint(res, `</section>`)
 }
 
@@ -524,6 +524,6 @@ func API_GetExercise(res http.ResponseWriter, req *http.Request, params httprout
 	fmt.Fprint(res, `<solution>`+Exercise_to_Output.Solution+`</solution>`)
 	fmt.Fprintf(res, `<parent>%d</parent>`, Exercise_to_Output.Parent)
 	fmt.Fprintf(res, `<id>%d</id>`, Exercise_to_Output.ID)
-	fmt.Fprintf(res, `<order>%d</order`, Exercise_to_Output.Order)
+	fmt.Fprintf(res, `<order>%d</order>`, Exercise_to_Output.Order)
 	fmt.Fprint(res, `</exercise>`)
 }

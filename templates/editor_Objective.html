@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
-{{template "Head" .}}
+<head>
+{{template "Head"}}
+<head>
 <body>
     {{template "Nav" .}}
             <input id="JQ-ObjectiveID" type="hidden" value="{{.ID}}" readonly>
@@ -107,11 +109,6 @@
       </div>
     <!-- END Delete Modal ******************-->
 
-   <!-- 
-    <p>Results: <input id="JQ-Results" readonly></p><br>
-    <p>Book: <input id="JQ-BookTitle" value=".BookTitle}}" readonly></p><br>
-    <p>Chapter: <input id="JQ-ChapterTitle" value=".ChapterTitle}}" readonly></p><br>
-    <p>Section: <input id="JQ-SectionTitle" value=".SectionTitle}}" readonly></p><br> -->
 
     <script type="text/javascript">
         $(document).ready(function(){
@@ -119,14 +116,15 @@
             objectiveID = $("#JQ-ObjectiveID").val();
 
             $(".saveBtn").click(function(){
-                sectID = $("#JQ-SectionID").val()
+                //get stuff from form
                 ObjeName = $("#JQ-ObjectiveTitle").val()
                 ver = $("#JQ-Version").val()
                 cont = CKEDITOR.instances['JQ-Content'].getData();
                 ktw = CKEDITOR.instances['JQ-KeyTakeaways'].getData();
                 authr = $("#JQ-AuthorInput").val();
+                ordr = $("#JQ-Order").val();
 
-                $.post("/api/create/objective",{SectionID:sectID,ObjectiveName:ObjeName,ID:objectiveID,Version:ver,Content:cont,KeyTakeaways:ktw,Author:authr,Order: $("#JQ-Order").val()},function(data){
+                $.post("/api/create/objective",{ID:objectiveID,ObjectiveName:ObjeName,Version:ver,Content:cont,KeyTakeaways:ktw,Author:authr,Order: ordr},function(data){
                     j = $.parseJSON(data);
                     console.log(j.result +":"+ j.reason)
                     if (j.code == 0){ // reset save button
@@ -135,7 +133,7 @@
                         // say something
                     }
                 });
-                //$.wait(function(){$("#JQ-Results").val("")},3)
+             
             });
 
             $(".previewBtn").click(function(){
@@ -147,36 +145,11 @@
             });
 
 //CKeditor Stuff ***************************************
-            var stdConfig = {
-                    extraPlugins: 'mathjax',
-                    mathJaxLib: 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML',
-                    filebrowserImageBrowseUrl: '/image/browser?action=browseImageURL&oid='+objectiveID,
-                    filebrowserImageUploadUrl: '/api/ckeditor/create?action=uploadImageURL&oid='+objectiveID,
-                    filebrowserBrowseUrl: '/image/browser?action=browseURL&oid='+objectiveID,
-                    filebrowserUploadUrl: '/api/ckeditor/create?action=uploadURL&oid='+objectiveID,
-                    removePlugins: 'forms',
-                };
-
-            var contentEditor = CKEDITOR.replace('JQ-Content',stdConfig);
-            var keyTakeawaysEditor = CKEDITOR.replace('JQ-KeyTakeaways',stdConfig);
-            // code stolen to overried the save event
-            CKEDITOR.plugins.registered['save'] = {
-                  init: function (editor) {
-                     var command = editor.addCommand('save',
-                     {
-                          modes: { wysiwyg: 1, source: 1 },
-                          exec: function (editor) { // Add here custom function for the save button
-                            //alert('You clicked the save button in CKEditor toolbar!');
-                            $('.saveBtn').trigger('click');
-                          }
-                     });
-                     editor.ui.addButton('Save', { label: 'Save', command: 'save' });
-                  }
-            }
-            CKEDITOR.config.contentsCss = '/public/css/myeditor.css';
+            var contentEditor = CKEDITOR.replace('JQ-Content',stdImageConfig(objectiveID));
+            var keyTakeawaysEditor = CKEDITOR.replace('JQ-KeyTakeaways',stdImageConfig(objectiveID));
 //*********************************************************
 
-            // save button functionality  TODO: IF any input changes toggle!
+            // save button functionality  IF any input changes toggle!
             $('#objectiveInfo input').on('keyup',function(){
                 toggleSaveBtn();
             })
@@ -220,6 +193,7 @@
 
 
     // Exercises Work  ***********************************
+    // using localStorage to help with
             $('#exerciseInput').on('keyup',function(e){
                 if(e.keyCode==13){
                     $('#addExerciseBtn').trigger('click');
@@ -230,22 +204,21 @@
                 var newQuestion = 'New Question';
                 $('#exerciseInput').val('');
                 
-                $.post("/api/create/exercise",{ObjectiveID:objectiveID,Instruction:newInstruction,Question:newQuestion},function(data){
+                $.post("/api/create/exercise",{ObjectiveID:objectiveID,Instruction:newInstruction,Question:newQuestion,Order:localStorage.nextExerciseNumber},function(data){
                     g = $.parseJSON(data);
                     console.log(g.result +":"+ g.reason+":"+ g.object.ID);
-                    $("#exerciseRoot").append(getExerciseHTML(g.object.ID,newInstruction,newQuestion,""));
+                    $("#exerciseRoot").append(getExerciseHTML(g.object.ID,newInstruction,newQuestion,"",localStorage.nextExerciseNumber));
                 });
 
-               // window.location = '/edit/exercise/'+objectiveID;
             });
-            function getExerciseHTML(exerciseID,instruction,question,answer){
+            function getExerciseHTML(exerciseID,instruction,question,answer,number){
                 var exerciseHTML ='\
                     <div class="panel panel-default" id="'+exerciseID+'">\
                         <div class="panel-heading">\
                             <a class="collapsed" data-toggle="collapse" data-target="#ex-'+exerciseID+'" href="#collapse1"></a>\
                             <span class="pull-right ans">Answer &nbsp</span>\
                             <a href="/edit/exercise/'+exerciseID+'"  class="btn btn-xs btn-info" role="button" target="">Edit </a>\
-                            <strong>'+instruction+'</strong><br/> \
+                            <strong>'+number+'. '+instruction+'</strong><br/> \
                             <span class="checkbox">\
                                 <label> <input type="checkbox" value="'+exerciseID+'"/>'+question+'</label>\
                             </span>\
@@ -265,27 +238,31 @@
 
                 $.get("/api/exercises.json?ObjectiveID="+objectiveID,function(data, status){
                     var g = ($.parseJSON(data)).results;
+                    localStorage.numberOfExercises = g.length;
+                    localStorage.nextExerciseNumber = 1;
                     var promises = [];
 
                     $.each( g, function( key, val ){
-                        promises.push( $.get("/api/exercise.xml?ID="+val.ID) );
+                        var x = $.get("/api/exercise.xml?ID="+val.ID);
+                        promises.push( x );
                     });
                     // now we have an array of promises.
-                    console.log(promises); //This is good
                     //when they are ALL done... iterate through and populate the html in order (render mathjax after)
-                    $.when.apply(null, promises).always(function() {
-                      // Afterwards, do this.
-                        console.log('all done');
+                    $.when.apply(null, promises).always(function(data,status,jqXHR) {
+                        //console.log(jqXHR)
                         $.each( promises, function( key, val ){
-                            //console.log(val.responseText);
+                            //console.log(val);
                             var xml = val.responseText;
                             var instr = $(xml).find("instruction").html();
                             var question = $(xml).find("question").html();
                             var ans = $(xml).find("solution").html();
                             var exID = $(xml).find("id").html();
-                            $("#exerciseRoot").append(getExerciseHTML(exID,instr,question,ans));
+                            var exNumber = $(xml).find("order").html();
+                            $("#exerciseRoot").append(getExerciseHTML(exID,instr,question,ans,exNumber));
+                            localStorage.nextExerciseNumber = parseInt(exNumber)+1;
                            
                         });
+                        
                     });
                     MathJax.Hub.Queue(["Typeset",MathJax.Hub,"exerciseRoot"]);
                     

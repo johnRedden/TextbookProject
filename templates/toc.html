@@ -235,14 +235,12 @@
             $('.list-group-root').html('');
 
             $.each( j, function( key, val ){
-                var chapterID = val.ID;
-                var chapterName = val.Title;
                 //populate the root with the list group items
-                var HTMLblock = generalListGroupItem(chapterID,chapterName);
+                var HTMLblock = generalListGroupItem(val.ID, val.Title, val.Order);
                 $('.list-group-root').append( HTMLblock );
-                setGeneralListGroupItemListeners(chapterID,chapterName,'Chapter: ');
+                setGeneralListGroupItemListeners(val.ID,val.Title,'Chapter: ');
                 //be one step ahead
-                getBookSections(chapterID);
+                getBookSections(val.ID);
             });
 
             $('#chapterHeading').html('Chapters');
@@ -277,7 +275,7 @@
             $('#chapterBtn').on('click',function(){
                 var newChap =  $('#chapterInput').val();
                 newChap = newChap.replace(/^\s+|\s+$/g, "").replace(/\s+/g, " "); // regex to replace space in middle
-                $.post("/api/create/chapter",{BookID:localStorage.bookID,ChapterName:newChap},function(data){
+                $.post("/api/create/chapter",{BookID:localStorage.bookID,ChapterName:newChap,Order:0},function(data){
                     g = $.parseJSON(data);
                     console.log(g.result +":"+ g.reason+":"+ g.object.Title);
                     $('.list-group-root').html('<a href="#" class="list-group-item" ><i class="glyphicon glyphicon-download"></i>Loading...</a>');
@@ -295,14 +293,12 @@
             $('#cat-'+chapterID).html('');
             
             $.each( j, function( key, val ){
-                var sectionID = val.ID;
-                var sectionName = val.Title;
                 //populate the root with the list group items
-                var HTMLblock = generalListGroupItem(sectionID,sectionName);
+                var HTMLblock = generalListGroupItem(val.ID,val.Title,val.Order);
                 $('#cat-'+chapterID).append( HTMLblock );
-                setGeneralListGroupItemListeners(sectionID,sectionName,'Section: ');
+                setGeneralListGroupItemListeners(val.ID,val.Title,'Section: ');
                 //be one step ahead
-                getBookObjectives(sectionID);
+                getBookObjectives(val.ID);
             });
 
             //add Catalog button at end of level 1 list  *********************
@@ -338,7 +334,7 @@
                 newSectionName = newSectionName.replace(/^\s+|\s+$/g, "").replace(/\s+/g, " "); // regex to replace space in middle
 
                 $('#cat-'+chapterID).html('<a href="#" class="list-group-item" ><i class="glyphicon glyphicon-download"></i>Loading...</a>');
-                $.post("/api/create/section",{ChapterID:chapterID,SectionName:newSectionName},function(data){
+                $.post("/api/create/section",{ChapterID:chapterID,SectionName:newSectionName,Order:0},function(data){
                     g = $.parseJSON(data);
                     console.log(g.result +":"+ g.reason);
                     //second place to wait for datastore
@@ -353,18 +349,16 @@
             $('#cat-'+sectionID).html('');
             
             $.each( j, function( key, val ){
-                var objectiveID = val.ID;
-                var objectiveName = val.Title;
                 //populate the root with the list group items
         {{if eq .Permission 3}}
                 var HTMLblock = '<div class="list-group-item"> \
-                                            <a href="/preview?ID='+objectiveID+'"  id="'+objectiveID+'" target="_blank"><i class="glyphicon glyphicon-new-window"></i>'+objectiveName+'</a>\
-                                            <a href="/edit/objective/'+objectiveID+'"  class="btn btn-xs btn-info" role="button" target="">Edit</a> \
+                                            <a href="/preview?ID='+val.ID+'"  id="'+val.ID+'" target="_blank"><i class="glyphicon glyphicon-new-window"></i>'+val.Order+'. '+val.Title+'</a>\
+                                            <a href="/edit/objective/'+val.ID+'"  class="btn btn-xs btn-info" role="button" target="">Edit</a> \
                                         </div>';
         {{else}}
                 var HTMLblock = '<div class="list-group-item"> \
                                             \
-                                            <a href="/preview?ID='+objectiveID+'"  id="'+objectiveID+'" target="_blank"><i class="glyphicon glyphicon-new-window"></i>'+objectiveName+'</a>\
+                                            <a href="/preview?ID='+val.ID+'"  id="'+val.ID+'" target="_blank"><i class="glyphicon glyphicon-new-window"></i>'+val.Order+'. '+val.Title+'</a>\
                                         </div>';
 
         {{end}}
@@ -401,7 +395,7 @@
                 var newObjectiveName =  $('#objectiveInput-'+sectionID).val();
                 newObjectiveName = newObjectiveName.replace(/^\s+|\s+$/g, "").replace(/\s+/g, " "); // regex to replace space in middle
                 $('#cat-'+sectionID).html('<a href="#" class="list-group-item" ><i class="glyphicon glyphicon-download"></i>Loading...</a>');
-                $.post("/api/create/objective",{SectionID:sectionID,ObjectiveName:newObjectiveName},function(data){
+                $.post("/api/create/objective",{SectionID:sectionID,ObjectiveName:newObjectiveName,Order:0},function(data){
                     g = $.parseJSON(data);
                     console.log(g.result +":"+ g.reason);
                     //third place to wait
@@ -413,12 +407,12 @@
         };  
 
     //Generalized methods for this madness*********************************************
-    function generalListGroupItem(genID, genName){
+    function generalListGroupItem(genID, genName, order){
             //note: href and collapse id have to have the same value to collapse
         {{if eq .Permission 3}}
             var htmlBlock = '\
                 <div id="'+genID+'" name="'+genName+'">\
-                    <a href="#cat-'+genID+'" class="list-group-item" data-toggle="collapse"><span class="glyphicon glyphicon-chevron-right chevy"></span>'+genName +' \
+                    <a href="#cat-'+genID+'" class="list-group-item" data-toggle="collapse"><span class="glyphicon glyphicon-chevron-right chevy"></span>'+order+'. '+genName +' \
                         <div class="btn-group btn-group-sm pull-right" role="group">\
                             <button id="edit-'+genID+'" class="btn btn-success" data-toggle="modal" data-target="#catEditModal" type="button"><span class="glyphicon glyphicon-pencil"></span></button>\
                             <button id="delete-'+genID+'" class="btn btn-danger " data-toggle="modal" data-target="#catDeleteModal" type="button"><span class="glyphicon glyphicon-remove"></span> </button>\
@@ -432,7 +426,7 @@
         {{else}}
             var htmlBlock = '\
                 <div id="'+genID+'" name="'+genName+'">\
-                    <a href="#cat-'+genID+'" class="list-group-item" data-toggle="collapse"><span class="glyphicon glyphicon-chevron-right chevy"></span>'+genName +' \
+                    <a href="#cat-'+genID+'" class="list-group-item" data-toggle="collapse"><span class="glyphicon glyphicon-chevron-right chevy"></span>'+order+'. '+genName +' \
                     </a>\
                     <div class="collapse books" id="cat-'+genID+'">\
                         <a href="#" class="list-group-item" ><i class="glyphicon glyphicon-download"></i>Loading...</a>\

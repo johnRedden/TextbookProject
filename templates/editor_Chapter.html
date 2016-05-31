@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
+<head>
 {{template "Head"}}
+</head>
 <body>
     {{template "Nav" .}}
 
@@ -35,10 +37,7 @@
         </div>
 
         <input id="JQ-ID" readonly style="display: none;" value="{{.ID}}" />
-<!--
-        <label for="JQ-Results">Results:</label>
-        <input id="JQ-Results" readonly />
--->
+
     </div>
 
     {{template "Footer"}}
@@ -46,41 +45,15 @@
 
 
 <input id="JQ-ID" readonly style="display: none;" value="{{.ID}}" />
-<!--
-<button id="JQ-SubmitButton">Submit</button>
-<label for="JQ-Results">Results:</label>
-<input id="JQ-Results" readonly />
--->
 
 
     <script type="text/javascript">
     $(document).ready(function(){
         var referrer =  document.referrer;
-        // no images
-        var nonstdConfig = {
-                    extraPlugins: 'mathjax',
-                    mathJaxLib: 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML',
-                    removePlugins: 'forms'
-                };
+        var contentEditor = CKEDITOR.replace('JQ-Description',noImagesConfig);
 
-        var contentEditor = CKEDITOR.replace('JQ-Description',nonstdConfig);
-            // code stolen to overried the save event
-              CKEDITOR.plugins.registered['save'] = {
-                  init: function (editor) {
-                     var command = editor.addCommand('save',
-                     {
-                          modes: { wysiwyg: 1, source: 1 },
-                          exec: function (editor) { // Add here custom function for the save button
-                            //alert('You clicked the save button in CKEditor toolbar!');
-                            $('.saveBtn').trigger('click');
-                          }
-                     });
-                     editor.ui.addButton('Save', { label: 'Save', command: 'save' });
-                  }
-              }
 
         $("#JQ-SubmitButton").click(function(){
-            console.log("Save Called!")
             params = {
                 ID: $("#JQ-ID").val(),
                 ChapterName: $("#JQ-Title").val(),
@@ -88,8 +61,7 @@
                 Description:CKEDITOR.instances['JQ-Description'].getData(),
                 Order: $("#JQ-Order").val(),
             }
-            console.log("Posting: ")
-            console.log(params)
+
             $.post("/api/create/chapter",params,function(data){
                 j = $.parseJSON(data);
                 console.log(j.result +":"+ j.reason)
