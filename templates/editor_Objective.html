@@ -116,15 +116,15 @@
             objectiveID = $("#JQ-ObjectiveID").val();
 
             $(".saveBtn").click(function(){
-                sectID = $("#JQ-SectionID").val();
-                console.log(sectID)
+                //get stuff from form
                 ObjeName = $("#JQ-ObjectiveTitle").val()
                 ver = $("#JQ-Version").val()
                 cont = CKEDITOR.instances['JQ-Content'].getData();
                 ktw = CKEDITOR.instances['JQ-KeyTakeaways'].getData();
                 authr = $("#JQ-AuthorInput").val();
+                ordr = $("#JQ-Order").val();
 
-                $.post("/api/create/objective",{SectionID:sectID,ObjectiveName:ObjeName,ID:objectiveID,Version:ver,Content:cont,KeyTakeaways:ktw,Author:authr,Order: $("#JQ-Order").val()},function(data){
+                $.post("/api/create/objective",{ID:objectiveID,ObjectiveName:ObjeName,Version:ver,Content:cont,KeyTakeaways:ktw,Author:authr,Order: ordr},function(data){
                     j = $.parseJSON(data);
                     console.log(j.result +":"+ j.reason)
                     if (j.code == 0){ // reset save button
@@ -133,7 +133,7 @@
                         // say something
                     }
                 });
-                //$.wait(function(){$("#JQ-Results").val("")},3)
+             
             });
 
             $(".previewBtn").click(function(){
@@ -149,7 +149,7 @@
             var keyTakeawaysEditor = CKEDITOR.replace('JQ-KeyTakeaways',stdImageConfig(objectiveID));
 //*********************************************************
 
-            // save button functionality  TODO: IF any input changes toggle!
+            // save button functionality  IF any input changes toggle!
             $('#objectiveInfo input').on('keyup',function(){
                 toggleSaveBtn();
             })
@@ -193,6 +193,7 @@
 
 
     // Exercises Work  ***********************************
+    // using localStorage to help with
             $('#exerciseInput').on('keyup',function(e){
                 if(e.keyCode==13){
                     $('#addExerciseBtn').trigger('click');
@@ -209,7 +210,6 @@
                     $("#exerciseRoot").append(getExerciseHTML(g.object.ID,newInstruction,newQuestion,"",localStorage.nextExerciseNumber));
                 });
 
-               // window.location = '/edit/exercise/'+objectiveID;
             });
             function getExerciseHTML(exerciseID,instruction,question,answer,number){
                 var exerciseHTML ='\
@@ -249,9 +249,9 @@
                     // now we have an array of promises.
                     //when they are ALL done... iterate through and populate the html in order (render mathjax after)
                     $.when.apply(null, promises).always(function(data,status,jqXHR) {
-                        
+                        console.log(jqXHR)
                         $.each( promises, function( key, val ){
-                            //console.log(val);
+                            console.log(val);
                             var xml = val.responseText;
                             var instr = $(xml).find("instruction").html();
                             var question = $(xml).find("question").html();
