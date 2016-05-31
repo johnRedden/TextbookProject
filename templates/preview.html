@@ -19,7 +19,7 @@
     <!-- Latest compiled and minified JavaScript -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 
-    <script type="text/javascript" src="http://rawgit.com/jasonday/printThis/master/printThis.js"></script>
+    <script type="text/javascript" src="/public/js/printThis.js"></script>
 
     <link rel="stylesheet" href="/public/css/ens-contentSystem.css">
 
@@ -83,18 +83,22 @@
             </div>
         </div>
         <hr/>
-        <div class="objective"><strong>Objective:</strong> {{.Title}}</div>
-        
-        <div class="text-justify">{{.Content}}</div>
+        <div class="objective"><strong>Objective:</strong> {{.Title}}
+            <button id="print-objective" class="btn btn-default btn-sm pull-right"><span class="glyphicon glyphicon-print"></span></button>
+        </div>
+        <br/>
+        <div id="objective-content" class="text-justify">{{.Content}}</div>
 
         <hr/>
-        <div class="keytakeaways"><strong>Key Takeaways:</strong></div>
-        <div class="">{{.KeyTakeaways}}</div>
+        <div class="keytakeaways"><strong>Key Takeaways:</strong>
+            <button id="print-keytakeaways" class="btn btn-default btn-sm pull-right"><span class="glyphicon glyphicon-print"></span></button>
+        </div>
+        <div id="keytakeaways">{{.KeyTakeaways}}</div>
         <hr/>
 
         <div class="exercises"><strong>Exercises:</strong>
             <button id="toggle-all" class="btn btn-default btn-sm">Select All</button>
-            <button id="print-selected" class="btn btn-default btn-sm">Print</button>
+            <button id="print-selected" class="btn btn-default btn-sm pull-right"><span class="glyphicon glyphicon-print"></span></button>
         </div>
         <p class="text-center"> </p> 
         <div id="exerciseRoot" class="panel-group" >Exercises go here.</div>
@@ -104,7 +108,7 @@
             <span>Authors: {{.Author}} - </span>
             <span>Version: {{.Version}}</span>
         </div>
-        <div id="printableExercises" class="hidden">Hi</div>
+        <div id="printableDiv" class="hidden"> </div>
         <footer>© eduNetSystems.com</footer>
     </div>
 
@@ -112,8 +116,6 @@
     <script type="text/javascript">
         $(document).on('ready',function(){
             objectiveID = $("#JQ-ObjectiveID").val();
-
-
 
             $('#font-size-small-btn').click(function() {
                 $('body').removeClass("font-size-large");
@@ -142,15 +144,54 @@
                     $(this).html('Select All');
                 }
             });
+            //print functionality
+            $('#print-objective').click(function(){
+                $('#printableDiv').html($('.objective').html());
+                var c = $('#objective-content').html();
+                $('#printableDiv').append(c+'<br/><br/>');
+       
+                $('#printableDiv').printThis({
+                        importCSS: false,      
+                        importStyle: true,    
+                        printContainer: true,     
+                        pageTitle: "ENS Content System",             
+                        removeInline: false,    
+                        printDelay: 150,    
+                        header: null,        
+                        formValues: true      
+                });
+                
+            });
+            $('#print-keytakeaways').click(function(){
+                $('#printableDiv').html($('.objective').html()+'<br/>Key Takeaways:<br/>');
+                var c = $('#keytakeaways').html();
+                $('#printableDiv').append(c+'<br/><br/>');
+       
+                $('#printableDiv').printThis({
+                        importCSS: false,      
+                        importStyle: true,    
+                        printContainer: true,     
+                        pageTitle: "ENS Content System",             
+                        removeInline: false,    
+                        printDelay: 150,    
+                        header: null,        
+                        formValues: true      
+                });
+                
+            });
             $('#print-selected').click(function(){
-                var e = $('#exerciseRoot input[type="checkbox"]:checked');
-                $.each( e, function( key, val ){
+                $('#printableDiv').html($('.objective').html()+'<br/><br/>');
+                var c = $('#exerciseRoot input[type="checkbox"]:checked');
+                $.each( c, function( key, val ){
                     var id = $(val).attr('value');
-                    $('#printableExercises').append('id'+id+'<br/>');
+                    var n = $('#'+id).find('.num').html();
+                    var q = $('#'+id).find('.question').html();
+                    var i = $('#'+id).find('.instr').html();
+                    $('#printableDiv').append('#'+n+' '+i +'<br/>'+q+'<br/><br/>');
 
                     console.log($(val).attr('value'));
                 });
-                $('#printableExercises').printThis({
+                $('#printableDiv').printThis({
                         importCSS: false,      
                         importStyle: true,    
                         printContainer: true,     
@@ -161,7 +202,7 @@
                         formValues: true      
                 });
                 
-            })
+            });
 //exercise Work
             function getExerciseHTML(exerciseID,instruction,question,answer,number){
                 var exerciseHTML ='\
@@ -169,9 +210,9 @@
                         <div class="panel-heading">\
                             <a class="collapsed" data-toggle="collapse" data-target="#ex-'+exerciseID+'" href="#collapse1"></a>\
                             <span class="pull-right ans">Answer &nbsp</span>\
-                            <strong>'+number+'. '+instruction+'</strong><br/> \
+                            <strong><span class="num">'+number+'.</span> <span class="instr">'+instruction+'</span></strong><br/> \
                             <span class="checkbox">\
-                                <label> <input type="checkbox" value="'+exerciseID+'"/>'+question+'</label>\
+                                <label> <input type="checkbox" value="'+exerciseID+'"/><span class="question"'+question+'</span></label>\
                             </span>\
                         </div>\
                         <div id="ex-'+exerciseID+'" class="panel-collapse collapse">\

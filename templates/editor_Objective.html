@@ -249,9 +249,9 @@
                     // now we have an array of promises.
                     //when they are ALL done... iterate through and populate the html in order (render mathjax after)
                     $.when.apply(null, promises).always(function(data,status,jqXHR) {
-                        console.log(jqXHR)
+                        //console.log(jqXHR)
                         $.each( promises, function( key, val ){
-                            console.log(val);
+                            //console.log(val);
                             var xml = val.responseText;
                             var instr = $(xml).find("instruction").html();
                             var question = $(xml).find("question").html();
