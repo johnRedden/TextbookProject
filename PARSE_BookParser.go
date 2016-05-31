@@ -227,6 +227,10 @@ S22:
 		commandsRan.add(fmt.Sprint("   : Chapter.Version=", data))
 		pChapter.Version, _ = strconv.ParseFloat(data, 64)
 		goto S22
+	case `<div chapter-order="">`:
+		commandsRan.add(fmt.Sprint("   : Chapter.Order=", data))
+		pChapter.Order, _ = strconv.Atoi(data)
+		goto S22
 	case `<div chapter-description="">`:
 		commandsRan.add(fmt.Sprint("   : Chapter.Description=", data))
 		pChapter.Description = template.HTML(data)
@@ -271,6 +275,10 @@ S42:
 	case `<div section-version="">`:
 		commandsRan.add(fmt.Sprint("   : Section.Version=", data))
 		pSection.Version, _ = strconv.ParseFloat(data, 64)
+		goto S42
+	case `<div section-order="">`:
+		commandsRan.add(fmt.Sprint("   : Section.Order=", data))
+		pSection.Order, _ = strconv.Atoi(data)
 		goto S42
 	case `<div section-description="">`:
 		commandsRan.add(fmt.Sprint("   : Section.Description=", data))
@@ -320,6 +328,10 @@ S62:
 	case `<div objective-version="">`:
 		commandsRan.add(fmt.Sprint("   : Objective.Version=", data))
 		pObjective.Version, _ = strconv.ParseFloat(data, 64)
+		goto S62
+	case `<div objective-order="">`:
+		commandsRan.add(fmt.Sprint("   : Objective.Order=", data))
+		pObjective.Order, _ = strconv.Atoi(data)
 		goto S62
 	case `<div objective-author="">`:
 		commandsRan.add(fmt.Sprint("   : Objective.Author=", data))
@@ -377,6 +389,10 @@ S82:
 	case `<div exercise-instruction="">`:
 		commandsRan.add(fmt.Sprint("   : Exercise.Instruction=", data))
 		pExercise.Instruction = data
+		goto S82
+	case `<div exercise-order="">`:
+		commandsRan.add(fmt.Sprint("   : Exercise.Order=", data))
+		pExercise.Order, _ = strconv.Atoi(data)
 		goto S82
 	case `<div exercise-question="">`:
 		commandsRan.add(fmt.Sprint("   : Exercise.Question=", data))
@@ -520,6 +536,7 @@ func (c Chapter) sanitize() Chapter {
 	return Chapter{
 		Title:       strings.Replace(c.Title, "\n", "", -1),
 		Version:     c.Version,
+		Order:       c.Order,
 		Description: template.HTML(strings.Replace(string(c.Description), "\n", "", -1)),
 		Parent:      c.Parent,
 		ID:          c.ID,
@@ -530,6 +547,7 @@ func (s Section) sanitize() Section {
 	return Section{
 		Title:       strings.Replace(s.Title, "\n", "", -1),
 		Version:     s.Version,
+		Order:       s.Order,
 		Description: template.HTML(strings.Replace(string(s.Description), "\n", "", -1)),
 		Parent:      s.Parent,
 		ID:          s.ID,
@@ -540,6 +558,7 @@ func (o Objective) sanitize() Objective {
 	return Objective{
 		Title:        strings.Replace(o.Title, "\n", "", -1),
 		Version:      o.Version,
+		Order:        o.Order,
 		Author:       strings.Replace(o.Author, "\n", "", -1),
 		Content:      template.HTML(strings.Replace(string(o.Content), "\n", "", -1)),
 		KeyTakeaways: template.HTML(strings.Replace(string(o.KeyTakeaways), "\n", "", -1)),
@@ -551,6 +570,7 @@ func (o Objective) sanitize() Objective {
 func (e Exercise) sanitize() Exercise {
 	return Exercise{
 		Instruction: strings.Replace(e.Instruction, "\n", "", -1),
+		Order:       e.Order,
 		Question:    template.HTML(strings.Replace(string(e.Question), "\n", "", -1)),
 		Solution:    template.HTML(strings.Replace(string(e.Solution), "\n", "", -1)),
 		Parent:      e.Parent,

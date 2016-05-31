@@ -19,6 +19,7 @@
 <i chapter=""></i>
 <div chapter-title="">{{.Title}}</div>
 <div chapter-version="">{{.Version}}</div>
+<div chapter-order="">{{.Order}}</div>
 <div chapter-description="">{{.Description}}</div>
 {{range .Sections}}{{template "SectionInformation" .}}{{end}}{{end}}
 
@@ -26,6 +27,7 @@
 <i section=""></i>
 <div section-title="">{{.Title}}</div>
 <div section-version="">{{.Version}}</div>
+<div section-order="">{{.Order}}</div>
 <div section-description="">{{.Description}}</div>
 {{range .Objectives}}{{template "ObjectiveInformation" .}}{{end}}{{end}}
 
@@ -33,6 +35,7 @@
 <i objective=""></i>
 <div objective-title="">{{.Title}}</div>
 <div objective-version="">{{.Version}}</div>
+<div objective-order="">{{.Order}}</div>
 <div objective-author="">{{.Author}}</div>
 <div objective-content="">{{.Content}}</div>
 <div objective-keyTakeaways="">{{.KeyTakeaways}}</div>
@@ -41,6 +44,7 @@
 {{define "ExerciseInformation"}}
 <i exercise=""></i>
 <div exercise-instruction="">{{.Instruction}}</div>
+<div exercise-order="">{{.Order}}</div>
 <div exercise-question="">{{.Question}}</div>
 <div exercise-solution="">{{.Solution}}</div>
 {{end}}
