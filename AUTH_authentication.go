@@ -132,7 +132,7 @@ func AUTH_Register_GET(res http.ResponseWriter, req *http.Request, params httpro
 		http.Redirect(res, req, GetLoginURL(ctx, "/register?redirect="+req.FormValue("redirect")), http.StatusTemporaryRedirect)
 		return
 	}
-	ServeTemplateWithParams(res, req, "registerUser.html", strings.ToLower(u.Email))
+	ServeTemplateWithParams(res, "registerUser.html", strings.ToLower(u.Email))
 }
 
 // Call: /register

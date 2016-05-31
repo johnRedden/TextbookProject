@@ -1,10 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"github.com/julienschmidt/httprouter"
-	"golang.org/x/net/context"
 	"google.golang.org/appengine"
-	"google.golang.org/appengine/log"
 	"html/template"
 	"net/http"
 )
@@ -16,6 +15,7 @@ var pages *template.Template
 func init() {
 	r := httprouter.New()
 	http.Handle("/", r)
+	r.PanicHandler = HandlePanic
 
 	//// ---------------------------------------------------------- //
 	// Handlers
@@ -157,7 +157,7 @@ func init() {
 // Optional Options:
 func home(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	pu, _ := GetPermissionUserFromSession(appengine.NewContext(req))
-	ServeTemplateWithParams(res, req, "index.html", pu)
+	ServeTemplateWithParams(res, "index.html", pu)
 }
 
 // Call: /about
@@ -170,7 +170,7 @@ func home(res http.ResponseWriter, req *http.Request, params httprouter.Params) 
 // Optional Options:
 func getAboutPage(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	pu, _ := GetPermissionUserFromSession(appengine.NewContext(req))
-	ServeTemplateWithParams(res, req, "about.html", pu)
+	ServeTemplateWithParams(res, "about.html", pu)
 }
 
 // Call: /toc.html/:ID
@@ -200,7 +200,7 @@ func getSimpleTOC(res http.ResponseWriter, req *http.Request, params httprouter.
 		params.ByName("ID"),
 	}
 
-	ServeTemplateWithParams(res, req, "toc.html", screenOutput)
+	ServeTemplateWithParams(res, "toc.html", screenOutput)
 }
 
 // Call: /catalogs
@@ -213,7 +213,7 @@ func getSimpleTOC(res http.ResponseWriter, req *http.Request, params httprouter.
 // Optional Options:
 func getCatalogsPage(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	pu, _ := GetPermissionUserFromSession(appengine.NewContext(req))
-	ServeTemplateWithParams(res, req, "catalogs.html", pu)
+	ServeTemplateWithParams(res, "catalogs.html", pu)
 }
 
 // Call: /select
@@ -226,7 +226,7 @@ func getCatalogsPage(res http.ResponseWriter, req *http.Request, params httprout
 // Mandatory Options:
 // Optional Options:
 func selectBookFromForm(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	ServeTemplateWithParams(res, req, "simpleSelector.html", nil)
+	ServeTemplateWithParams(res, "simpleSelector.html", nil)
 }
 
 // Call: /favicon
@@ -246,50 +246,15 @@ func favIcon(res http.ResponseWriter, req *http.Request, params httprouter.Param
 /////
 
 // Internal Function
-// generic error handling for any error we encounter.
-func HandleError(res http.ResponseWriter, e error) {
-	if e != nil {
-		http.Error(res, e.Error(), http.StatusInternalServerError)
-	}
-}
-
-// Internal Function
-// generic error handling for any error we encounter plus a message we've defined.
-// This sends a log out to appengine.
-func HandleErrorWithLog(res http.ResponseWriter, e error, tag string, ctx context.Context) {
-	if e != nil {
-		log.Criticalf(ctx, "%s: %v", tag, e)
-		http.Error(res, e.Error(), http.StatusInternalServerError)
-	}
-}
-
-var (
-	errorMessages = map[int]string{
-		400: "Expected information missing. Ensure that all form information has values.",
-		401: "You must login to complete this action.",
-		406: "Incoming information invalid. Please try again.",
-		500: "Internal Server Error. Try again in 30 seconds. If issue persists, please report bug.",
-	}
-)
-
-func HandleErrorIntoPage(res http.ResponseWriter, req *http.Request, e error, action string) bool {
-	if e != nil {
-		screenOutput := struct {
-			Recommend template.HTML
-			MoreInfo  string
-		}{
-			template.HTML(action),
-			e.Error(),
-		}
-		ServeTemplateWithParams(res, req, "error.gohtml", screenOutput)
-		return true
-	}
-	return false
-}
-
-// Internal Function
 // Passes along any information to templates and then executes them.
-func ServeTemplateWithParams(res http.ResponseWriter, req *http.Request, templateName string, params interface{}) {
+func ServeTemplateWithParams(res http.ResponseWriter, templateName string, params interface{}) {
 	err := pages.ExecuteTemplate(res, templateName, &params)
 	HandleError(res, err)
+}
+
+func HandlePanic(res http.ResponseWriter, req *http.Request, param interface{}) {
+	fmt.Fprint(res, `<html><plaintext>`)
+	fmt.Fprintln(res, "A Panic has occured on page: ", req.URL.String())
+	fmt.Fprintln(res, "This is all we know:\n", param)
+	fmt.Fprintln(res, "~~EOF")
 }

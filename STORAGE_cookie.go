@@ -19,6 +19,7 @@ func ToCookie(res http.ResponseWriter, key string, value string, expiration time
 	cookie := &http.Cookie{
 		Name:   key,
 		Value:  value,
+		Path:   "/",
 		MaxAge: int(expiration.Seconds()),
 	}
 	http.SetCookie(res, cookie)
@@ -59,11 +60,10 @@ func UpdateCookie(res http.ResponseWriter, req *http.Request, key string, expira
 // Description:
 // This function will delete key from response:Cookie
 func DeleteCookie(res http.ResponseWriter, key string) {
-	cookie := &http.Cookie{
-		Name:    key,
-		Value:   "",
-		MaxAge:  int(0),
-		Expires: time.Now(),
-	}
-	http.SetCookie(res, cookie)
+	http.SetCookie(res, &http.Cookie{
+		Name:   key,
+		Value:  "",
+		MaxAge: -1,
+		Path:   "/",
+	})
 }

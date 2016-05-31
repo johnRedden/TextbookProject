@@ -50,7 +50,7 @@ func IMAGE_PostUploadForm(res http.ResponseWriter, req *http.Request, params htt
 	}
 	// ACTION: Give the user an internal permissions key?
 
-	ServeTemplateWithParams(res, req, "simpleImageUploader.html", req.FormValue("oid"))
+	ServeTemplateWithParams(res, "simpleImageUploader.html", req.FormValue("oid"))
 }
 
 // Call: /image/browser
@@ -91,7 +91,7 @@ func IMAGE_BrowserForm(res http.ResponseWriter, req *http.Request, params httpro
 		req.FormValue("oid"),
 	}
 
-	ServeTemplateWithParams(res, req, "simpleImageBrowser.html", imageBrowser)
+	ServeTemplateWithParams(res, "simpleImageBrowser.html", imageBrowser)
 }
 
 // ------------------------------------

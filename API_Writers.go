@@ -24,7 +24,6 @@ API_Writers.go by Allen J. Mills
 import (
 	"fmt"
 	"github.com/julienschmidt/httprouter"
-	"google.golang.org/appengine"
 	"html/template"
 	"net/http"
 	"strconv"
@@ -283,8 +282,6 @@ func API_MakeSection(res http.ResponseWriter, req *http.Request, params httprout
 // Optional Options: Version, Content, KeyTakeaways, Author
 // Codes: See Above.
 func API_MakeObjective(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	ctx := appengine.NewContext(req)
-
 	if validPerm, permErr := HasPermission(res, req, api_Make_Permission); !validPerm {
 		// User Must be at least Writer.
 		fmt.Fprint(res, `{"result":"failure","reason":"Invalid Authorization: `+permErr.Error()+`","code":418}`)
@@ -294,7 +291,7 @@ func API_MakeObjective(res http.ResponseWriter, req *http.Request, params httpro
 	ObjectiveID, _ := strconv.Atoi(req.FormValue("ID"))
 
 	objectiveForDatastore, getErr := GetObjectiveFromDatastore(req, int64(ObjectiveID))
-	HandleErrorWithLog(res, getErr, "api/makeObjective Error: (GET) ", ctx)
+	HandleError(res, getErr)
 
 	sectionID, numErr2 := strconv.Atoi(req.FormValue("SectionID"))
 	if numErr2 == nil { // if you're giving me a section, we're good
@@ -335,7 +332,7 @@ func API_MakeObjective(res http.ResponseWriter, req *http.Request, params httpro
 	}
 
 	rk, putErr := PutObjectiveIntoDatastore(req, objectiveForDatastore)
-	HandleErrorWithLog(res, putErr, "api/makeObjective Error: (PUT) ", ctx)
+	HandleError(res, putErr)
 
 	fmt.Fprint(res, `{"result":"success","reason":"","code":0,"object":{"Title":"`, objectiveForDatastore.Title, `","ID":"`, rk.IntID(), `"}}`)
 }

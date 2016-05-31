@@ -33,7 +33,7 @@ func ADMIN_AdministrationConsole(res http.ResponseWriter, req *http.Request, par
 	ctx := appengine.NewContext(req)
 	pu, _ := GetPermissionUserFromSession(ctx)
 
-	ServeTemplateWithParams(res, req, "adminConsole.html", pu.Name)
+	ServeTemplateWithParams(res, "adminConsole.html", pu.Name)
 }
 
 // Call: /admin/changeUsrPerm

@@ -1,90 +1,157 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Error</title>
-<script type="text/javascript">
-    function clickswap(e) {
-        a = document.querySelector("#" + e);
-        b = document.querySelector("#" + e + " + div");
-        if (b.getAttribute("hide") == "yes") {
-            b.setAttribute("hide", "no");
-            a.setAttribute("selected", "yes");
-        } else {
-            b.setAttribute("hide", "yes");
-            a.setAttribute("selected", "no");
-        }
-    }
-    console.log(window.location.pathname)
-</script>
+    <meta charset="UTF-8">
+    <title>Uh Oh! An Error has occured.</title>
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.2/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.rawgit.com/daneden/animate.css/master/animate.min.css">
+
 <style type="text/css">
     * {
-        box-sizing: border-box;
+      box-sizing: border-box
     }
-    div[hide="yes"] {
+    body,
+    html {
+      margin: 0;
+      padding: 0
+    }
+    body {
+      background-color: #007A89;
+      color: #fff;
+      font-size: 2em
+    }
+    div.Bar,
+    nav.Bar {
+      width: 100%;
+      padding-left: 1vw;
+      padding-right: 1vw;
+    }
+    div.Space {
+      margin-top: 2vh;
+      margin-bottom: 2vh
+    }
+    div.Bar div.Primary,
+    nav.Bar div.Primary {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      padding-bottom: 0;
+      padding-top: 0
+    }
+    div.Primary h1 {
+      padding-top: 0;
+      padding-bottom: 0;
+      padding-left: 2vw;
+      margin: 0
+    }
+    div.Description {
+      padding-top: 1vh;
+      padding-left: 4vw;
+      padding-bottom: 2vh;
+      font-size: .9em
+    }
+    nav ul {
+      margin: 0;
+      padding-left: 0;
+      padding-top: .25vh;
+      padding-bottom: .25vh;
+      height: 100%;
+      list-style: none;
+      display: flex;
+      align-items: flex-start
+    }
+    nav ul.spaced {
+      justify-content: space-between
+    }
+    nav ul.centered {
+      justify-content: center
+    }
+    nav ul li {
+      font-size: .9em;
+      padding-left: 3px;
+      padding-right: 3px
+    }
+    li a {
+      text-decoration: unset;
+      color: inherit;
+      transition: background-color .5s;
+      border-radius: 2px;
+      padding: 2px
+    }
+    li a:hover {
+      background-color: rgba(255, 255, 255, 0.3)
+    }
+    .Skew {
+      -ms-transform: skewX(5deg);
+      -webkit-transform: skewX(5deg);
+      transform: skewX(5deg)
+    }
+    .hinge {
+      animation-fill-mode: none;
+      animation-delay: 1s
+    }
+    .Dark {
+      background-color: #000;
+      color: #fff
+    }
+    .Light {
+      background-color: rgba(255, 255, 255, 0.8);
+      color: #FF4933
+    }
+    #PopoutError+div.Popout {
         display: none;
     }
-    button {
-        border-radius: 4px;
-        border: none;
-        background-color: darkgray;
-        text-align: center;
+    #PopoutError:focus+div.Popout {
         display: block;
+        position: fixed;
+        left: 2vw;
+        right: 2vw;
+        bottom: 0px;
+        padding-top: 5vh;
+        padding-bottom: 5vh;
+        padding-left: 2vw;
+        background-color: rgba(0,0,0,0.8);
         color: white;
-        margin: 10px;
-        margin-left: 0px;
-        width: 100%;
-    }
-    button[selected="yes"] {
-        background-color: gray;
-        color: white;
-    }
-    a {
-        text-decoration: none;
-        border-radius: 4px;
-        background-color: darkgray;
-        display: block;
-        margin-top: 10px;
-        color: white;
-        text-align: center;
-    }
-    nav {
-        position: relative;
-        width: 50vw;
-    }
-    #Rec {
-        position: relative;
-        width: 100vw;
-        border-bottom: 2px dashed black;
-        font-size: 1.3em;
-    }
-    #ErrDisc {
-        color: gray;
-        font-size: 0.8em;
+        border: 2px solid red;
     }
 </style>
+<script type="text/javascript">
+    function backButton() {
+        window.history.back();
+    }
+</script>
 </head>
 <body>
 
-<h1>Uh Oh!</h1>
-<h3>It looks like something went wrong.</h3>
-<div id="Rec"><p style="text-decoration: underline;">Recommended Action:</p><p>
-    {{.Recommend}}
-</p></div>
-<nav>
-<a href="/">Go Home</a>
-<a href="/login">Login and Return</a>
-<a href="https://github.com/johnRedden/TextbookProject/issues/new?title=[Bug Report] Please add a descriptive title&body=Describe where the bug occurred and copy the text that shows when 'More Information' is clicked.">Github Bug Reporting</a>
-<button id="MInfo" onclick="clickswap(`MInfo`)">More Information</button>
-<div id="ErrDisc" hide="yes"><p>
-    {{.MoreInfo}}
-</p>
-</div>
-</nav>
+  <div class="Bar Dark Space">
+    <div class="Primary animated fadeInRight">
+      <i class="animated pulse infinite fa fa-exclamation-circle fa-2x"></i>
+      <h1 class="Skew animated hinge">Uh Oh!</h1>
+    </div>
+  </div>
 
-<!-- Expects Struct
-    Recommend string
-    MoreInfo string
- -->
-
+  <div class="Bar Light">
+    <div class="Description">You are seeing this error message because:
+      <br>{{.Title}}</div>
+  </div>
+  <nav class="Bar Nav Dark">
+    <ul class="spaced">
+      <ul class="centered">
+        <li><a href="/"><i class="fa fa-home"></i> Home</a></li>
+        <li><a href="#" onclick="backButton()"><i class="fa fa-arrow-circle-left"></i> Back</a></li>
+        <li><a href="https://github.com/johnRedden/TextbookProject/issues/new?title=[Bug Report]{{.Title}}&body={{.Details}}" target="_blank"><i class="fa fa-bug"></i> Report Bug</a></li>
+      </ul>
+      <ul class="centered">
+        <li>
+            <a id="PopoutError" href="#" title="More Information"><i class="fa fa-info"></i></a>
+            <div class="Popout">
+                <h3>Detailed Failure Information:</h3>
+                <p>{{.Details}}</p>
+            </div>
+        </li>
+        <li style="display:none;"><a class="" href="#playGame" title="Play Game"><i class="fa fa-user-secret"></i></a></li>
+      </ul>
+    </ul>
+  </nav>
 </body>
 </html>

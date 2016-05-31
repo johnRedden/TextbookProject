@@ -517,7 +517,7 @@ func exportBookToScreen(res http.ResponseWriter, req *http.Request, params httpr
 		}
 	}
 
-	ServeTemplateWithParams(res, req, "BookExport.gohtml", complexOutput)
+	ServeTemplateWithParams(res, "BookExport.gohtml", complexOutput)
 }
 
 func (b Book) sanitize() Book {

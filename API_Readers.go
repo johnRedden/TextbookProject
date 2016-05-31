@@ -55,7 +55,7 @@ func API_GetCatalogs(res http.ResponseWriter, req *http.Request, params httprout
 		x.ID = k.IntID()
 		cataloglist = append(cataloglist, x)
 	}
-	ServeTemplateWithParams(res, req, "Catalogs.json", cataloglist)
+	ServeTemplateWithParams(res, "Catalogs.json", cataloglist)
 }
 
 // Call: /api/books.json
@@ -92,7 +92,7 @@ func API_GetBooks(res http.ResponseWriter, req *http.Request, params httprouter.
 		x.ID = k.IntID()
 		booklist = append(booklist, x)
 	}
-	ServeTemplateWithParams(res, req, "Books.json", booklist)
+	ServeTemplateWithParams(res, "Books.json", booklist)
 }
 
 // Call: /api/chapters.json
@@ -132,7 +132,7 @@ func API_GetChapters(res http.ResponseWriter, req *http.Request, params httprout
 		chapterList = append(chapterList, x)
 	}
 
-	ServeTemplateWithParams(res, req, "Chapters.json", chapterList)
+	ServeTemplateWithParams(res, "Chapters.json", chapterList)
 }
 
 // Call: /api/sections.json
@@ -171,7 +171,7 @@ func API_GetSections(res http.ResponseWriter, req *http.Request, params httprout
 		sectionList = append(sectionList, x)
 	}
 
-	ServeTemplateWithParams(res, req, "Sections.json", sectionList)
+	ServeTemplateWithParams(res, "Sections.json", sectionList)
 }
 
 // Call: /api/sections.json
@@ -210,7 +210,7 @@ func API_GetObjectives(res http.ResponseWriter, req *http.Request, params httpro
 		objectiveList = append(objectiveList, x)
 	}
 
-	ServeTemplateWithParams(res, req, "Objectives.json", objectiveList)
+	ServeTemplateWithParams(res, "Objectives.json", objectiveList)
 }
 
 // Call: /api/exercises.json
@@ -253,7 +253,7 @@ func API_GetExercises(res http.ResponseWriter, req *http.Request, params httprou
 		x.ID = k.IntID()
 		exerciselist = append(exerciselist, x)
 	}
-	ServeTemplateWithParams(res, req, "Exercises.json", exerciselist)
+	ServeTemplateWithParams(res, "Exercises.json", exerciselist)
 }
 
 // Call: /api/toc.xml
@@ -492,7 +492,7 @@ func API_GetObjectiveHTML(res http.ResponseWriter, req *http.Request, params htt
 		return
 	}
 
-	ServeTemplateWithParams(res, req, "ObjectiveHTML.html", objectiveToScreen)
+	ServeTemplateWithParams(res, "ObjectiveHTML.html", objectiveToScreen)
 }
 
 // Call: /api/exercise.xml

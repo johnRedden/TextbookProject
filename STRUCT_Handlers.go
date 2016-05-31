@@ -13,8 +13,6 @@ import (
 	"google.golang.org/appengine"
 	"net/http"
 	"strconv"
-	// "strings"
-	// "html/template"
 )
 
 // ------------------------------------
@@ -31,23 +29,23 @@ import (
 func getCatalogEditor(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	if validPerm, permErr := HasPermission(res, req, WritePermissions); !validPerm {
 		// User Must be at least Writer.
-		HandleErrorIntoPage(res, req, permErr, errorMessages[http.StatusUnauthorized])
+		ErrorPage(res, "Invalid Permission", permErr)
 		return
 	}
 
 	editID := params.ByName("ID")
 	i, parseErr := strconv.Atoi(editID)
-	if HandleErrorIntoPage(res, req, parseErr, "Invalid ID Given: Please ensure that the url is correct.") {
+	if ErrorPage(res, "Invalid ID Given: Please ensure that the url is correct.", parseErr) {
 		return
 	}
 
 	if i == 0 {
-		HandleErrorIntoPage(res, req, errors.New("Invalid ID Given: Incoming parameter ID is a zero value."), "ID cannot be 0. Please ensure that the url is correct.")
+		ErrorPage(res, "ID cannot be 0. Please ensure that the url is correct.", errors.New("Invalid ID Given: Incoming parameter ID is a zero value."))
 		return
 	}
 
 	itemToScreen, getErr := GetCatalogFromDatastore(req, int64(i))
-	if HandleErrorIntoPage(res, req, getErr, errorMessages[500]) {
+	if ErrorPage(res, "Internal Services Error", getErr) {
 		return
 	}
 
@@ -65,7 +63,7 @@ func getCatalogEditor(res http.ResponseWriter, req *http.Request, params httprou
 		itemToScreen,
 	}
 
-	ServeTemplateWithParams(res, req, "editor_Catalog.html", screenOutput)
+	ServeTemplateWithParams(res, "editor_Catalog.html", screenOutput)
 }
 
 // Call: /edit/Book/:ID
@@ -78,23 +76,23 @@ func getCatalogEditor(res http.ResponseWriter, req *http.Request, params httprou
 func getBookEditor(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	if validPerm, permErr := HasPermission(res, req, WritePermissions); !validPerm {
 		// User Must be at least Writer.
-		HandleErrorIntoPage(res, req, permErr, errorMessages[http.StatusUnauthorized])
+		ErrorPage(res, "Invalid Permission", permErr)
 		return
 	}
 
 	editID := params.ByName("ID")
 	i, parseErr := strconv.Atoi(editID)
-	if HandleErrorIntoPage(res, req, parseErr, "Invalid ID Given: Please ensure that the url is correct.") {
+	if ErrorPage(res, "Invalid ID Given: Please ensure that the url is correct.", parseErr) {
 		return
 	}
 
 	if i == 0 {
-		HandleErrorIntoPage(res, req, errors.New("Invalid ID Given: Incoming parameter ID is a zero value."), "ID cannot be 0. Please ensure that the url is correct.")
+		ErrorPage(res, "ID cannot be 0. Please ensure that the url is correct.", errors.New("Invalid ID Given: Incoming parameter ID is a zero value."))
 		return
 	}
 
 	itemToScreen, getErr := GetBookFromDatastore(req, int64(i))
-	if HandleErrorIntoPage(res, req, getErr, errorMessages[500]) {
+	if ErrorPage(res, "Internal Services Error", getErr) {
 		return
 	}
 
@@ -112,7 +110,7 @@ func getBookEditor(res http.ResponseWriter, req *http.Request, params httprouter
 		itemToScreen,
 	}
 
-	ServeTemplateWithParams(res, req, "editor_Book.html", screenOutput)
+	ServeTemplateWithParams(res, "editor_Book.html", screenOutput)
 }
 
 // Call: /edit/Chapter/:ID
@@ -125,23 +123,23 @@ func getBookEditor(res http.ResponseWriter, req *http.Request, params httprouter
 func getChapterEditor(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	if validPerm, permErr := HasPermission(res, req, WritePermissions); !validPerm {
 		// User Must be at least Writer.
-		HandleErrorIntoPage(res, req, permErr, errorMessages[http.StatusUnauthorized])
+		ErrorPage(res, "Invalid Permission", permErr)
 		return
 	}
 
 	editID := params.ByName("ID")
 	i, parseErr := strconv.Atoi(editID)
-	if HandleErrorIntoPage(res, req, parseErr, "Invalid ID Given: Please ensure that the url is correct.") {
+	if ErrorPage(res, "Invalid ID Given: Please ensure that the url is correct.", parseErr) {
 		return
 	}
 
 	if i == 0 {
-		HandleErrorIntoPage(res, req, errors.New("Invalid ID Given: Incoming parameter ID is a zero value."), "ID cannot be 0. Please ensure that the url is correct.")
+		ErrorPage(res, "ID cannot be 0. Please ensure that the url is correct.", errors.New("Invalid ID Given: Incoming parameter ID is a zero value."))
 		return
 	}
 
 	itemToScreen, getErr := GetChapterFromDatastore(req, int64(i))
-	if HandleErrorIntoPage(res, req, getErr, errorMessages[500]) {
+	if ErrorPage(res, "Internal Services Error", getErr) {
 		return
 	}
 
@@ -159,7 +157,7 @@ func getChapterEditor(res http.ResponseWriter, req *http.Request, params httprou
 		itemToScreen,
 	}
 
-	ServeTemplateWithParams(res, req, "editor_Chapter.html", screenOutput)
+	ServeTemplateWithParams(res, "editor_Chapter.html", screenOutput)
 }
 
 // Call: /edit/Section/:ID
@@ -172,23 +170,23 @@ func getChapterEditor(res http.ResponseWriter, req *http.Request, params httprou
 func getSectionEditor(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	if validPerm, permErr := HasPermission(res, req, WritePermissions); !validPerm {
 		// User Must be at least Writer.
-		HandleErrorIntoPage(res, req, permErr, errorMessages[http.StatusUnauthorized])
+		ErrorPage(res, "Invalid Permission", permErr)
 		return
 	}
 
 	editID := params.ByName("ID")
 	i, parseErr := strconv.Atoi(editID)
-	if HandleErrorIntoPage(res, req, parseErr, "Invalid ID Given: Please ensure that the url is correct.") {
+	if ErrorPage(res, "Invalid ID Given: Please ensure that the url is correct.", parseErr) {
 		return
 	}
 
 	if i == 0 {
-		HandleErrorIntoPage(res, req, errors.New("Invalid ID Given: Incoming parameter ID is a zero value."), "ID cannot be 0. Please ensure that the url is correct.")
+		ErrorPage(res, "ID cannot be 0. Please ensure that the url is correct.", errors.New("Invalid ID Given: Incoming parameter ID is a zero value."))
 		return
 	}
 
 	itemToScreen, getErr := GetSectionFromDatastore(req, int64(i))
-	if HandleErrorIntoPage(res, req, getErr, errorMessages[500]) {
+	if ErrorPage(res, "Internal Services Error", getErr) {
 		return
 	}
 
@@ -206,7 +204,7 @@ func getSectionEditor(res http.ResponseWriter, req *http.Request, params httprou
 		itemToScreen,
 	}
 
-	ServeTemplateWithParams(res, req, "editor_Section.html", screenOutput)
+	ServeTemplateWithParams(res, "editor_Section.html", screenOutput)
 }
 
 // Call: /edit/objective/:ID
@@ -221,23 +219,23 @@ func getSectionEditor(res http.ResponseWriter, req *http.Request, params httprou
 func getSimpleObjectiveEditor(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	if validPerm, permErr := HasPermission(res, req, WritePermissions); !validPerm {
 		// User Must be at least Writer.
-		HandleErrorIntoPage(res, req, permErr, errorMessages[http.StatusUnauthorized])
+		ErrorPage(res, "Invalid Permission", permErr)
 		return
 	}
 
 	editID := params.ByName("ID")
 	i, parseErr := strconv.Atoi(editID)
-	if HandleErrorIntoPage(res, req, parseErr, "Invalid ID Given: Please ensure that the url is correct.") {
+	if ErrorPage(res, "Invalid ID Given: Please ensure that the url is correct.", parseErr) {
 		return
 	}
 
 	if i == 0 {
-		HandleErrorIntoPage(res, req, errors.New("Invalid ID Given: Incoming parameter ID is a zero value."), "ID cannot be 0. Please ensure that the url is correct.")
+		ErrorPage(res, "ID cannot be 0. Please ensure that the url is correct.", errors.New("Invalid ID Given: Incoming parameter ID is a zero value."))
 		return
 	}
 
 	itemToScreen, getErr := GetObjectiveFromDatastore(req, int64(i))
-	if HandleErrorIntoPage(res, req, getErr, errorMessages[500]) {
+	if ErrorPage(res, "Internal Services Error", getErr) {
 		return
 	}
 
@@ -255,7 +253,7 @@ func getSimpleObjectiveEditor(res http.ResponseWriter, req *http.Request, params
 		itemToScreen,
 	}
 
-	ServeTemplateWithParams(res, req, "editor_Objective.html", screenOutput)
+	ServeTemplateWithParams(res, "editor_Objective.html", screenOutput)
 }
 
 // Call: /edit/Exercise/:ID
@@ -268,23 +266,23 @@ func getSimpleObjectiveEditor(res http.ResponseWriter, req *http.Request, params
 func getExerciseEditor(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	if validPerm, permErr := HasPermission(res, req, WritePermissions); !validPerm {
 		// User Must be at least Writer.
-		HandleErrorIntoPage(res, req, permErr, errorMessages[http.StatusUnauthorized])
+		ErrorPage(res, "Invalid Permission", permErr)
 		return
 	}
 
 	editID := params.ByName("ID")
 	i, parseErr := strconv.Atoi(editID)
-	if HandleErrorIntoPage(res, req, parseErr, "Invalid ID Given: Please ensure that the url is correct.") {
+	if ErrorPage(res, "Invalid ID Given: Please ensure that the url is correct.", parseErr) {
 		return
 	}
 
 	if i == 0 {
-		HandleErrorIntoPage(res, req, errors.New("Invalid ID Given: Incoming parameter ID is a zero value."), "ID cannot be 0. Please ensure that the url is correct.")
+		ErrorPage(res, "ID cannot be 0. Please ensure that the url is correct.", errors.New("Invalid ID Given: Incoming parameter ID is a zero value."))
 		return
 	}
 
 	itemToScreen, getErr := GetExerciseFromDatastore(req, int64(i))
-	if HandleErrorIntoPage(res, req, getErr, errorMessages[500]) {
+	if ErrorPage(res, "Internal Services Error", getErr) {
 		return
 	}
 
@@ -302,7 +300,7 @@ func getExerciseEditor(res http.ResponseWriter, req *http.Request, params httpro
 		itemToScreen,
 	}
 
-	ServeTemplateWithParams(res, req, "editor_exercise.html", screenOutput)
+	ServeTemplateWithParams(res, "editor_exercise.html", screenOutput)
 }
 
 // ------------------------------------
@@ -321,7 +319,7 @@ func getExerciseEditor(res http.ResponseWriter, req *http.Request, params httpro
 // Optional Options:
 func getSimpleObjectiveReader(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	readID := params.ByName("ID")
-	ServeTemplateWithParams(res, req, "simpleReader.html", readID)
+	ServeTemplateWithParams(res, "simpleReader.html", readID)
 }
 
 // Call: /read/exercise/:ID
@@ -336,20 +334,20 @@ func getSimpleObjectiveReader(res http.ResponseWriter, req *http.Request, params
 // Optional Options:
 func getSimpleExerciseReader(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	i, parseErr := strconv.Atoi(params.ByName("ID"))
-	if HandleErrorIntoPage(res, req, parseErr, "Invalid ID Given: Please ensure that the url is correct.") {
+	if ErrorPage(res, "Invalid ID Given: Please ensure that the url is correct.", parseErr) {
 		return
 	}
 
 	if i == 0 {
-		HandleErrorIntoPage(res, req, errors.New("Invalid ID Given: Incoming parameter ID is a zero value."), "ID cannot be 0. Please ensure that the url is correct.")
+		ErrorPage(res, "ID cannot be 0. Please ensure that the url is correct.", errors.New("Invalid ID Given: Incoming parameter ID is a zero value."))
 		return
 	}
 
 	itemToScreen, getErr := GetExerciseFromDatastore(req, int64(i))
-	if HandleErrorIntoPage(res, req, getErr, errorMessages[500]) {
+	if ErrorPage(res, "Internal Services Error", getErr) {
 		return
 	}
-	ServeTemplateWithParams(res, req, "reader_exercise.html", itemToScreen)
+	ServeTemplateWithParams(res, "reader_exercise.html", itemToScreen)
 }
 
 // Call: /preview
@@ -363,14 +361,14 @@ func getSimpleExerciseReader(res http.ResponseWriter, req *http.Request, params 
 // Mandatory Options: ID
 // Optional Options:
 func getObjectivePreview(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	objKey, convErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
-	if HandleErrorIntoPage(res, req, convErr, "Invalid ID Given: Please ensure that the url is correct.") {
+	objKey, parseErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
+	if ErrorPage(res, "Invalid ID Given: Please ensure that the url is correct.", parseErr) {
 		return
 	}
 
-	objToScreen, err := GetObjectiveFromDatastore(req, objKey)
-	if HandleErrorIntoPage(res, req, err, errorMessages[500]) {
+	objToScreen, getErr := GetObjectiveFromDatastore(req, objKey)
+	if ErrorPage(res, "Internal Services Error", getErr) {
 		return
 	}
-	ServeTemplateWithParams(res, req, "preview.html", objToScreen)
+	ServeTemplateWithParams(res, "preview.html", objToScreen)
 }
