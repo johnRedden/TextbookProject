@@ -39,6 +39,16 @@ const (
 	AdminPermissions = iota
 )
 
+type Permission struct {
+	Permission int
+}
+
+// Method: Key
+// Implements Retrivable interface
+func (p *Permission) Key(ctx context.Context, id interface{}) *datastore.Key {
+	return datastore.NewKey(ctx, "Permissions", id.(string), 0, nil)
+}
+
 // Internal Function
 // Description:
 // Given a response, request, and minimum permission level.
@@ -62,21 +72,4 @@ func HasPermission(res http.ResponseWriter, req *http.Request, minimumRequiredPe
 		}
 	}
 	return true, nil
-}
-
-func PutPermissionLevelToDatastore(ctx context.Context, keyname string, permLevel int) error {
-	permkey := datastore.NewKey(ctx, "Permissions", keyname, 0, nil)
-	toDatastore := &struct{ PL int }{permLevel}
-	_, putErr := datastore.Put(ctx, permkey, toDatastore)
-	return putErr
-}
-func GetPermissionLevelFromDatastore(ctx context.Context, keyname string) (int, error) {
-	permkey := datastore.NewKey(ctx, "Permissions", keyname, 0, nil)
-	pl := struct{ PL int }{}
-	getErr := datastore.Get(ctx, permkey, &pl)
-	return pl.PL, getErr
-}
-func RemovePermissionLevelFromDatastore(ctx context.Context, keyname string) error {
-	permkey := datastore.NewKey(ctx, "Permissions", keyname, 0, nil)
-	return datastore.Delete(ctx, permkey)
 }

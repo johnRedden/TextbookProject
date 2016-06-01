@@ -29,18 +29,23 @@ var (
 ////
 
 // Type: PermissionUser
-// An appengine/user.User with Name and Permission
+// Our users with Name and Permission
 type PermissionUser struct {
 	Name       string
 	Permission int
-	ID         string
 	Email      string
+}
+
+// Method: Key
+// Implements Retrivable interface
+func (u *PermissionUser) Key(ctx context.Context, id interface{}) *datastore.Key {
+	return datastore.NewKey(ctx, "Users", id.(string), 0, nil)
 }
 
 // Method: ToString
 // Converts a permission user into a marshalled string
 func (u PermissionUser) ToString() string {
-	return fmt.Sprintf("%s�%s�%d�%s", u.Name, u.Email, u.Permission, u.ID)
+	return fmt.Sprintf("%s�%s�%d", u.Name, u.Email, u.Permission)
 }
 
 // Internal Function
@@ -52,7 +57,7 @@ func (u PermissionUser) ToString() string {
 //      failure?(error) - Any errors are stored here if exists.
 func MarshallPermissionUser(p string) (PermissionUser, error) {
 	data := strings.Split(p, "�")
-	if len(data) < 4 {
+	if len(data) < 3 {
 		return PermissionUser{}, ErrPermissionUserMarshall
 	}
 	permLevel, convErr := strconv.Atoi(data[2])
@@ -63,7 +68,6 @@ func MarshallPermissionUser(p string) (PermissionUser, error) {
 		Name:       data[0],
 		Email:      data[1],
 		Permission: permLevel,
-		ID:         data[3],
 	}, nil
 }
 
@@ -73,35 +77,10 @@ func MarshallPermissionUser(p string) (PermissionUser, error) {
 //
 // Returns:
 //      user(PermissionUser) - Prepared PermissionUser
-func MakePermissionUser(name string, permission int, u *user.User) PermissionUser {
+func MakePermissionUser(name, email string, permission int) PermissionUser {
 	return PermissionUser{
 		Name:       name,
 		Permission: permission,
-		Email:      strings.ToLower(u.Email),
-		ID:         u.ID,
+		Email:      strings.ToLower(email),
 	}
-}
-
-//// --------------------------
-// Permission User, Datastore
-// This collection of functions handle the insertion,
-// retrieval, and deletion of PermissionUsers from
-// datastore.
-// All PermissionUsers exist on table Users
-////
-
-func PutPermissionUserToDatastore(ctx context.Context, keyname string, pu *PermissionUser) error {
-	userkey := datastore.NewKey(ctx, "Users", keyname, 0, nil)
-	_, putErr := datastore.Put(ctx, userkey, pu)
-	return putErr
-}
-func GetPermissionUserFromDatastore(ctx context.Context, keyname string) (PermissionUser, error) {
-	userkey := datastore.NewKey(ctx, "Users", keyname, 0, nil)
-	pu := PermissionUser{}
-	getErr := datastore.Get(ctx, userkey, &pu)
-	return pu, getErr
-}
-func RemovePermissionUserFromDatastore(ctx context.Context, keyname string) error {
-	userkey := datastore.NewKey(ctx, "Users", keyname, 0, nil)
-	return datastore.Delete(ctx, userkey)
 }

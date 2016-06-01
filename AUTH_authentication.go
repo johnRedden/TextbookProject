@@ -19,27 +19,15 @@ import (
 	"strings"
 )
 
-// Internal Function
+// Internal Function, Outbound Service
 // Description:
-// Given a session context, this will retrieve the current user's PermissionUser.
+// This will create a google login url to have a user login using their gmail. It will then redirect back to an internal url of our choosing.
 //
 // Returns:
-//      user(PermissionUser) - Prepared PermissionUser
-//      failure?(error) - Any errors are stored here if exists.
-func GetPermissionUserFromSession(ctx context.Context) (PermissionUser, error) {
-	u := user.Current(ctx)
-	if u != nil {
-		if mVal, err := FromMemcache(ctx, strings.ToLower(u.Email)); err == nil {
-			if pVal, mErr := MarshallPermissionUser(mVal); mErr == nil {
-				return pVal, nil
-			} else {
-				return PermissionUser{}, mErr
-			}
-		} else {
-			return PermissionUser{}, err
-		}
-	}
-	return PermissionUser{}, ErrNotLoggedIn
+//      url(string) - Google login url with redirect.
+func GetOAuthURL(ctx context.Context, redirect string) string {
+	login, _ := user.LoginURLFederated(ctx, redirect, "")
+	return login
 }
 
 //// --------------------------
