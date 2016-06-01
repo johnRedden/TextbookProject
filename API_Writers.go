@@ -24,6 +24,7 @@ API_Writers.go by Allen J. Mills
 import (
 	"fmt"
 	"github.com/julienschmidt/httprouter"
+	"google.golang.org/appengine"
 	"html/template"
 	"net/http"
 	"strconv"
@@ -59,7 +60,8 @@ func API_MakeCatalog(res http.ResponseWriter, req *http.Request, params httprout
 
 	catID, _ := strconv.Atoi(req.FormValue("ID"))
 
-	catalogForDatastore, getErr := GetCatalogFromDatastore(req, int64(catID))
+	ctx := appengine.NewContext(req)
+	catalogForDatastore, getErr := GetCatalogFromDatastore(ctx, int64(catID))
 	if getErr != nil {
 		fmt.Fprint(res, `{"result":"failure","reason":"Retrivial Error: `+getErr.Error()+`","code":500}`)
 		return
@@ -89,7 +91,7 @@ func API_MakeCatalog(res http.ResponseWriter, req *http.Request, params httprout
 	}
 
 	// Get the datastore up and running!
-	rk, putErr := PutCatalogIntoDatastore(req, catalogForDatastore)
+	rk, putErr := PlaceInDatastore(ctx, catalogForDatastore.ID, &catalogForDatastore)
 	if putErr != nil {
 		fmt.Fprint(res, `{"result":"failure","reason":"Placement Error: `+putErr.Error()+`","code":500}`)
 		return
@@ -116,7 +118,8 @@ func API_MakeBook(res http.ResponseWriter, req *http.Request, params httprouter.
 
 	bookID, _ := strconv.Atoi(req.FormValue("ID"))
 
-	bookForDatastore, getErr := GetBookFromDatastore(req, int64(bookID))
+	ctx := appengine.NewContext(req)
+	bookForDatastore, getErr := GetBookFromDatastore(ctx, int64(bookID))
 	HandleError(res, getErr)
 
 	if catKey, parseErr := strconv.ParseInt(req.FormValue("CatalogID"), 10, 64); parseErr == nil && catKey != int64(0) { // if you're giving me a catalog, we're good
@@ -152,7 +155,7 @@ func API_MakeBook(res http.ResponseWriter, req *http.Request, params httprouter.
 		bookForDatastore.Description = template.HTML(req.FormValue("Description"))
 	}
 
-	rk, putErr := PutBookIntoDatastore(req, bookForDatastore)
+	rk, putErr := PlaceInDatastore(ctx, bookForDatastore.ID, &bookForDatastore)
 	HandleError(res, putErr)
 
 	fmt.Fprint(res, `{"result":"success","reason":"","code":0,"object":{"Title":"`, bookForDatastore.Title, `","ID":"`, rk.IntID(), `"}}`)
@@ -176,7 +179,8 @@ func API_MakeChapter(res http.ResponseWriter, req *http.Request, params httprout
 
 	chapterID, _ := strconv.Atoi(req.FormValue("ID"))
 
-	chapterForDatastore, getErr := GetChapterFromDatastore(req, int64(chapterID))
+	ctx := appengine.NewContext(req)
+	chapterForDatastore, getErr := GetChapterFromDatastore(ctx, int64(chapterID))
 	HandleError(res, getErr)
 
 	bookID, numErr2 := strconv.Atoi(req.FormValue("BookID"))
@@ -209,7 +213,7 @@ func API_MakeChapter(res http.ResponseWriter, req *http.Request, params httprout
 		chapterForDatastore.Order = orderI
 	}
 
-	rk, putErr := PutChapterIntoDatastore(req, chapterForDatastore)
+	rk, putErr := PlaceInDatastore(ctx, chapterForDatastore.ID, &chapterForDatastore)
 	HandleError(res, putErr)
 
 	fmt.Fprint(res, `{"result":"success","reason":"","code":0,"object":{"Title":"`, chapterForDatastore.Title, `","ID":"`, rk.IntID(), `"}}`)
@@ -233,7 +237,8 @@ func API_MakeSection(res http.ResponseWriter, req *http.Request, params httprout
 
 	sectionID, _ := strconv.Atoi(req.FormValue("ID"))
 
-	sectionForDatastore, getErr := GetSectionFromDatastore(req, int64(sectionID))
+	ctx := appengine.NewContext(req)
+	sectionForDatastore, getErr := GetSectionFromDatastore(ctx, int64(sectionID))
 	HandleError(res, getErr)
 
 	chapterID, numErr2 := strconv.Atoi(req.FormValue("ChapterID"))
@@ -266,7 +271,7 @@ func API_MakeSection(res http.ResponseWriter, req *http.Request, params httprout
 		sectionForDatastore.Order = orderI
 	}
 
-	rk, putErr := PutSectionIntoDatastore(req, sectionForDatastore)
+	rk, putErr := PlaceInDatastore(ctx, sectionForDatastore.ID, &sectionForDatastore)
 	HandleError(res, putErr)
 
 	fmt.Fprint(res, `{"result":"success","reason":"","code":0,"object":{"Title":"`, sectionForDatastore.Title, `","ID":"`, rk.IntID(), `"}}`)
@@ -289,8 +294,8 @@ func API_MakeObjective(res http.ResponseWriter, req *http.Request, params httpro
 	}
 
 	ObjectiveID, _ := strconv.Atoi(req.FormValue("ID"))
-
-	objectiveForDatastore, getErr := GetObjectiveFromDatastore(req, int64(ObjectiveID))
+	ctx := appengine.NewContext(req)
+	objectiveForDatastore, getErr := GetObjectiveFromDatastore(ctx, int64(ObjectiveID))
 	HandleError(res, getErr)
 
 	sectionID, numErr2 := strconv.Atoi(req.FormValue("SectionID"))
@@ -331,7 +336,7 @@ func API_MakeObjective(res http.ResponseWriter, req *http.Request, params httpro
 		objectiveForDatastore.Order = orderI
 	}
 
-	rk, putErr := PutObjectiveIntoDatastore(req, objectiveForDatastore)
+	rk, putErr := PlaceInDatastore(ctx, objectiveForDatastore.ID, &objectiveForDatastore)
 	HandleError(res, putErr)
 
 	fmt.Fprint(res, `{"result":"success","reason":"","code":0,"object":{"Title":"`, objectiveForDatastore.Title, `","ID":"`, rk.IntID(), `"}}`)
@@ -355,7 +360,8 @@ func API_MakeExercise(res http.ResponseWriter, req *http.Request, params httprou
 
 	exerID, _ := strconv.Atoi(req.FormValue("ID"))
 
-	exerciseForDatastore, getErr := GetExerciseFromDatastore(req, int64(exerID))
+	ctx := appengine.NewContext(req)
+	exerciseForDatastore, getErr := GetExerciseFromDatastore(ctx, int64(exerID))
 	HandleError(res, getErr)
 
 	objectiveID, numErr2 := strconv.Atoi(req.FormValue("ObjectiveID"))
@@ -382,7 +388,7 @@ func API_MakeExercise(res http.ResponseWriter, req *http.Request, params httprou
 		exerciseForDatastore.Order = orderI
 	}
 
-	rk, putErr := PutExerciseIntoDatastore(req, exerciseForDatastore)
+	rk, putErr := PlaceInDatastore(ctx, exerciseForDatastore.ID, &exerciseForDatastore)
 	HandleError(res, putErr)
 
 	fmt.Fprint(res, `{"result":"success","reason":"","code":0,"object":{"Title":"","ID":"`, rk.IntID(), `"}}`)

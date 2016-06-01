@@ -9,9 +9,7 @@ structure.go by Allen J. Mills
 
 import (
 	"golang.org/x/net/context"
-	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
-	"net/http"
 )
 
 // ------------------------------
@@ -20,208 +18,126 @@ import (
 // Using Tables: Catalogs, Books, Chapters, Sections, and Objectives
 // for our structure objects.
 /////
+
 func MakeCatalogKey(ctx context.Context, id int64) *datastore.Key {
-	return datastore.NewKey(ctx, "Catalogs", "", id, nil)
+	return (&Catalog{}).Key(ctx, id)
 }
 func MakeBookKey(ctx context.Context, id int64) *datastore.Key {
-	return datastore.NewKey(ctx, "Books", "", id, nil)
+	return (&Book{}).Key(ctx, id)
 }
 func MakeChapterKey(ctx context.Context, id int64) *datastore.Key {
-	return datastore.NewKey(ctx, "Chapters", "", id, nil)
+	return (&Chapter{}).Key(ctx, id)
 }
 func MakeSectionKey(ctx context.Context, id int64) *datastore.Key {
-	return datastore.NewKey(ctx, "Sections", "", id, nil)
+	return (&Section{}).Key(ctx, id)
 }
 func MakeObjectiveKey(ctx context.Context, id int64) *datastore.Key {
-	return datastore.NewKey(ctx, "Objectives", "", id, nil)
+	return (&Objective{}).Key(ctx, id)
 }
 func MakeExerciseKey(ctx context.Context, id int64) *datastore.Key {
-	return datastore.NewKey(ctx, "Exercises", "", id, nil)
+	return (&Exercise{}).Key(ctx, id)
 }
 
 // ------------------------------
-// Struct:Catalog, Get,Put, and Remove from datastore
+// Struct:Catalog, Get from datastore
 /////
-func GetCatalogFromDatastore(req *http.Request, key int64) (Catalog, error) {
+func GetCatalogFromDatastore(ctx context.Context, key int64) (Catalog, error) {
 	if key == 0 {
 		return Catalog{}, nil
 	}
-	ctx := appengine.NewContext(req)
 
-	catalogToReturn := Catalog{}
-	ck := MakeCatalogKey(ctx, key)
-	getErr := datastore.Get(ctx, ck, &catalogToReturn)
+	c := Catalog{}
+	getErr := GetFromDatastore(ctx, key, &c)
 	if getErr == datastore.ErrNoSuchEntity {
 		getErr = nil
 	}
-	catalogToReturn.ID = key
-	return catalogToReturn, getErr
-}
-func PutCatalogIntoDatastore(req *http.Request, c Catalog) (*datastore.Key, error) {
-	ctx := appengine.NewContext(req)
-
-	ck := MakeCatalogKey(ctx, c.ID)
-	rk, putErr := datastore.Put(ctx, ck, &c)
-	return rk, putErr
-}
-func RemoveCatalogFromDatastore(req *http.Request, catalogKey int64) error {
-	ctx := appengine.NewContext(req)
-	ck := MakeCatalogKey(ctx, catalogKey)
-	return datastore.Delete(ctx, ck)
+	c.ID = key
+	return c, getErr
 }
 
 // ------------------------------
-// Struct:Book, Get,Put, and Remove from datastore
+// Struct:Book, Get from datastore
 /////
-func GetBookFromDatastore(req *http.Request, key int64) (Book, error) {
+func GetBookFromDatastore(ctx context.Context, key int64) (Book, error) {
 	if key == 0 {
 		return Book{}, nil
 	}
-	ctx := appengine.NewContext(req)
 
-	bookToReturn := Book{}
-	bk := MakeBookKey(ctx, key)
-
-	getErr := datastore.Get(ctx, bk, &bookToReturn)
+	b := Book{}
+	getErr := GetFromDatastore(ctx, key, &b)
 	if getErr == datastore.ErrNoSuchEntity {
-		return Book{}, nil
+		getErr = nil
 	}
-	bookToReturn.ID = key
-	return bookToReturn, getErr
-}
-func PutBookIntoDatastore(req *http.Request, b Book) (*datastore.Key, error) {
-	ctx := appengine.NewContext(req)
-
-	bk := MakeBookKey(ctx, b.ID)
-	rk, putErr := datastore.Put(ctx, bk, &b)
-	return rk, putErr
-}
-func RemoveBookFromDatastore(req *http.Request, bookKey int64) error {
-	ctx := appengine.NewContext(req)
-	bk := MakeBookKey(ctx, bookKey)
-	return datastore.Delete(ctx, bk)
+	b.ID = key
+	return b, getErr
 }
 
 // ------------------------------
 // Struct:Chapter, Get,Put, and Remove from datastore
 /////
-func GetChapterFromDatastore(req *http.Request, key int64) (Chapter, error) {
+func GetChapterFromDatastore(ctx context.Context, key int64) (Chapter, error) {
 	if key == 0 {
 		return Chapter{}, nil
 	}
-	ctx := appengine.NewContext(req)
 
-	chatperToReturn := Chapter{}
-	ck := MakeChapterKey(ctx, key)
-	getErr := datastore.Get(ctx, ck, &chatperToReturn)
+	e := Chapter{}
+	getErr := GetFromDatastore(ctx, key, &e)
 	if getErr == datastore.ErrNoSuchEntity {
-		return Chapter{}, nil
+		getErr = nil
 	}
-	chatperToReturn.ID = key
-	return chatperToReturn, getErr
-}
-func PutChapterIntoDatastore(req *http.Request, c Chapter) (*datastore.Key, error) {
-	ctx := appengine.NewContext(req)
-
-	ck := MakeChapterKey(ctx, c.ID)
-	rk, putErr := datastore.Put(ctx, ck, &c)
-	return rk, putErr
-}
-func RemoveChapterFromDatastore(req *http.Request, chapterKey int64) error {
-	ctx := appengine.NewContext(req)
-	ck := MakeChapterKey(ctx, chapterKey)
-	return datastore.Delete(ctx, ck)
+	e.ID = key
+	return e, getErr
 }
 
 // ------------------------------
-// Struct:Section, Get,Put, and Remove from datastore
+// Struct:Section, Get from datastore
 /////
-func GetSectionFromDatastore(req *http.Request, key int64) (Section, error) {
+func GetSectionFromDatastore(ctx context.Context, key int64) (Section, error) {
 	if key == 0 {
 		return Section{}, nil
 	}
-	ctx := appengine.NewContext(req)
 
-	sectionToReturn := Section{}
-	sk := MakeSectionKey(ctx, key)
-	getErr := datastore.Get(ctx, sk, &sectionToReturn)
+	e := Section{}
+	getErr := GetFromDatastore(ctx, key, &e)
 	if getErr == datastore.ErrNoSuchEntity {
-		return Section{}, nil
+		getErr = nil
 	}
-	sectionToReturn.ID = key
-	return sectionToReturn, getErr
-}
-func PutSectionIntoDatastore(req *http.Request, s Section) (*datastore.Key, error) {
-	ctx := appengine.NewContext(req)
-
-	sk := MakeSectionKey(ctx, s.ID)
-	rk, putErr := datastore.Put(ctx, sk, &s)
-	return rk, putErr
-}
-func RemoveSectionFromDatastore(req *http.Request, sectionKey int64) error {
-	ctx := appengine.NewContext(req)
-	sk := MakeSectionKey(ctx, sectionKey)
-	return datastore.Delete(ctx, sk)
+	e.ID = key
+	return e, getErr
 }
 
 // ------------------------------
 // Struct:Objective, Get,Put, and Remove from datastore
 /////
-func GetObjectiveFromDatastore(req *http.Request, key int64) (Objective, error) {
+func GetObjectiveFromDatastore(ctx context.Context, key int64) (Objective, error) {
 	if key == 0 {
 		return Objective{}, nil
 	}
 
-	ctx := appengine.NewContext(req)
-
-	objectiveToReturn := Objective{}
-	ok := MakeObjectiveKey(ctx, key)
-	getErr := datastore.Get(ctx, ok, &objectiveToReturn)
+	e := Objective{}
+	getErr := GetFromDatastore(ctx, key, &e)
 	if getErr == datastore.ErrNoSuchEntity {
-		return Objective{}, nil
+		getErr = nil
 	}
-	objectiveToReturn.ID = key
-	return objectiveToReturn, getErr
-}
-func PutObjectiveIntoDatastore(req *http.Request, o Objective) (*datastore.Key, error) {
-	ctx := appengine.NewContext(req)
-
-	ok := MakeObjectiveKey(ctx, o.ID)
-	rk, putErr := datastore.Put(ctx, ok, &o)
-	return rk, putErr
-}
-func RemoveObjectiveFromDatastore(req *http.Request, objectiveKey int64) error {
-	ctx := appengine.NewContext(req)
-	ok := MakeObjectiveKey(ctx, objectiveKey)
-	return datastore.Delete(ctx, ok)
+	e.ID = key
+	return e, getErr
 }
 
 // ------------------------------
 // Struct:Exercise, Get,Put, and Remove from datastore
 /////
-func GetExerciseFromDatastore(req *http.Request, key int64) (Exercise, error) {
-	if key == 0 { // 0 is a new blank ID. In this context, return a blank struct.
+func GetExerciseFromDatastore(ctx context.Context, key int64) (Exercise, error) {
+	if key == 0 {
 		return Exercise{}, nil
 	}
-	ctx := appengine.NewContext(req)
 
-	exerciseToReturn := Exercise{}
-	ek := MakeExerciseKey(ctx, key)
-	getErr := datastore.Get(ctx, ek, &exerciseToReturn)
-	exerciseToReturn.ID = key
-	return exerciseToReturn, getErr
-}
-func PutExerciseIntoDatastore(req *http.Request, e Exercise) (*datastore.Key, error) {
-	ctx := appengine.NewContext(req)
-
-	ek := MakeExerciseKey(ctx, e.ID)
-	rk, putErr := datastore.Put(ctx, ek, &e)
-	return rk, putErr
-}
-func RemoveExerciseFromDatastore(req *http.Request, exerciseKey int64) error {
-	ctx := appengine.NewContext(req)
-	ek := MakeExerciseKey(ctx, exerciseKey)
-	return datastore.Delete(ctx, ek)
+	e := Exercise{}
+	getErr := GetFromDatastore(ctx, key, &e)
+	if getErr == datastore.ErrNoSuchEntity {
+		getErr = nil
+	}
+	e.ID = key
+	return e, getErr
 }
 
 // ------------------------------

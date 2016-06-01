@@ -357,13 +357,13 @@ func API_DeleteExercise(res http.ResponseWriter, req *http.Request, params httpr
 	}
 
 	// Remove this exercise from datastore.
-	remvErr := RemoveExerciseFromDatastore(req, exerID)
+	ctx := appengine.NewContext(req)
+	remvErr := DeleteFromDatastore(ctx, exerID, &Exercise{})
 	if remvErr != nil {
 		fmt.Fprint(res, `{"result":"failure","reason":"Internal Error","code":500}`)
 	}
 
 	// Clear this exercises images, if any.
-	ctx := appengine.NewContext(req)
 	imagesToDelete := GetFilesFromGCS_WithPrefix(ctx, req.FormValue("ID"))
 	RemoveFilesFromGCS(ctx, imagesToDelete)
 

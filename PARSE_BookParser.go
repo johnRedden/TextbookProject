@@ -126,6 +126,7 @@ func (d *debugger) add(s string) {
 func runParserStateMachine(lines []string, req *http.Request, pCatalogKey int64) []string {
 	lines = append(lines, "<i END></i>")
 	commandsRan := newDebugger()
+	ctx := appengine.NewContext(req)
 	commandsRan.add(fmt.Sprint("Catalog Key:", pCatalogKey))
 	commandsRan.add("S10: FSM-Init")
 
@@ -161,7 +162,7 @@ S12:
 	switch command {
 	default:
 		commandsRan.add("S12: IF Failure, Push Book")
-		pBK, putErr := PutBookIntoDatastore(req, pBook)
+		pBK, putErr := PlaceInDatastore(ctx, pBook.ID, &pBook)
 		if putErr != nil {
 			commandsRan.add("Error in placing book into datastore!")
 			commandsRan.add(putErr.Error())
@@ -211,7 +212,7 @@ S22:
 	switch command {
 	default:
 		commandsRan.add("S22: IF Failure, Push Chapter")
-		pCK, putErr := PutChapterIntoDatastore(req, pChapter)
+		pCK, putErr := PlaceInDatastore(ctx, pChapter.ID, &pChapter)
 		if putErr != nil {
 			commandsRan.add("Error in placing chapter into datastore!")
 			commandsRan.add(putErr.Error())
@@ -260,7 +261,7 @@ S42:
 	switch command {
 	default:
 		commandsRan.add("S42: IF Failure, Push Section")
-		pSK, putErr := PutSectionIntoDatastore(req, pSection)
+		pSK, putErr := PlaceInDatastore(ctx, pSection.ID, &pSection)
 		if putErr != nil {
 			commandsRan.add("Error in placing section into datastore!")
 			commandsRan.add(putErr.Error())
@@ -313,7 +314,7 @@ S62:
 	switch command {
 	default:
 		commandsRan.add("S62: IF Failure, Push Objective")
-		pOK, putErr := PutObjectiveIntoDatastore(req, pObjective)
+		pOK, putErr := PlaceInDatastore(ctx, pObjective.ID, &pObjective)
 		if putErr != nil {
 			commandsRan.add("Error in placing objective into datastore!")
 			commandsRan.add(putErr.Error())
@@ -378,7 +379,7 @@ S82:
 	switch command {
 	default:
 		commandsRan.add("S82: IF Failure, Push Exercise")
-		pEK, putErr := PutExerciseIntoDatastore(req, pExercise)
+		pEK, putErr := PlaceInDatastore(ctx, pExercise.ID, &pExercise)
 		if putErr != nil {
 			commandsRan.add("Error in placing exercise into datastore!")
 			commandsRan.add(putErr.Error())
@@ -444,7 +445,8 @@ func exportBookToScreen(res http.ResponseWriter, req *http.Request, params httpr
 		return
 	}
 
-	parentBook, getErr := GetBookFromDatastore(req, int64(i))
+	ctx := appengine.NewContext(req)
+	parentBook, getErr := GetBookFromDatastore(ctx, int64(i))
 	HandleError(res, getErr)
 
 	complexOutput := struct {
@@ -464,7 +466,6 @@ func exportBookToScreen(res http.ResponseWriter, req *http.Request, params httpr
 	GCK := Get_Child_Key_From_Parent
 	complexOutput.Book = parentBook.sanitize()
 
-	ctx := appengine.NewContext(req)
 	for ci, ck := range GCK(ctx, parentBook.ID, "Chapters") {
 		nextChapter := Chapter{}
 		datastore.Get(ctx, ck, &nextChapter)

@@ -44,7 +44,8 @@ func getCatalogEditor(res http.ResponseWriter, req *http.Request, params httprou
 		return
 	}
 
-	itemToScreen, getErr := GetCatalogFromDatastore(req, int64(i))
+	ctx := appengine.NewContext(req)
+	itemToScreen, getErr := GetCatalogFromDatastore(ctx, int64(i))
 	if ErrorPage(res, "Internal Services Error", getErr) {
 		return
 	}
@@ -91,7 +92,8 @@ func getBookEditor(res http.ResponseWriter, req *http.Request, params httprouter
 		return
 	}
 
-	itemToScreen, getErr := GetBookFromDatastore(req, int64(i))
+	ctx := appengine.NewContext(req)
+	itemToScreen, getErr := GetBookFromDatastore(ctx, int64(i))
 	if ErrorPage(res, "Internal Services Error", getErr) {
 		return
 	}
@@ -138,7 +140,8 @@ func getChapterEditor(res http.ResponseWriter, req *http.Request, params httprou
 		return
 	}
 
-	itemToScreen, getErr := GetChapterFromDatastore(req, int64(i))
+	ctx := appengine.NewContext(req)
+	itemToScreen, getErr := GetChapterFromDatastore(ctx, int64(i))
 	if ErrorPage(res, "Internal Services Error", getErr) {
 		return
 	}
@@ -185,7 +188,8 @@ func getSectionEditor(res http.ResponseWriter, req *http.Request, params httprou
 		return
 	}
 
-	itemToScreen, getErr := GetSectionFromDatastore(req, int64(i))
+	ctx := appengine.NewContext(req)
+	itemToScreen, getErr := GetSectionFromDatastore(ctx, int64(i))
 	if ErrorPage(res, "Internal Services Error", getErr) {
 		return
 	}
@@ -234,7 +238,8 @@ func getSimpleObjectiveEditor(res http.ResponseWriter, req *http.Request, params
 		return
 	}
 
-	itemToScreen, getErr := GetObjectiveFromDatastore(req, int64(i))
+	ctx := appengine.NewContext(req)
+	itemToScreen, getErr := GetObjectiveFromDatastore(ctx, int64(i))
 	if ErrorPage(res, "Internal Services Error", getErr) {
 		return
 	}
@@ -281,7 +286,8 @@ func getExerciseEditor(res http.ResponseWriter, req *http.Request, params httpro
 		return
 	}
 
-	itemToScreen, getErr := GetExerciseFromDatastore(req, int64(i))
+	ctx := appengine.NewContext(req)
+	itemToScreen, getErr := GetExerciseFromDatastore(ctx, int64(i))
 	if ErrorPage(res, "Internal Services Error", getErr) {
 		return
 	}
@@ -343,7 +349,8 @@ func getSimpleExerciseReader(res http.ResponseWriter, req *http.Request, params 
 		return
 	}
 
-	itemToScreen, getErr := GetExerciseFromDatastore(req, int64(i))
+	ctx := appengine.NewContext(req)
+	itemToScreen, getErr := GetExerciseFromDatastore(ctx, int64(i))
 	if ErrorPage(res, "Internal Services Error", getErr) {
 		return
 	}
@@ -366,7 +373,8 @@ func getObjectivePreview(res http.ResponseWriter, req *http.Request, params http
 		return
 	}
 
-	objToScreen, getErr := GetObjectiveFromDatastore(req, objKey)
+	ctx := appengine.NewContext(req)
+	objToScreen, getErr := GetObjectiveFromDatastore(ctx, objKey)
 	if ErrorPage(res, "Internal Services Error", getErr) {
 		return
 	}

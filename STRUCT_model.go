@@ -8,6 +8,8 @@ Model.go by Allen J. Mills
 */
 
 import (
+	"golang.org/x/net/context"
+	"google.golang.org/appengine/datastore"
 	"html/template"
 )
 
@@ -18,6 +20,10 @@ type Catalog struct {
 	Description template.HTML `datastore:",noindex"`
 
 	ID int64 `datastore:"-"`
+}
+
+func (c *Catalog) Key(ctx context.Context, id interface{}) *datastore.Key {
+	return datastore.NewKey(ctx, "Catalogs", "", id.(int64), nil)
 }
 
 type Book struct { // Book has an ancestor in catalog, searchable based on catalog that it was a part of.
@@ -31,6 +37,10 @@ type Book struct { // Book has an ancestor in catalog, searchable based on catal
 	ID     int64 `datastore:"-"` // self.ID, assigned when pulled from datastore.
 }
 
+func (b *Book) Key(ctx context.Context, id interface{}) *datastore.Key {
+	return datastore.NewKey(ctx, "Books", "", id.(int64), nil)
+}
+
 type Chapter struct { // Chapter has an ancestor in Book. Chapter only has meaning from book.
 	Title       string
 	Version     float64       `datastore:",noindex"`
@@ -41,6 +51,10 @@ type Chapter struct { // Chapter has an ancestor in Book. Chapter only has meani
 	ID     int64 `datastore:"-"` // self.ID assigned when pulled from datastore.
 }
 
+func (c *Chapter) Key(ctx context.Context, id interface{}) *datastore.Key {
+	return datastore.NewKey(ctx, "Chapters", "", id.(int64), nil)
+}
+
 type Section struct {
 	Title       string
 	Version     float64       `datastore:",noindex"`
@@ -49,6 +63,10 @@ type Section struct {
 
 	Parent int64 // key.intID for Chapter
 	ID     int64 `datastore:"-"`
+}
+
+func (s *Section) Key(ctx context.Context, id interface{}) *datastore.Key {
+	return datastore.NewKey(ctx, "Sections", "", id.(int64), nil)
 }
 
 type Objective struct {
@@ -64,6 +82,10 @@ type Objective struct {
 	ID     int64 `datastore:"-"`
 }
 
+func (o *Objective) Key(ctx context.Context, id interface{}) *datastore.Key {
+	return datastore.NewKey(ctx, "Objectives", "", id.(int64), nil)
+}
+
 type Exercise struct {
 	Instruction string
 	Question    template.HTML `datastore:",noindex"`
@@ -72,4 +94,8 @@ type Exercise struct {
 
 	Parent int64
 	ID     int64 `datastore:"-"`
+}
+
+func (e *Exercise) Key(ctx context.Context, id interface{}) *datastore.Key {
+	return datastore.NewKey(ctx, "Exercises", "", id.(int64), nil)
 }

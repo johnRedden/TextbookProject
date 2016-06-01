@@ -283,9 +283,10 @@ func API_getTOC(res http.ResponseWriter, req *http.Request, params httprouter.Pa
 	/// - - - -
 	// Gather Book information, ensure that book exists.
 	////////
+	ctx := appengine.NewContext(req)
 
 	BookTitle, BookCatalog, BookID_Out := func(req *http.Request, id int64) (string, int64, int64) { // get book data
-		book_to_output, _ := GetBookFromDatastore(req, id)
+		book_to_output, _ := GetBookFromDatastore(ctx, id)
 		return book_to_output.Title, book_to_output.Parent, book_to_output.ID
 	}(req, BookID_In)
 
@@ -299,7 +300,6 @@ func API_getTOC(res http.ResponseWriter, req *http.Request, params httprouter.Pa
 	// Prepare to make everything simple.
 	//////
 
-	ctx := appengine.NewContext(req)
 	gatherKindGroup := Get_Name_ID_From_Parent // alias new function with old name.
 	/// - - - -
 	// Print header/Book information
@@ -356,7 +356,8 @@ func API_GetCatalog(res http.ResponseWriter, req *http.Request, params httproute
 		fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8" ?><error><status>Failure</status><message>Invalid ID</message></error>`)
 		return
 	}
-	Catalog_to_Output, geterr := GetCatalogFromDatastore(req, int64(CatalogID))
+	ctx := appengine.NewContext(req)
+	Catalog_to_Output, geterr := GetCatalogFromDatastore(ctx, int64(CatalogID))
 	if geterr != nil {
 		fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8" ?><error><status>Failure</status><message>ID Not Found!</message></error>`)
 		return
@@ -387,7 +388,8 @@ func API_GetBook(res http.ResponseWriter, req *http.Request, params httprouter.P
 		fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8" ?><error><status>Failure</status><message>Invalid ID</message></error>`)
 		return
 	}
-	Book_to_Output, geterr := GetBookFromDatastore(req, BookID)
+	ctx := appengine.NewContext(req)
+	Book_to_Output, geterr := GetBookFromDatastore(ctx, BookID)
 	if geterr != nil {
 		fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8" ?><error><status>Failure</status><message>ID Not Found!</message></error>`)
 		return
@@ -420,7 +422,8 @@ func API_GetChapter(res http.ResponseWriter, req *http.Request, params httproute
 		fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8" ?><error><status>Failure</status><message>Invalid ID</message></error>`)
 		return
 	}
-	Chapter_to_Output, geterr := GetChapterFromDatastore(req, ChapterID)
+	ctx := appengine.NewContext(req)
+	Chapter_to_Output, geterr := GetChapterFromDatastore(ctx, ChapterID)
 	if geterr != nil {
 		fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8" ?><error><status>Failure</status><message>ID Not Found!</message></error>`)
 		return
@@ -452,7 +455,8 @@ func API_GetSection(res http.ResponseWriter, req *http.Request, params httproute
 		fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8" ?><error><status>Failure</status><message>Invalid ID</message></error>`)
 		return
 	}
-	Section_to_Output, geterr := GetSectionFromDatastore(req, SectionID)
+	ctx := appengine.NewContext(req)
+	Section_to_Output, geterr := GetSectionFromDatastore(ctx, SectionID)
 	if geterr != nil {
 		fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8" ?><error><status>Failure</status><message>ID Not Found!</message></error>`)
 		return
@@ -485,7 +489,8 @@ func API_GetObjectiveHTML(res http.ResponseWriter, req *http.Request, params htt
 		return
 	}
 
-	objectiveToScreen, getErr := GetObjectiveFromDatastore(req, int64(ObjectiveID))
+	ctx := appengine.NewContext(req)
+	objectiveToScreen, getErr := GetObjectiveFromDatastore(ctx, int64(ObjectiveID))
 	//HandleError(res, getErr)
 	if getErr != nil {
 		fmt.Fprint(res, `<section><p>Request has failed: No objective with given ID.</p></section>`)
@@ -513,7 +518,8 @@ func API_GetExercise(res http.ResponseWriter, req *http.Request, params httprout
 		fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8" ?><error><status>Failure</status><message>Invalid ID</message></error>`)
 		return
 	}
-	Exercise_to_Output, geterr := GetExerciseFromDatastore(req, int64(ExerciseID))
+	ctx := appengine.NewContext(req)
+	Exercise_to_Output, geterr := GetExerciseFromDatastore(ctx, int64(ExerciseID))
 	if geterr != nil {
 		fmt.Fprint(res, `<?xml version="1.0" encoding="UTF-8" ?><error><status>Failure</status><message>ID Not Found!</message></error>`)
 		return
