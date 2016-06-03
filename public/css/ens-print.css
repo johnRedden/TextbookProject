@@ -1,0 +1,10 @@
+    body{
+    	background-color: white;
+        font-size:small;
+        line-height: 1.2;
+        font-family: 'Merriweather', Georgia, 'Times New Roman', Times, serif;
+
+        text-align:justify;	
+    	text-justify:auto;
+        
+    }
