@@ -9,9 +9,11 @@ filename.go by Allen J. Mills
 
 import (
 	"errors"
+	"github.com/Esseh/retrievable"
 	"golang.org/x/net/context"
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
+	"google.golang.org/appengine/user"
 	"net/http"
 )
 
@@ -46,7 +48,7 @@ type Permission struct {
 // Method: Key
 // Implements Retrivable interface
 func (p *Permission) Key(ctx context.Context, id interface{}) *datastore.Key {
-	return datastore.NewKey(ctx, "Permissions", id.(string), 0, nil)
+	return datastore.NewKey(ctx, "Permissions", "", id.(int64), nil)
 }
 
 // Internal Function
@@ -59,17 +61,43 @@ func (p *Permission) Key(ctx context.Context, id interface{}) *datastore.Key {
 //      valid?(bool) - True/False if user meets requirement
 //      failure?(error) - Any errors are stored here if exists.
 func HasPermission(res http.ResponseWriter, req *http.Request, minimumRequiredPermission int) (bool, error) {
-	if sessErr := MaintainSession(res, req); sessErr != nil { // Must have a session
+	u, sessErr := GetUserFromSession(res, req)
+	if sessErr != nil {
 		return false, sessErr
-	} else {
-		ctx := appengine.NewContext(req)
-		if u, permissionErr := GetPermissionUserFromSession(ctx); permissionErr != nil { // Must have a valid permission user.
-			return false, permissionErr
-		} else {
-			if u.Permission < minimumRequiredPermission { // That permission user must be at least the minimum.
-				return false, ErrInvalidPermission
-			}
+	}
+	ctx := appengine.NewContext(req)
+	perm := Permission{}
+	getErr := retrievable.GetEntity(ctx, &perm, u.ID)
+	if getErr != nil {
+		// No Permissions? Default.
+		perm = Permission{
+			Permission: ReadPermissions,
 		}
 	}
-	return true, nil
+
+	if perm.Permission >= minimumRequiredPermission {
+		return true, nil
+	}
+	return false, ErrInvalidPermission
+}
+
+func NewPermission(appu *user.User, recommended int) Permission {
+	if appu != nil && appu.Admin {
+		return Permission{AdminPermissions}
+	}
+	return Permission{recommended}
+}
+
+func SetPermission(ctx context.Context, uID int64, perm *Permission) error {
+	_, putErr := retrievable.PlaceEntity(ctx, uID, perm)
+	return putErr
+}
+
+func GetPermission(ctx context.Context, uID int64) int {
+	perm := Permission{}
+	getErr := retrievable.GetEntity(ctx, &perm, uID)
+	if getErr != nil {
+		return ReadPermissions
+	}
+	return perm.Permission
 }

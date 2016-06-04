@@ -12,13 +12,12 @@ AUTH_session.go by Allen J. Mills
 import (
 	"errors"
 	"fmt"
+	"github.com/Esseh/retrievable"
 	"golang.org/x/net/context"
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
-	"google.golang.org/appengine/user"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -34,7 +33,7 @@ var (
 )
 
 type Session struct {
-	UserKey string
+	UserKey int64
 	Valid   time.Time
 	ID      int64 `datastore:",noindex"`
 }
@@ -44,32 +43,34 @@ type Session struct {
 func (p *Session) Key(ctx context.Context, id interface{}) *datastore.Key {
 	return datastore.NewKey(ctx, "Sessions", "", id.(int64), nil)
 }
+func (p *Session) StoreKey(k *datastore.Key) {
+	p.ID = k.IntID()
+}
 
-func NewSession(res http.ResponseWriter, req *http.Request, email string) (Session, error) {
+func NewSession(res http.ResponseWriter, req *http.Request, userId int64) (Session, error) {
 	ctx := appengine.NewContext(req)
 	s := Session{}
-	s.UserKey = email
+	s.UserKey = userId
 	s.Valid = time.Now().Add(StorageDuration)
 
 	// Optional: Limit Sessions to one?
 
-	sK, putErr := PlaceInDatastore(ctx, int64(0), &s)
+	sK, putErr := retrievable.PlaceEntity(ctx, int64(0), &s)
 	if putErr != nil {
-		return Session{}, nil, putErr
+		return Session{}, putErr
 	}
-	s.ID = sK.IntID()
 	ToCookie(res, SessionCookie, fmt.Sprint(sK.IntID()), StorageDuration)
-	return s, sK, nil
+	return s, nil
 }
 
 func DeleteSession(res http.ResponseWriter, req *http.Request, id int64) error {
 	ctx := appengine.NewContext(req)
 	DeleteCookie(res, SessionCookie)
-	return DeleteFromDatastore(ctx, id, &Session{})
+	return retrievable.DeleteEntity(ctx, (&Session{}).Key(ctx, id))
 }
 
 func GetSession(res http.ResponseWriter, req *http.Request) (Session, error) {
-	val, cErr := FromCookie(req, key) // Get session info from cookie
+	val, cErr := FromCookie(req, SessionCookie) // Get session info from cookie
 	if cErr != nil {
 		return Session{}, ErrNotLoggedIn
 	}
@@ -79,16 +80,16 @@ func GetSession(res http.ResponseWriter, req *http.Request) (Session, error) {
 		return Session{}, ErrInvalidSession
 	}
 
+	ctx := appengine.NewContext(req)
 	s := Session{}
-	getErr := GetFromDatastore(ctx, id, &s) // Get actual session from datastore
+	getErr := retrievable.GetEntity(ctx, &s, id) // Get actual session from datastore
 	if getErr != nil {
 		return Session{}, ErrTimedOut
 	}
-	s.ID = id
 
 	if s.Valid.After(time.Now()) { // is that session still valid?
 		s.Valid = time.Now().Add(StorageDuration)
-		putErr := PlaceInDatastore(ctx, s.ID, &s)
+		_, putErr := PlaceInDatastore(ctx, s.ID, &s)
 		if putErr != nil {
 			return s, putErr
 		}
@@ -110,20 +111,23 @@ func HasSession(res http.ResponseWriter, req *http.Request) bool {
 
 // Internal Function
 // Description:
-// Given an http call, this will retrieve the current user's PermissionUser.
+// Given an http call, this will retrieve the current user's User.
 //
 // Returns:
-//      user(PermissionUser) - Prepared PermissionUser
+//      user(User) - Prepared PermissionUser
 //      failure?(error) - Any errors are stored here if exists.
-func GetUserFromSession(res http.ResponseWriter, req *http.Request) (PermissionUser, error) {
+func GetUserFromSession(res http.ResponseWriter, req *http.Request) (User, error) {
 	ctx := appengine.NewContext(req)
 
 	s, sessErr := GetSession(res, req)
 	if sessErr != nil {
-		return PermissionUser{}, sessErr
+		return User{}, sessErr
 	}
 
-	u := PermissionUser{}
-	getErr := GetFromDatastore(ctx, s.UserKey, &u)
+	u := User{}
+	getErr := retrievable.GetEntity(ctx, &u, s.UserKey)
+	if getErr == nil {
+		u.Permission = GetPermission(ctx, u.ID)
+	}
 	return u, getErr
 }

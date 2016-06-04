@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/julienschmidt/httprouter"
-	"google.golang.org/appengine"
+	// "google.golang.org/appengine"
 	"html/template"
 	"net/http"
 )
@@ -45,6 +45,7 @@ func init() {
 	// Files: AUTH_authentication.go
 	/****************************************/
 	r.GET("/login", AUTH_Login_GET)         // <user> User Login
+	r.POST("/login", AUTH_LOGIN_POST)       //
 	r.GET("/logout", AUTH_Logout_GET)       // <user> User Logout
 	r.GET("/register", AUTH_Register_GET)   // <user> Register New Users/Modify existing users
 	r.POST("/register", AUTH_Register_POST) // <user><auth> Post to make the new user
@@ -156,7 +157,7 @@ func init() {
 // Mandatory Options:
 // Optional Options:
 func home(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	pu, _ := GetPermissionUserFromSession(appengine.NewContext(req))
+	pu, _ := GetUserFromSession(res, req)
 	ServeTemplateWithParams(res, "index.html", pu)
 }
 
@@ -169,7 +170,7 @@ func home(res http.ResponseWriter, req *http.Request, params httprouter.Params) 
 // Mandatory Options:
 // Optional Options:
 func getAboutPage(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	pu, _ := GetPermissionUserFromSession(appengine.NewContext(req))
+	pu, _ := GetUserFromSession(res, req)
 	ServeTemplateWithParams(res, "about.html", pu)
 }
 
@@ -186,7 +187,7 @@ func getAboutPage(res http.ResponseWriter, req *http.Request, params httprouter.
 // Mandatory Options: ID
 // Optional Options:
 func getSimpleTOC(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	pu, _ := GetPermissionUserFromSession(appengine.NewContext(req))
+	pu, _ := GetUserFromSession(res, req)
 
 	screenOutput := struct {
 		Name       string
@@ -212,7 +213,7 @@ func getSimpleTOC(res http.ResponseWriter, req *http.Request, params httprouter.
 // Mandatory Options:
 // Optional Options:
 func getCatalogsPage(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	pu, _ := GetPermissionUserFromSession(appengine.NewContext(req))
+	pu, _ := GetUserFromSession(res, req)
 	ServeTemplateWithParams(res, "catalogs.html", pu)
 }
 

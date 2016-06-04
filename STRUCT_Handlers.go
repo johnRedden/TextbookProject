@@ -50,7 +50,7 @@ func getCatalogEditor(res http.ResponseWriter, req *http.Request, params httprou
 		return
 	}
 
-	pu, _ := GetPermissionUserFromSession(appengine.NewContext(req))
+	pu, _ := GetUserFromSession(res, req)
 
 	screenOutput := struct {
 		Name       string
@@ -98,7 +98,7 @@ func getBookEditor(res http.ResponseWriter, req *http.Request, params httprouter
 		return
 	}
 
-	pu, _ := GetPermissionUserFromSession(appengine.NewContext(req))
+	pu, _ := GetUserFromSession(res, req)
 
 	screenOutput := struct {
 		Name       string
@@ -146,7 +146,7 @@ func getChapterEditor(res http.ResponseWriter, req *http.Request, params httprou
 		return
 	}
 
-	pu, _ := GetPermissionUserFromSession(appengine.NewContext(req))
+	pu, _ := GetUserFromSession(res, req)
 
 	screenOutput := struct {
 		Name       string
@@ -194,7 +194,7 @@ func getSectionEditor(res http.ResponseWriter, req *http.Request, params httprou
 		return
 	}
 
-	pu, _ := GetPermissionUserFromSession(appengine.NewContext(req))
+	pu, _ := GetUserFromSession(res, req)
 
 	screenOutput := struct {
 		Name       string
@@ -244,7 +244,7 @@ func getSimpleObjectiveEditor(res http.ResponseWriter, req *http.Request, params
 		return
 	}
 
-	pu, _ := GetPermissionUserFromSession(appengine.NewContext(req))
+	pu, _ := GetUserFromSession(res, req)
 
 	screenOutput := struct {
 		Name       string
@@ -292,7 +292,7 @@ func getExerciseEditor(res http.ResponseWriter, req *http.Request, params httpro
 		return
 	}
 
-	pu, _ := GetPermissionUserFromSession(appengine.NewContext(req))
+	pu, _ := GetUserFromSession(res, req)
 
 	screenOutput := struct {
 		Name       string
