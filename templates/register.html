@@ -1,25 +1,52 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title></title>
+    <title>Register!</title>
+
+<style type="text/css">
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    header {
+        background-color: #233B3B;
+        color: white;
+        padding-top: 10px;
+        padding-left: 10px;
+        padding-bottom: 10px;
+        margin-bottom: 2vh;
+    }
+    div[centerfold] {
+        display: flex;
+        justify-content: center;
+        position: relative;
+        width: 75%;
+    }
+    input[fill] {
+        position: relative;
+        width: 100%;
+    }
+</style>
 </head>
 <body>
+<header>
+    <h1>Register!</h1>
+</header>
+<div centerfold><content>
 
-<form method="POST">
-    <input type="email" placeholder="Email" name="Email" value="{{.Email}}" {{if .Email}}readonly{{end}} />
-    <input type="text" placeholder="Name" name="Name" value="{{.Name}}" />
-    <input type="password" placeholder="Password" name="Password" />
-    <input type="submit" value="Register" />
-</form>
+    <form method="POST">
+        <input fill type="email" placeholder="Email" name="Email" value="{{.Email}}" {{if .Email}}readonly{{end}} />
+        <input fill type="text" placeholder="Name" name="Name" value="{{.Name}}" />
+        <input fill type="password" placeholder="Password" name="Password" />
+        <input type="submit" value="Register" />
+    </form>
 
-<form method="GET">
-    <input type="text" style="display: none;" name="Oauth" value="now"></input>
-    <input type="submit" value="Login With Gmail?" />
-</form>
-
-<div style="border: 1px solid black; margin-top: 20px;">
-{{.}}
-</div>
-
+    <form method="GET">
+        <input type="text" style="display: none;" name="Oauth" value="now"></input>
+        <input type="text" style="display: none;" name="redirect" value="{{.Redirect}}"></input>
+        <input type="submit" value="Register With Gmail?" />
+    </form>
+</content></div>
 </body>
 </html>

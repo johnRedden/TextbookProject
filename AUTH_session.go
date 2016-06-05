@@ -66,7 +66,17 @@ func NewSession(res http.ResponseWriter, req *http.Request, userId int64) (Sessi
 	return s, nil
 }
 
-func DeleteSession(res http.ResponseWriter, req *http.Request, id int64) error {
+func DeleteSession(res http.ResponseWriter, req *http.Request) error {
+	val, cErr := FromCookie(req, SessionCookie) // Get session info from cookie
+	if cErr != nil {
+		return ErrNotLoggedIn
+	}
+
+	id, convErr := strconv.ParseInt(val, 10, 64) // Change cookie val into key
+	if convErr != nil {
+		return ErrInvalidSession
+	}
+
 	ctx := appengine.NewContext(req)
 	DeleteCookie(res, SessionCookie)
 	return retrievable.DeleteEntity(ctx, (&Session{}).Key(ctx, id))

@@ -11,7 +11,7 @@ Globals.go by Allen J. Mills
 
 const GCS_BucketID = "edueditorimages"
 
-//const GCS_BucketID = "liquid-journal-88820_bucket1"
+// const GCS_BucketID = "liquid-journal-88820_bucket1"
 
 var Allowed_Filetypes = []string{"png", "jpg", "jpeg", "gif"} // Ensure that all types here are also supported as image/jpeg for MIME types.
 
