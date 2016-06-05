@@ -13,6 +13,8 @@ import (
 	"golang.org/x/net/context"
 	"google.golang.org/appengine/datastore"
 	// "strconv"
+	"encoding/json"
+	// "fmt"
 	"strings"
 )
 
@@ -27,7 +29,7 @@ import (
 type User struct {
 	Name       string
 	Email      string
-	Permission int   `datastore:"-"`
+	Permission int
 	ID         int64 `datastore:"-"`
 }
 
@@ -39,6 +41,15 @@ func (u *User) Key(ctx context.Context, id interface{}) *datastore.Key {
 
 func (u *User) StoreKey(k *datastore.Key) {
 	u.ID = k.IntID()
+}
+
+// ToString
+func (u *User) ToString() string {
+	b, _ := json.Marshal(u)
+	return string(b)
+}
+func (u *User) FromString(s string) {
+	json.Unmarshal([]byte(s), &u)
 }
 
 // Internal Function

@@ -13,7 +13,6 @@ import (
 	"golang.org/x/net/context"
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
-	"google.golang.org/appengine/user"
 	"net/http"
 )
 
@@ -81,15 +80,13 @@ func HasPermission(res http.ResponseWriter, req *http.Request, minimumRequiredPe
 	return false, ErrInvalidPermission
 }
 
-func NewPermission(appu *user.User, recommended int) Permission {
-	if appu != nil && appu.Admin {
-		return Permission{AdminPermissions}
-	}
-	return Permission{recommended}
+func NewPermission(recommended int) *Permission {
+	return &Permission{recommended}
 }
 
-func SetPermission(ctx context.Context, uID int64, perm *Permission) error {
-	_, putErr := retrievable.PlaceEntity(ctx, uID, perm)
+func SetPermission(ctx context.Context, uID int64, perm int) error {
+	p := &Permission{perm}
+	_, putErr := retrievable.PlaceEntity(ctx, uID, p)
 	return putErr
 }
 

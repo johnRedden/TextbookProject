@@ -44,12 +44,13 @@ func init() {
 	// Module: Authentication/Session
 	// Files: AUTH_authentication.go
 	/****************************************/
-	r.GET("/login", AUTH_Login_GET)         // <user> User Login
-	r.POST("/login", AUTH_LOGIN_POST)       //
-	r.GET("/logout", AUTH_Logout_GET)       // <user> User Logout
-	r.GET("/register", AUTH_Register_GET)   // <user> Register New Users/Modify existing users
-	r.POST("/register", AUTH_Register_POST) // <user><auth> Post to make the new user
-	r.GET("/user", AUTH_UserInfo)           // <user><auth><DEBUG> DEBUG user info
+	r.GET("/login", AUTH_Login_GET)                       // <user> User Login
+	r.POST("/login", AUTH_LOGIN_POST)                     //
+	r.GET("/logout", AUTH_Logout_GET)                     // <user> User Logout
+	r.GET("/register", AUTH_Register_GET)                 // <user> Register New Users/Modify existing users
+	r.GET("/register/:UUID", AUTH_Register_GET_USINGUUID) //
+	r.POST("/register", AUTH_Register_POST)               // <user><auth> Post to make the new user
+	r.GET("/user", AUTH_UserInfo)                         // <user><auth><DEBUG> DEBUG user info
 
 	// Module: Structure Readers
 	// Files: main.go, STRUCT_Handlers.go

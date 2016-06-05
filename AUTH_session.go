@@ -50,6 +50,9 @@ func (p *Session) StoreKey(k *datastore.Key) {
 func NewSession(res http.ResponseWriter, req *http.Request, userId int64) (Session, error) {
 	ctx := appengine.NewContext(req)
 	s := Session{}
+	if userId == int64(0) {
+		return Session{}, ErrInvalidSession
+	}
 	s.UserKey = userId
 	s.Valid = time.Now().Add(StorageDuration)
 

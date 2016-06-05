@@ -6,16 +6,20 @@
 <body>
 
 <form method="POST">
-    <input type="email" placeholder="Email" name="Email" />
-    <input type="text" placeholder="Name" name="Name" />
+    <input type="email" placeholder="Email" name="Email" value="{{.Email}}" {{if .Email}}readonly{{end}} />
+    <input type="text" placeholder="Name" name="Name" value="{{.Name}}" />
     <input type="password" placeholder="Password" name="Password" />
     <input type="submit" value="Register" />
 </form>
 
-<form method="POST">
-    <input type="text" style="display: none;" name="Oauth" value="yes"></input>
+<form method="GET">
+    <input type="text" style="display: none;" name="Oauth" value="now"></input>
     <input type="submit" value="Login With Gmail?" />
 </form>
+
+<div style="border: 1px solid black; margin-top: 20px;">
+{{.}}
+</div>
 
 </body>
 </html>

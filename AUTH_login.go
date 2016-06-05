@@ -40,24 +40,28 @@ func GetUserIDFromLogin(ctx context.Context, email, password string) (int64, err
 	return uLogin.UserKey, nil
 }
 
-func CreateUserFromLogin(ctx context.Context, email, password string, u *User) error {
+func CreateUserFromLogin(ctx context.Context, email, password string, u *User) (*User, error) {
 	// Step 1: Verify user does not exist
 	if checkLoginErr := retrievable.GetEntity(ctx, &LoginAccount{}, email); checkLoginErr == nil {
-		return ErrUserExists
+		return u, ErrUserExists
 	} else if checkLoginErr != datastore.ErrNoSuchEntity {
-		return checkLoginErr
+		return u, checkLoginErr
 	}
 
 	// Step 2: Place user into datastore
-	uKey, putUserErr := retrievable.PlaceInDatastore(ctx, u.ID, u)
+	uKey, putUserErr := retrievable.PlaceInDatastore(ctx, int64(0), u)
 	if putUserErr != nil {
-		return putUserErr
+		return u, putUserErr
+	}
+
+	if u.ID == int64(0) {
+		return u, errors.New("HEY, DATASTORE IS STUPID")
 	}
 
 	// Step 3: Encrypt user password
 	cPass, cErr := bcrypt.GenerateFromPassword([]byte(password), 0)
 	if cErr != nil {
-		return cErr
+		return u, cErr
 	}
 
 	// Step 4: Create user login profile
@@ -65,7 +69,7 @@ func CreateUserFromLogin(ctx context.Context, email, password string, u *User) e
 	uLogin.Password = cPass
 	uLogin.UserKey = uKey.IntID()
 	_, putErr := retrievable.PlaceEntity(ctx, email, &uLogin)
-	return putErr
+	return u, putErr
 }
 
 func DeleteUserIDAndLoginKey(ctx context.Context, email, password string) error {

@@ -11,12 +11,16 @@ AUTH_authentication.go by Allen J. Mills
 
 import (
 	"fmt"
+	"github.com/Esseh/retrievable"
 	"github.com/julienschmidt/httprouter"
+	"github.com/nu7hatch/gouuid"
 	"golang.org/x/net/context"
 	"google.golang.org/appengine"
+	// "google.golang.org/appengine/memcache"
 	"google.golang.org/appengine/user"
 	"net/http"
 	// "strings"
+	// "time"
 )
 
 // Internal Function, Outbound Service
@@ -28,6 +32,11 @@ import (
 func GetOAuthURL(ctx context.Context, redirect string) string {
 	login, _ := user.LoginURLFederated(ctx, redirect, "")
 	return login
+}
+
+func NewLoginUUID() string {
+	u4, _ := uuid.NewV4()
+	return u4.String()
 }
 
 //// --------------------------
@@ -94,8 +103,41 @@ func AUTH_Logout_GET(res http.ResponseWriter, req *http.Request, params httprout
 // Optional Options: redirect
 func AUTH_Register_GET(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	ctx := appengine.NewContext(req)
-	u := user.Current(ctx) // we may be serving them an oauth user.
-	ServeTemplateWithParams(res, "register.html", u)
+	screen := User{}
+
+	registerUUID, cErr := FromCookie(req, "UUID")
+	if cErr != nil {
+		registerUUID = NewLoginUUID() // No uuid, we'll make one
+		ToCookie(res, "UUID", registerUUID, StorageDuration)
+	} else {
+		getErr := retrievable.GetFromMemcache(ctx, registerUUID, &screen)
+		if getErr != nil { // get what we stored for this uuid
+			fmt.Fprintln(res, "<html><plaintext>UUID ERROR!", getErr)
+			return
+		}
+	}
+
+	if req.FormValue("Oauth") == "now" {
+		lgn, _ := user.LoginURL(ctx, "/register?Oauth=yes")
+		lgo, _ := user.LogoutURL(ctx, lgn)
+		http.Redirect(res, req, lgo, http.StatusFound)
+		return
+	}
+
+	if req.FormValue("Oauth") == "yes" {
+		u := user.Current(ctx)
+		screen.Email = u.Email
+		if u.Admin {
+			screen.Permission = AdminPermissions
+		}
+	}
+
+	retrievable.PlaceInMemcache(ctx, registerUUID, screen, 0)
+	ServeTemplateWithParams(res, "register.html", screen)
+}
+func AUTH_Register_GET_USINGUUID(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	ToCookie(res, "UUID", params.ByName("UUID"), 0)
+	http.Redirect(res, req, "/register", http.StatusFound)
 }
 
 // Call: /register
@@ -109,21 +151,56 @@ func AUTH_Register_GET(res http.ResponseWriter, req *http.Request, params httpro
 // Mandatory Options:
 // Optional Options: redirect
 func AUTH_Register_POST(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	ctx := appengine.NewContext(req)
 	fmt.Fprint(res, "<html><plaintext>")
-	if req.FormValue("Oauth") == "yes" {
-		fmt.Fprintln(res, "Oauth has been requested, at this point")
-		fmt.Fprintln(res, "in time a url has been submitted to google.")
-		fmt.Fprintln(res, "Refresh the page and assume a google oauth token has been created.")
+	ctx := appengine.NewContext(req)
 
-		fmt.Fprintln(res, "\n", GetOAuthURL(ctx, "/register"))
+	name := req.FormValue("Name")
+	email := req.FormValue("Email")
+	pswd := req.FormValue("Password")
+
+	ruuid, cErr := FromCookie(req, "UUID")
+	if cErr != nil {
+		fmt.Fprintln(res, "Error with uuid cookie!")
+		fmt.Fprintln(res, cErr, "\n")
+	}
+
+	uNew := &User{}
+	getErr := retrievable.GetFromMemcache(ctx, ruuid, uNew)
+	if getErr != nil {
+		fmt.Fprintln(res, "Error with UUID mamcache!", getErr, "\n")
+	}
+
+	uNew.Email = email
+	uNew.Name = name
+
+	fmt.Fprintln(res, "Name:", name)
+	fmt.Fprintln(res, "Email:", email)
+	fmt.Fprintln(res, "Password:", pswd)
+	fmt.Fprintln(res, "Permission:", uNew.Permission)
+	fmt.Fprintln(res, "Now Preforming Creation actions.")
+
+	uNew, createErr := CreateUserFromLogin(ctx, uNew.Email, pswd, uNew)
+	if createErr != nil {
+		fmt.Fprintln(res, "Creation Error!", createErr)
 		return
 	}
-	fmt.Fprintln(res, "In this case, information is coming in:")
-	fmt.Fprintln(res, req.FormValue("Name"), "\n", req.FormValue("Email"), "\n", req.FormValue("Password"), "\n")
-	fmt.Fprintln(res, user.Current(ctx))
-	fmt.Fprintln(res, "We would preform register actions and log in.")
-	// http.Redirect(res, req, "/"+req.FormValue("redirect"), http.StatusSeeOther)
+
+	fmt.Fprintln(res, "Creation Done:", uNew)
+
+	permErr := SetPermission(ctx, uNew.ID, uNew.Permission)
+	if permErr != nil {
+		fmt.Fprintln(res, "Permission Error!", uNew)
+		return
+	}
+	fmt.Fprintln(res, "Permission Done:", uNew)
+
+	sess, sErr := NewSession(res, req, uNew.ID)
+	if sErr != nil {
+		fmt.Fprintln(res, "Sesssion Error!", sErr)
+		return
+	}
+	ToCookie(res, SessionCookie, fmt.Sprint(sess.ID), StorageDuration)
+	fmt.Fprintln(res, "Session Done:", sess)
 }
 
 // Call: /user
