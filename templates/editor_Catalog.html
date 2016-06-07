@@ -48,7 +48,7 @@
         var contentEditor = CKEDITOR.replace('JQ-Description',noImagesConfig);
 
         $("#JQ-SubmitButton").click(function(){
-            console.log("Save Called!")
+            //console.log("Save Called!")
             params = {
                 ID: $("#JQ-ID").val(),
                 CatalogName: $("#JQ-Title").val(),
@@ -56,8 +56,8 @@
                 Version: $("#JQ-Version").val(),
                 Description:CKEDITOR.instances['JQ-Description'].getData(),
             }
-            console.log("Posting: ")
-            console.log(params)
+            //console.log("Posting: ")
+            //console.log(params)
             $.post("/api/create/catalog",params,function(data){
                 j = $.parseJSON(data);
                 console.log(j.result +":"+ j.reason)
