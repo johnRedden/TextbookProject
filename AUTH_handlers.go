@@ -168,9 +168,10 @@ func AUTH_Register_GET(res http.ResponseWriter, req *http.Request, params httpro
 	if req.FormValue("Oauth") == "yes" {
 		u := user.Current(ctx)
 		screen.Email = u.Email
-		if u.Admin {
-			screen.Permission = AdminPermissions
-		}
+		// A bug has been possibly found with this? Users that did not sign in with google *SOMEHOW* were being given Admin privleges.
+		// if u.Admin {
+		// 	screen.Permission = AdminPermissions
+		// }
 		screen.Redirect, _ = user.LogoutURL(ctx, "/"+req.FormValue("redirect"))
 	}
 
@@ -221,10 +222,11 @@ func AUTH_Register_POST(res http.ResponseWriter, req *http.Request, params httpr
 		return
 	}
 
-	permErr := SetPermission(ctx, uNew.ID, uNew.Permission)
-	if ErrorPage(res, "User Permission Error: Cannot create a permission value for user.", permErr) {
-		return
-	}
+	// FUTURE: Advanced user permissions
+	// permErr := SetPermission(ctx, uNew.ID, uNew.Permission)
+	// if ErrorPage(res, "User Permission Error: Cannot create a permission value for user.", permErr) {
+	// 	return
+	// }
 
 	_, sErr := NewSession(res, req, uNew.ID)
 	if ErrorPage(res, "User Session Error: Cannot create session.", sErr) {
