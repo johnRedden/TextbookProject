@@ -20,6 +20,7 @@ var noImagesConfig = {
             filebrowserUploadUrl: '/api/ckeditor/create?action=uploadURL&oid='+argID,
             removePlugins: 'forms',
     };
+
     return stdConfig;
  }
 

@@ -145,7 +145,8 @@
             });
 
 //CKeditor Stuff ***************************************
-            var contentEditor = CKEDITOR.replace('JQ-Content',stdImageConfig(objectiveID));
+            var config = stdImageConfig(objectiveID);           
+            var contentEditor = CKEDITOR.replace('JQ-Content', config);
             var keyTakeawaysEditor = CKEDITOR.replace('JQ-KeyTakeaways',stdImageConfig(objectiveID));
 //*********************************************************
 
