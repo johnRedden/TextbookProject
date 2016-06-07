@@ -139,8 +139,8 @@ func GetUserFromSession(res http.ResponseWriter, req *http.Request) (User, error
 
 	u := User{}
 	getErr := retrievable.GetEntity(ctx, &u, s.UserKey)
-	if getErr == nil {
-		u.Permission = GetPermission(ctx, u.ID)
-	}
+	// if getErr == nil {
+	// 	u.Permission = GetPermission(ctx, u.ID)
+	// }
 	return u, getErr
 }
