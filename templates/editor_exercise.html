@@ -52,8 +52,6 @@
 <input id="JQ-OID" readonly style="display: none;" value="{{.Parent}}" />
 
 
-<label for="JQ-Results">Results:</label>
-<input id="JQ-Results" readonly />
 
     </div>
 
@@ -111,9 +109,9 @@
                 j = $.parseJSON(data);
                 console.log(j.result +":"+ j.reason)
                 if (j.code == 0){
-                    $("#JQ-Results").val("Submission Success");
+                    //$("#JQ-Results").val("Submission Success");
                 } else {
-                    $("#JQ-Results").val(j.reason)
+                    //$("#JQ-Results").val(j.reason)
                 }
                 toggleSaveBtn('saved');
             })

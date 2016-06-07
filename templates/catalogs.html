@@ -93,7 +93,7 @@
                 localStorage.catalogs = JSON.stringify( ($.parseJSON(data)).results );   
                 //gotta JSON.parse the strigified json object in local storage.  
                 console.log('API hit Catalogs');
-                console.log(data);
+                //console.log(data);
                 populateCatalog();
             });
         }

@@ -330,7 +330,7 @@
             //Adding a new catalog here
             $('#sectionBtn-'+chapterID).on('click',function(){
                 var newSectionName =  $('#sectionInput-'+chapterID).val();
-                console.log('new sect')
+                //console.log('new sect')
                 newSectionName = newSectionName.replace(/^\s+|\s+$/g, "").replace(/\s+/g, " "); // regex to replace space in middle
 
                 $('#cat-'+chapterID).html('<a href="#" class="list-group-item" ><i class="glyphicon glyphicon-download"></i>Loading...</a>');
