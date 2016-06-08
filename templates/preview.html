@@ -104,7 +104,10 @@
         </div>
         <hr/>
         <div class="objective"><strong>Objective: </strong><span id="objective-title">{{.Title}}</span>
-            <button id="print-objective" class="btn btn-default btn-sm pull-right"><span class="glyphicon glyphicon-print"></span></button>
+            <div class="btn-group btn-group-sm pull-right" role="group">
+            <button id="share-objective" class="btn btn-default btn-sm "><span class="glyphicon glyphicon-share" data-toggle="modal" data-target="#objectiveReaderModal"></span></button>
+            <button id="print-objective" class="btn btn-default btn-sm "><span class="glyphicon glyphicon-print"></span></button>
+            </div>
         </div>
         <br/>
         <div id="objective-content" class="text-justify">{{.Content}}</div>
@@ -131,11 +134,53 @@
         </div>
         <div id="printableDiv" class="hidden"> </div>
         
+
+
+        <!-- Reader Bodal Modal *******************-->
+          <div class="modal fade" id="objectiveReaderModal" role="dialog">
+            <div class="modal-dialog">
+            
+              <!-- Modal content-->
+              <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h2 class="modal-title"><span class="glyphicon glyphicon-share"></span> Share Objective</h2>
+                </div>
+                <div class="modal-body">
+                    <h4 class="modal-title">Iframe code and more formatting options coming soon.  For now, just the URL.</h4>
+                    <br/>
+                    <p><span id="genDeleteType">Book: Book Info Here </span><span id="genDeleteName"></span></p>
+                    <p><span>ID: </span><span id="objective-id"></span></p> 
+                    <pre id="objective-link">http link here</pre>    
+                      <div id="backColor" class="dropdown">
+                        <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">Background Color
+                        <span class="caret"></span></button>
+                        <ul class="dropdown-menu">
+                          <li><a href="#">white</a></li>
+                          <li><a href="#">lightblue</a></li>
+                          <li><a href="#">lightpink</a></li>
+                          <li><a href="#">lightgreen</a></li>
+                          <li><a href="#">oldlace</a></li>
+                        </ul>
+                      </div>
+  
+                </div>
+                <div class="modal-footer">
+                  <button id="objective-read" type="button" class="btn btn-success" data-dismiss="modal">Goto Page</button>
+                  <button type="button" class="btn btn-warning" data-dismiss="modal">Cancel</button>
+                </div>
+              </div>
+              
+            </div>
+          </div>
+        <!-- END  Modal ******************-->
+        
     </div>
 
     <script type="text/javascript">
         $(document).on('ready',function(){
             objectiveID = $("#JQ-ObjectiveID").val();
+            //console.log(location.origin);
 
             $('#font-size-small-btn').click(function() {
                 $('body').removeClass("font-size-large");
@@ -182,6 +227,25 @@
                         loadCSS: "/public/css/ens-print.css",     
                 });
                 
+            });
+            $('#share-objective').click(function(){
+                var link = location.origin+ "/read/objective?ID="+objectiveID;
+                $('#objective-id').html(objectiveID);
+                $('#objective-link').html(link);
+                $('#objective-read').off('click').on('click',function(){
+                    window.open(link);
+                });
+                $('#backColor ul li > a').click(function(){
+                    c=$(this).html();
+                    newLink = link+'&Background='+c;
+                    $('#objective-link').html(newLink);
+                    SelectText('objective-link');
+                    $('#objective-read').off('click').on('click',function(){
+                        window.open(newLink);
+                    });
+                });
+                
+
             });
             $('#print-keytakeaways').click(function(){
                 $('#printableDiv').html('<strong>Objective:</strong> '+$('#objective-title').html()+'<br/>Key Takeaways:<br/>');
@@ -231,7 +295,7 @@
                 var exerciseHTML ='\
                     <div class="panel panel-default" id="'+exerciseID+'">\
                         <div class="panel-heading">\
-                            <a class="collapsed" data-toggle="collapse" data-target="#ex-'+exerciseID+'" href="#collapse1"></a>\
+                            <a class="collapsed" data-toggle="collapse" data-target="#ex-'+exerciseID+'" ></a>\
                             <span class="pull-right ans">Answer &nbsp</span>\
                             <strong><span class="num">'+number+'.</span> <span class="instr">'+instruction+'</span></strong><br/> \
                             <span class="checkbox">\
@@ -284,7 +348,28 @@
 
             getObjectiveExercises(objectiveID);
 
+
+
         });
+
+function SelectText(element) {
+    var doc = document
+        , text = doc.getElementById(element)
+        , range, selection
+    ;    
+    if (doc.body.createTextRange) {
+        range = document.body.createTextRange();
+        range.moveToElementText(text);
+        range.select();
+    } else if (window.getSelection) {
+        selection = window.getSelection();        
+        range = document.createRange();
+        range.selectNodeContents(text);
+        selection.removeAllRanges();
+        selection.addRange(range);
+    }
+}
+
     </script>
 
 </body>

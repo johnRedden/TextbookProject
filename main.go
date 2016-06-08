@@ -40,6 +40,7 @@ func init() {
 	r.GET("/toc/:ID", getSimpleTOC)      // <user> user viewable toc for a book
 	r.GET("/about", getAboutPage)        // <user> About Page
 	r.GET("/favicon.ico", favIcon)       // <user> favicon
+	r.GET("/read/objective", getObjectivePage)     // <user> Objective Page Reader
 
 	// Module: Authentication/Session
 	// Files: AUTH_authentication.go
@@ -173,6 +174,11 @@ func home(res http.ResponseWriter, req *http.Request, params httprouter.Params) 
 func getAboutPage(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	pu, _ := GetUserFromSession(res, req)
 	ServeTemplateWithParams(res, "about.html", pu)
+}
+
+func getObjectivePage(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	pu, _ := GetUserFromSession(res, req)
+	ServeTemplateWithParams(res, "reader_Objective.html", pu)
 }
 
 // Call: /toc.html/:ID

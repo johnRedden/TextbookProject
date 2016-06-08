@@ -1,0 +1,38 @@
+
+body{
+    font-size:18px; /*todo toggle this*/
+    line-height: 1.5;
+    font-family: 'Merriweather', Georgia, 'Times New Roman', Times, serif;
+    text-align: justify;  /*todo toggle this*/
+    width:100%;
+}
+img {
+    max-width: 100%;
+    height: auto !important;
+    width: auto\9; /* IE8 */
+}
+.bookPage{
+    border-radius: 5px;
+    background: white;
+    border-color: darkgrey;
+    border-style: solid;
+    border-width: 1px;
+    margin-top:10px;
+}
+.ENS-Title, #keys{
+    border-radius: 5px;
+    background: whitesmoke;
+    padding: 5px;
+    margin-top:10px;
+    margin-bottom:5px;
+}
+.ens-example {
+    border-radius: 5px;
+    background: whitesmoke;
+    padding: 10px; 
+    border-color: darkgrey;
+    border-style: solid;
+    border-width: 1px;
+    margin-bottom:10px;
+    margin-top:10px;
+}

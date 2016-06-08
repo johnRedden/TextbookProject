@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <!-- Required meta tags always come first -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+
+    <title>eduNetSystems Reader</title>
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <!-- JQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <!-- Mathjax -->
+    <script type="text/javascript" async src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+
+    <script type="text/javascript" src="/public/js/printThis.js"></script>
+
+    <link rel="stylesheet" href="/public/css/ens-reader.css">
+
+    <style type="text/css">
+
+
+    </style>
+
+
+</head>
+<body>
+
+    <div id="objectiveContent" class="container bookPage">Loading...</div>
+    <div id="footer">Some sort footer bar.</div>
+    <script type="text/javascript">
+        $(document).on('ready',function(){
+
+            var objectiveID = getUrlParameter('ID');
+            //do something if no id
+
+            var backgroundColor = getUrlParameter('Background');
+            if(backgroundColor){
+                $('body').css('background-color', backgroundColor);
+            }else{
+                $('body').css('background-color', 'oldLace');
+
+            }
+
+            
+            $.get("/api/objective.html?ID="+objectiveID,function(data, status){
+                    //console.log(data);
+                    $('#objectiveContent').html(data);
+                    $('.ENS-Title').prepend('<strong>Objective: </strong>');
+                    $('.ENS-KeyTakeaways').prepend('<p id="keys"><strong>Key Takeaways: </strong><p>');
+                    MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+            });
+
+
+           
+
+
+        });
+
+
+        //Utility methods
+        var getUrlParameter = function getUrlParameter(sParam) {
+            var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+                sURLVariables = sPageURL.split('&'),
+                sParameterName,
+                i;
+
+            for (i = 0; i < sURLVariables.length; i++) {
+                sParameterName = sURLVariables[i].split('=');
+
+                if (sParameterName[0] === sParam) {
+                    return sParameterName[1] === undefined ? true : sParameterName[1];
+                }
+            }
+        };
+    </script>
+
+</body>
+</html>
