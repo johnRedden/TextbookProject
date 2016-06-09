@@ -19,21 +19,26 @@
     <!-- Latest compiled and minified JavaScript -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 
-    <script type="text/javascript" src="/public/js/printThis.js"></script>
-
     <link rel="stylesheet" href="/public/css/ens-reader.css">
-
-    <style type="text/css">
-
-
-    </style>
 
 
 </head>
 <body>
+    <div class="container bookPage">
+        <div id="menu" class="btn-group btn-group-sm pull-right" role="group" aria-label="Font Size">
+          <button id="increaseFont" type="button" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button>
+          <button id="decreaseFont" type="button" class="btn btn-default"><span class="glyphicon glyphicon-minus"></span></button>
+          <button id="print" type="button" class="btn btn-default"><span class="glyphicon glyphicon-print"></span></button>
+        </div>
 
-    <div id="objectiveContent" class="container bookPage">Loading...</div>
-    <div id="footer">Some sort footer bar.</div>
+        <div id="objectiveContent" >Loading...</div>
+        <div id="objectiveInfo">
+            <span id="author"> </span><br/>
+            <span id="version"> </span><br/>
+            <span>© content.eduNetSystems.com</span>
+        </div>
+    </div>
+
     <script type="text/javascript">
         $(document).on('ready',function(){
 
@@ -54,15 +59,32 @@
                     $('#objectiveContent').html(data);
                     $('.ENS-Title').prepend('<strong>Objective: </strong>');
                     $('.ENS-KeyTakeaways').prepend('<p id="keys"><strong>Key Takeaways: </strong><p>');
+                    var v = $('#objectiveContent').find('.ENS-Version');
+                    var a = $('#objectiveContent').find('.ENS-Author');
+                    $('#author').html('Author: '+a.html());
+                    $('#version').html('Version: '+v.html());
+                    v.html('');
+                    a.html('');
+ 
                     MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
             });
 
+            $('#increaseFont').click(function(){
+                var x = parseInt($('body').css('font-size'));
+                if(x<48){
+                    $('body').css('font-size', x+2+'px');
+                }
+            });
 
-           
-
-
+            $('#decreaseFont').click(function(){
+                var x = parseInt($('body').css('font-size'));
+                if(x>8)
+                    $('body').css('font-size', x-2+'px');
+            });
+            $('#print').click(function(){
+                window.print();
+            });
         });
-
 
         //Utility methods
         var getUrlParameter = function getUrlParameter(sParam) {

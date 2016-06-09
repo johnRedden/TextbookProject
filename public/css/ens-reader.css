@@ -1,6 +1,6 @@
 
 body{
-    font-size:18px; /*todo toggle this*/
+    font-size:18px; 
     line-height: 1.5;
     font-family: 'Merriweather', Georgia, 'Times New Roman', Times, serif;
     text-align: justify;  /*todo toggle this*/
@@ -18,8 +18,9 @@ img {
     border-style: solid;
     border-width: 1px;
     margin-top:10px;
+    margin-bottom:10px;
 }
-.ENS-Title, #keys{
+.ENS-Title, #keys, #objectiveInfo{
     border-radius: 5px;
     background: whitesmoke;
     padding: 5px;
