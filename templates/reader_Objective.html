@@ -20,6 +20,12 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 
     <link rel="stylesheet" href="/public/css/ens-reader.css">
+    <style>
+    #menu{
+        margin-top:13px;
+        margin-right:5px;
+    }
+    </style>
 
 
 </head>
@@ -68,21 +74,23 @@
  
                     MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
             });
-
+//menuBar
             $('#increaseFont').click(function(){
                 var x = parseInt($('body').css('font-size'));
                 if(x<48){
                     $('body').css('font-size', x+2+'px');
                 }
+                $(this).blur();
             });
-
             $('#decreaseFont').click(function(){
                 var x = parseInt($('body').css('font-size'));
                 if(x>8)
                     $('body').css('font-size', x-2+'px');
+                $(this).blur();
             });
             $('#print').click(function(){
                 window.print();
+                $(this).blur();
             });
         });
 

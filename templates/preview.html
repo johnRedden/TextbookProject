@@ -1,29 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-    
-    <!-- Required meta tags always come first -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no">
-    <meta http-equiv="x-ua-compatible" content="ie=edge">
-
-    <title>eduNetSystems Preview</title>
-
-    <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-    <!-- JQuery -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
-    <!-- Mathjax -->
-    <script type="text/javascript" async src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML"></script>
-
-    <!-- Latest compiled and minified JavaScript -->
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+{{template "Head"}}
 
     <script type="text/javascript" src="/public/js/printThis.js"></script>
-
+<!--
     <link rel="stylesheet" href="/public/css/ens-contentSystem.css">
 
-
+-->
     <style type="text/css">
 
     body{
@@ -45,6 +29,7 @@
         border-style: solid;
         border-width: 1px;
         margin-top:10px;
+        margin-bottom:10px;
     }
     .font-size-small {
         font-size: small;
@@ -88,12 +73,35 @@
         }
 
 
+        .mono { font-family: Consolas, Lucida Console, monospace;
+        font-size:small; 
+        width:100%;
+        color:black;
+        }
+        .shareBox{
+                    border-radius: 5px;
+        background: whitesmoke;
+        padding: 10px; 
+        border-color: darkgrey;
+        border-style: solid;
+        border-width: 1px;
+        margin-bottom:10px;
+        margin-top:10px;
+
+        }
+        .modal-footer, .modal-header, .close{
+            background-color: #233B3B;
+            color:white;
+        }
+
     </style>
 
 
 
 </head>
 <body>
+<!--preview page needs server stuff-->
+    {{template "Nav" }}
     <div class="container bookPage" id="ENScontent">
     <input id="JQ-ObjectiveID" type="hidden" value="{{.ID}}" readonly>
 
@@ -138,38 +146,50 @@
         
 
 
-        <!-- Reader Bodal Modal *******************-->
+        <!-- Reader Share Modal *******************-->
           <div class="modal fade" id="objectiveReaderModal" role="dialog">
             <div class="modal-dialog">
             
               <!-- Modal content-->
-              <div class="modal-content">
+              <div  class="modal-content ">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
                     <h2 class="modal-title"><span class="glyphicon glyphicon-share"></span> Share Objective</h2>
                 </div>
-                <div class="modal-body">
-                    <h4 class="modal-title">Iframe code and more formatting options coming soon.  For now, just the URL.</h4>
-                    <br/>
-                    <p><span id="genDeleteType">Book: Book Info Here </span><span id="genDeleteName"></span></p>
-                    <p><span>ID: </span><span id="objective-id"></span></p> 
-                    <pre id="objective-link">http link here</pre>    
-                      <div id="backColor" class="dropdown">
+                <div id="shareWell" class="modal-body">
+
+                    <div id="backColor" class="dropdown">
                         <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">Background Color
                         <span class="caret"></span></button>
                         <ul class="dropdown-menu">
-                          <li><a href="#">white</a></li>
-                          <li><a href="#">lightblue</a></li>
-                          <li><a href="#">lightpink</a></li>
-                          <li><a href="#">lightgreen</a></li>
-                          <li><a href="#">oldlace</a></li>
+                            <li><a>oldlace</a></li>
+                            <li><a>white</a></li>
+                            <li><a>lightblue</a></li>
+                            <li><a>lightpink</a></li>
+                            <li><a>lightgreen</a></li>
+                            <li class="divider"></li>
+                            <li><div class="text-center">Any Named Color</div></li>
                         </ul>
-                      </div>
-  
+                    </div>
+                  
+
+                    <div class="shareBox">
+                        <div><strong>Link to objective:</strong></div>
+                        <textarea id="objective-link" class="mono">http link here</textarea>
+                        <a id="linkBtn" class="btn btn-info"><span class="glyphicon glyphicon-copy"></span> Select Code.</a>
+                    </div>
+                   
+                    <div class="shareBox">
+                        <div><strong>Iframe embed code:</strong></div>
+                        <textarea id="objective-embed" class="mono">Embed code here</textarea> 
+                        <a id="embedBtn" class="btn btn-info"><span class="glyphicon glyphicon-copy"></span> Select Code.</a>
+                    </div>
+                 
                 </div>
+
                 <div class="modal-footer">
                   <button id="objective-read" type="button" class="btn btn-success" data-dismiss="modal">Goto Page</button>
-                  <button type="button" class="btn btn-warning" data-dismiss="modal">Cancel</button>
+                  <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
                 </div>
               </div>
               
@@ -178,10 +198,15 @@
         <!-- END  Modal ******************-->
         
     </div>
+    <br/>
+
+        {{template "Footer"}}
 
     <script type="text/javascript">
         $(document).on('ready',function(){
             objectiveID = $("#JQ-ObjectiveID").val();
+            defaultBackgroundColor = $('body').css('background-color');
+            console.log(defaultBackgroundColor)
             //console.log(location.origin);
 
             $('#font-size-small-btn').click(function() {
@@ -232,19 +257,33 @@
             });
             $('#share-objective').click(function(){
                 var link = location.origin+ "/read/objective?ID="+objectiveID;
+                var embed = '<iframe src="'+link+'" width="100%" height="600" allowfullscreen="allowfullscreen"></iframe>';
                 $('#objective-id').html(objectiveID);
                 $('#objective-link').html(link);
+                $('#objective-embed').html(embed);
+                $('#shareWell').css('background-color',defaultBackgroundColor);
+                $('#linkBtn').off('click').on('click',function(){
+                    SelectText('objective-link');
+                });
+                $('#embedBtn').off('click').on('click',function(){
+                    SelectText('objective-embed');
+                });
                 $('#objective-read').off('click').on('click',function(){
-                    window.open(link);
+                    window.open($('#objective-link').val());
                 });
                 $('#backColor ul li > a').click(function(){
                     c=$(this).html();
-                    newLink = link+'&Background='+c;
+                    var newLink = link+'&Background='+c;
+                    var newEmbed = '<iframe src="'+newLink+'" width="100%" height="600" allowfullscreen="allowfullscreen"></iframe>';
+                    $('#shareWell').css('background-color',c);
                     $('#objective-link').html(newLink);
-                    SelectText('objective-link');
-                    $('#objective-read').off('click').on('click',function(){
-                        window.open(newLink);
-                    });
+                    $('#objective-embed').html(newEmbed);
+                });
+                $('#colorInput').keypress(function (e) {
+                  if (e.which == 13) {
+                    $(this).submit();
+                    return false;    //<---- Add this line
+                  }
                 });
                 
 
