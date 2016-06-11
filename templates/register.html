@@ -36,16 +36,13 @@
 <div centerfold><content>
 
     <form method="POST">
-        <input fill type="email" placeholder="Email" name="Email" value="{{.Email}}" {{if .Email}}readonly{{end}} />
+        <input fill type="email" placeholder="Email" name="Email" value="{{.Email}}" readonly />
         <input fill type="text" placeholder="Name" name="Name" value="{{.Name}}" />
-        <input fill type="password" placeholder="Password" name="Password" />
+        <select name="Level">
+            <option value="reader" selected>Reader</option>
+            <option value="writer">Creator</option>
+        </select>
         <input type="submit" value="Register" />
-    </form>
-
-    <form method="GET">
-        <input type="text" style="display: none;" name="Oauth" value="now"></input>
-        <input type="text" style="display: none;" name="redirect" value="{{.Redirect}}"></input>
-        <input type="submit" value="Register With Gmail?" />
     </form>
 </content></div>
 </body>

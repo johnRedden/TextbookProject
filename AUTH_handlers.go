@@ -16,11 +16,14 @@ import (
 	"github.com/nu7hatch/gouuid"
 	"golang.org/x/net/context"
 	"google.golang.org/appengine"
-	// "google.golang.org/appengine/memcache"
 	"google.golang.org/appengine/user"
 	"net/http"
-	// "strings"
-	// "time"
+	"strings"
+	"time"
+)
+
+var (
+	RegisterUUIDTime = time.Minute * time.Duration(3) // Three minutes until cookie deletes itself.
 )
 
 // Internal Function, Outbound Service
@@ -34,7 +37,7 @@ func GetOAuthURL(ctx context.Context, redirect string) string {
 	return login
 }
 
-func NewLoginUUID() string {
+func NewUUID() string {
 	u4, _ := uuid.NewV4()
 	return u4.String()
 }
@@ -42,6 +45,145 @@ func NewLoginUUID() string {
 //// --------------------------
 // Login Process,
 // Login, Logout, and registration handlers.
+////
+
+// Call: /logout
+// Description:
+// Deletes the user's local session data.
+// Will attempt to redirect the user to page at option:redirect if exists.
+//
+// Method: GET
+// Results: HTTP.Redirect
+// Mandatory Options:
+// Optional Options: redirect
+func AUTH_Logout_GET(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	DeleteSession(res)
+	ctx := appengine.NewContext(req)
+	lgo, _ := user.LogoutURL(ctx, "/"+req.FormValue("redirect"))
+	http.Redirect(res, req, lgo, http.StatusSeeOther)
+}
+
+////----------------------//
+// Register
+////
+
+// Call: /register
+// Description:
+// After user gains an OAuth token, will ask the user
+// for additional information to create the user's
+// PermissionUser.
+// Will forward value of option:redirect.
+//
+// Method: GET
+// Results: HTML
+// Mandatory Options:
+// Optional Options: redirect
+func AUTH_Register_GET(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	ctx := appengine.NewContext(req)
+	screen := User{}
+	// Step 1: UUID
+	registerUUID, cErr := FromCookie(req, "UUID")
+	if cErr != nil { // No uuid, we'll make one
+		registerUUID = NewUUID()
+		ToCookie(res, "UUID", registerUUID, RegisterUUIDTime)
+	} else {
+		getErr := retrievable.GetFromMemcache(ctx, registerUUID, &screen)
+		if ErrorPage(res, "UUID Error!", getErr) {
+			return
+		}
+	}
+
+	if authed, _ := FromCookie(req, "AUTHED"); authed != "yes" {
+		// if req.FormValue("Oauth") != "yes" { // has oauth occured?
+		// First time oauth. Go out to google.
+		ToCookie(res, "AUTHED", "yes", RegisterUUIDTime)
+		retrievable.PlaceInMemcache(ctx, registerUUID, screen, 0)
+		lgn, _ := user.LoginURLFederated(ctx, "/register?Oauth=yes&redirect="+req.FormValue("redirect"), "")
+		http.Redirect(res, req, lgn, http.StatusFound)
+		return
+	}
+
+	DeleteCookie(res, "AUTHED")
+
+	u := user.Current(ctx)
+	if u == nil {
+		ErrorPage(res, "OAuth Error!", ErrNotLoggedIn)
+		return
+	}
+	screen.Email = strings.ToLower(u.Email)
+	if u.Admin {
+		screen.Permission = AdminPermissions
+	}
+	// Output and get Name
+	retrievable.PlaceInMemcache(ctx, registerUUID, screen, 0)
+	ServeTemplateWithParams(res, "register.html", screen)
+	return
+}
+func AUTH_Register_GET_USINGUUID(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	ToCookie(res, "UUID", params.ByName("UUID"), 0)
+	http.Redirect(res, req, "/register?redirect="+req.FormValue("redirect"), http.StatusFound)
+}
+
+// Call: /register
+// Description:
+// After user submits the additional information required.
+// This call will make the permission user and issue a new session.
+// Will redirect to option:redirect if exists.
+//
+// Method: POST
+// Results: HTTP.Redirect
+// Mandatory Options:
+// Optional Options: redirect
+func AUTH_Register_POST(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	ctx := appengine.NewContext(req)
+
+	ruuid, cErr := FromCookie(req, "UUID")
+	if ErrorPage(res, "UUID Error: Cannot find UUID cookie.", cErr) {
+		return
+	}
+
+	uNew := &User{}
+	getErr := retrievable.GetFromMemcache(ctx, ruuid, uNew)
+	if ErrorPage(res, "UUID Error: Cannot find UUID memcache value.", getErr) {
+		return
+	}
+
+	// Validate info
+	if req.FormValue("Name") == "" || req.FormValue("Email") == "" {
+		ErrorPage(res, "Incoming information invalid. Attempt to register again.", ErrInvalidSession)
+		return
+	}
+
+	lvl := ReadPermissions
+	if req.FormValue("Level") == "writer" {
+		lvl = WritePermissions
+	}
+
+	// Set updated information
+	uNew.Name = req.FormValue("Name")
+	uNew.Permission = func(a, b int) int {
+		if a > b {
+			return a
+		}
+		return b
+	}(uNew.Permission, lvl)
+
+	_, putErr := retrievable.PlaceEntity(ctx, int64(0), uNew)
+	if ErrorPage(res, "User Creation Error", putErr) {
+		return
+	}
+
+	createErr := CreateLogin(ctx, uNew)
+	if ErrorPage(res, "Login Creation Error!", createErr) {
+		return
+	}
+	http.SetCookie(res, MakeSessionCookie(uNew))
+	DeleteCookie(res, "UUID")
+	http.Redirect(res, req, "/"+req.FormValue("redirect"), http.StatusSeeOther)
+}
+
+/////-----------------------//
+// Login
 ////
 
 // Call: /login
@@ -63,177 +205,38 @@ func NewLoginUUID() string {
 // Optional Options: redirect, changeuser
 func AUTH_Login_GET(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	// User has requested a login procedure.
-	screen := struct {
-		User
-		Redirect string `datastore:"-"`
-	}{
-		User{},
-		req.FormValue("redirect"),
-	}
 
-	if req.FormValue("Oauth") == "now" {
-		ctx := appengine.NewContext(req)
-		lgn, _ := user.LoginURL(ctx, "/login?Oauth=yes&redirect="+req.FormValue("redirect"))
-		lgo, _ := user.LogoutURL(ctx, lgn)
-		http.Redirect(res, req, lgo, http.StatusFound)
-		return
-	}
-
-	if req.FormValue("Oauth") == "yes" {
-		ctx := appengine.NewContext(req)
-		u := user.Current(ctx)
-		screen.Email = u.Email
-		screen.Redirect, _ = user.LogoutURL(ctx, "/"+req.FormValue("redirect"))
-	}
-
-	ServeTemplateWithParams(res, "login.html", screen)
-}
-
-func AUTH_LOGIN_POST(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	ctx := appengine.NewContext(req)
 
-	email := req.FormValue("Email")
-	pswd := req.FormValue("Password")
-
-	uid, loginErr := GetUserIDFromLogin(ctx, email, pswd)
-	if ErrorPage(res, "Login Validation Error", loginErr) {
+	if authed, _ := FromCookie(req, "AUTHED"); authed != "yes" {
+		ToCookie(res, "AUTHED", "yes", RegisterUUIDTime)
+		lgn, _ := user.LoginURLFederated(ctx, "/login?Oauth=yes&redirect="+req.FormValue("redirect"), "")
+		http.Redirect(res, req, lgn, http.StatusFound)
 		return
 	}
 
-	_, sErr := NewSession(res, req, uid)
-	if ErrorPage(res, "Session Creation Error!", sErr) {
+	ou := user.Current(ctx)
+	if ou == nil {
+		DeleteCookie(res, "AUTHED") // spoofed AUTHED cookie. Delete this one and give an error page.
+		ErrorPage(res, "Invalid Login State: OAuth", ErrNotLoggedIn)
+		return
+	}
+	uid, getErr := GetUIDFromLogin(ctx, ou.Email)
+	if getErr != nil || uid == 0 {
+		http.Redirect(res, req, "/register?login=user_not_found&redirect="+req.FormValue("redirect"), http.StatusSeeOther)
 		return
 	}
 
-	http.Redirect(res, req, "/"+req.FormValue("redirect"), http.StatusSeeOther)
-}
+	DeleteCookie(res, "AUTHED") // We've gone past the point of needing the auth cookie. go fourth.
 
-// Call: /logout
-// Description:
-// Deletes the user's local session data.
-// Will attempt to redirect the user to page at option:redirect if exists.
-//
-// Method: GET
-// Results: HTTP.Redirect
-// Mandatory Options:
-// Optional Options: redirect
-func AUTH_Logout_GET(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	DeleteSession(res, req) // Remove our local session information.
-	http.Redirect(res, req, "/"+req.FormValue("redirect"), http.StatusSeeOther)
-}
-
-// Call: /register
-// Description:
-// After user gains an OAuth token, will ask the user
-// for additional information to create the user's
-// PermissionUser.
-// Will forward value of option:redirect.
-//
-// Method: GET
-// Results: HTML
-// Mandatory Options:
-// Optional Options: redirect
-func AUTH_Register_GET(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	ctx := appengine.NewContext(req)
-	screen := struct {
-		User
-		Redirect string `datastore:"-"`
-	}{
-		User{},
-		"",
-	}
-	// Step 1: UUID
-	registerUUID, cErr := FromCookie(req, "UUID")
-	if cErr != nil {
-		registerUUID = NewLoginUUID() // No uuid, we'll make one
-		ToCookie(res, "UUID", registerUUID, StorageDuration)
-	} else {
-		getErr := retrievable.GetFromMemcache(ctx, registerUUID, &screen)
-		if ErrorPage(res, "UUID Error!", getErr) {
-			return
-		}
-	}
-
-	screen.Redirect = req.FormValue("redirect")
-
-	// Step 2.1: Oauth asked for?
-	if req.FormValue("Oauth") == "now" {
-		lgn, _ := user.LoginURL(ctx, "/register?Oauth=yes&redirect="+req.FormValue("redirect"))
-		lgo, _ := user.LogoutURL(ctx, lgn)
-		http.Redirect(res, req, lgo, http.StatusFound)
+	u := &User{}
+	getuErr := retrievable.GetEntity(ctx, u, uid)
+	if ErrorPage(res, "No Such User", getuErr) {
 		return
 	}
 
-	// Step 2.2: Oauth returned?
-	if req.FormValue("Oauth") == "yes" {
-		u := user.Current(ctx)
-		screen.Email = u.Email
-		// A bug has been possibly found with this? Users that did not sign in with google *SOMEHOW* were being given Admin privleges.
-		// if u.Admin {
-		// 	screen.Permission = AdminPermissions
-		// }
-		screen.Redirect, _ = user.LogoutURL(ctx, "/"+req.FormValue("redirect"))
-	}
-
-	// Step 3: Hold onto the temporary info and go.
-	retrievable.PlaceInMemcache(ctx, registerUUID, screen, 0)
-	ServeTemplateWithParams(res, "register.html", screen)
-}
-func AUTH_Register_GET_USINGUUID(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	ToCookie(res, "UUID", params.ByName("UUID"), 0)
-	http.Redirect(res, req, "/register?redirect="+req.FormValue("redirect"), http.StatusFound)
-}
-
-// Call: /register
-// Description:
-// After user submits the additional information required.
-// This call will make the permission user and issue a new session.
-// Will redirect to option:redirect if exists.
-//
-// Method: POST
-// Results: HTTP.Redirect
-// Mandatory Options:
-// Optional Options: redirect
-func AUTH_Register_POST(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	ctx := appengine.NewContext(req)
-
-	name := req.FormValue("Name")
-	email := req.FormValue("Email")
-	pswd := req.FormValue("Password")
-
-	// Validate info
-
-	ruuid, cErr := FromCookie(req, "UUID")
-	if ErrorPage(res, "UUID Error: Cannot find UUID cookie.", cErr) {
-		return
-	}
-
-	uNew := &User{}
-	getErr := retrievable.GetFromMemcache(ctx, ruuid, uNew)
-	if ErrorPage(res, "UUID Error: Cannot find UUID memcache value.", getErr) {
-		return
-	}
-
-	uNew.Email = email
-	uNew.Name = name
-
-	uNew, createErr := CreateUserFromLogin(ctx, uNew.Email, pswd, uNew)
-	if ErrorPage(res, "User Creation Error!", createErr) {
-		return
-	}
-
-	// FUTURE: Advanced user permissions
-	// permErr := SetPermission(ctx, uNew.ID, uNew.Permission)
-	// if ErrorPage(res, "User Permission Error: Cannot create a permission value for user.", permErr) {
-	// 	return
-	// }
-
-	_, sErr := NewSession(res, req, uNew.ID)
-	if ErrorPage(res, "User Session Error: Cannot create session.", sErr) {
-		return
-	}
-	DeleteCookie(res, "UUID")
-	http.Redirect(res, req, "/"+req.FormValue("redirect"), http.StatusSeeOther)
+	http.SetCookie(res, MakeSessionCookie(u))
+	http.Redirect(res, req, "/"+req.FormValue("redirect"), http.StatusFound)
 }
 
 // Call: /user

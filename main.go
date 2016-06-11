@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"github.com/julienschmidt/httprouter"
-	// "google.golang.org/appengine"
 	"html/template"
 	"net/http"
 )
@@ -34,19 +33,18 @@ func init() {
 	// Module: Core Structure
 	// Files: main.go, STRUCT_Handlers.go
 	/*************************************/
-	r.GET("/", home)                     // <user> Root page
-	r.GET("/catalogs", getCatalogsPage)  // <user> Catalogs listing
-	r.GET("/select", selectBookFromForm) // <user> select objective based on information
-	r.GET("/toc/:ID", getSimpleTOC)      // <user> user viewable toc for a book
-	r.GET("/about", getAboutPage)        // <user> About Page
-	r.GET("/favicon.ico", favIcon)       // <user> favicon
-	r.GET("/read/objective", getObjectivePage)     // <user> Objective Page Reader
+	r.GET("/", home)                           // <user> Root page
+	r.GET("/catalogs", getCatalogsPage)        // <user> Catalogs listing
+	r.GET("/select", selectBookFromForm)       // <user> select objective based on information
+	r.GET("/toc/:ID", getSimpleTOC)            // <user> user viewable toc for a book
+	r.GET("/about", getAboutPage)              // <user> About Page
+	r.GET("/favicon.ico", favIcon)             // <user> favicon
+	r.GET("/read/objective", getObjectivePage) // <user> Objective Page Reader
 
 	// Module: Authentication/Session
 	// Files: AUTH_authentication.go
 	/****************************************/
 	r.GET("/login", AUTH_Login_GET)                       // <user> User Login
-	r.POST("/login", AUTH_LOGIN_POST)                     //
 	r.GET("/logout", AUTH_Logout_GET)                     // <user> User Logout
 	r.GET("/register", AUTH_Register_GET)                 // <user> Register New Users/Modify existing users
 	r.GET("/register/:UUID", AUTH_Register_GET_USINGUUID) //

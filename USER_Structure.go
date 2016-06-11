@@ -8,13 +8,9 @@ filename.go by Allen J. Mills
 */
 
 import (
-	// "errors"
-	// "fmt"
+	"encoding/json"
 	"golang.org/x/net/context"
 	"google.golang.org/appengine/datastore"
-	// "strconv"
-	"encoding/json"
-	// "fmt"
 	"strings"
 )
 
