@@ -221,7 +221,7 @@ func AUTH_Login_GET(res http.ResponseWriter, req *http.Request, params httproute
 		ErrorPage(res, "Invalid Login State: OAuth", ErrNotLoggedIn)
 		return
 	}
-	uid, getErr := GetUIDFromLogin(ctx, ou.Email)
+	uid, getErr := GetUIDFromLogin(ctx, strings.ToLower(ou.Email))
 	if getErr != nil || uid == 0 {
 		http.Redirect(res, req, "/register?login=user_not_found&redirect="+req.FormValue("redirect"), http.StatusSeeOther)
 		return
