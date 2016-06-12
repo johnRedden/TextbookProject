@@ -214,7 +214,11 @@ func IMAGE_API_GetImageFromCS(res http.ResponseWriter, req *http.Request, params
 	obj := client.Bucket(GCS_BucketID).Object(id) // pull the object from cs
 
 	// We'll just copy the image data onto the response, letting the browser know that we're sending an image.
-	res.Header().Set("Content-Type", "image/jpeg; charset=utf-8")
+	ctype, ok := Content_Types[stringedExt(id)]
+	if !ok {
+		ctype = "image/png"
+	}
+	res.Header().Set("Content-Type", ctype+"; charset=utf-8")
 	rdr, _ := obj.NewReader(ctx)
 	io.Copy(res, rdr)
 }
@@ -314,6 +318,11 @@ func filterExtension(req *http.Request, hdr *multipart.FileHeader) (string, erro
 	return ext, fmt.Errorf("Filetype %s is not allowed by server.", ext)
 }
 
+func stringedExt(filename string) string {
+	ext := filename[strings.LastIndex(filename, ".")+1:] // parse through the fileheader for its extension.
+	return strings.ToLower(ext)
+}
+
 // ------------------------------------
 // API - Internal Cloud Storage functions
 // Local Only!
@@ -339,7 +348,12 @@ func addFileToGCS(ctx context.Context, filename string, freader io.Reader) error
 		{storage.AllUsers, storage.RoleReader},
 	}
 
-	csWriter.ContentType = "image/jpeg"
+	if ctype, ok := Content_Types[stringedExt(filename)]; ok {
+		csWriter.ContentType = ctype
+	} else {
+		csWriter.ContentType = "image/png"
+	}
+
 	io.Copy(csWriter, freader)
 	return csWriter.Close()
 }

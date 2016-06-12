@@ -15,4 +15,11 @@ const GCS_BucketID = "edueditorimages"
 
 var Allowed_Filetypes = []string{"png", "jpg", "jpeg", "gif"} // Ensure that all types here are also supported as image/jpeg for MIME types.
 
+var Content_Types = map[string]string{
+	"png":  "image/png",
+	"jpg":  "image/jpeg",
+	"jpeg": "image/jpeg",
+	"gif":  "image/gif",
+}
+
 // Place any other variables that could regularly be changed out here.
