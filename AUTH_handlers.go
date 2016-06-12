@@ -58,9 +58,9 @@ func NewUUID() string {
 // Optional Options: redirect
 func AUTH_Logout_GET(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	DeleteSession(res)
-	ctx := appengine.NewContext(req)
-	lgo, _ := user.LogoutURL(ctx, "/"+req.FormValue("redirect"))
-	http.Redirect(res, req, lgo, http.StatusSeeOther)
+	// ctx := appengine.NewContext(req)
+	// lgo, _ := user.LogoutURL(ctx, "/"+req.FormValue("redirect"))
+	http.Redirect(res, req, "/", http.StatusSeeOther)
 }
 
 ////----------------------//
