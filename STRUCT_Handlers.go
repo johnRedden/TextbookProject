@@ -368,6 +368,8 @@ func getSimpleExerciseReader(res http.ResponseWriter, req *http.Request, params 
 // Mandatory Options: ID
 // Optional Options:
 func getObjectivePreview(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	pu, _ := GetUserFromSession(res, req)
+
 	objKey, parseErr := strconv.ParseInt(req.FormValue("ID"), 10, 64)
 	if ErrorPage(res, "Invalid ID Given: Please ensure that the url is correct.", parseErr) {
 		return
@@ -378,5 +380,18 @@ func getObjectivePreview(res http.ResponseWriter, req *http.Request, params http
 	if ErrorPage(res, "Internal Services Error", getErr) {
 		return
 	}
-	ServeTemplateWithParams(res, "preview.html", objToScreen)
+	screenOutput := struct {
+		Name       string
+		Email      string
+		Permission int
+		Objective
+	}{
+		pu.Name,
+		pu.Email,
+		pu.Permission,
+		objToScreen,
+	}
+
+
+	ServeTemplateWithParams(res, "preview.html", screenOutput)
 }
