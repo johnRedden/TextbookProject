@@ -133,9 +133,9 @@ func init() {
 	r.GET("/admin", ADMIN_AdministrationConsole)                // <user><auth> Admin Console
 	r.POST("/admin/changeUsrPerm", ADMIN_POST_ELEVATEUSER)      // <api><auth> Admin: Change User Permissions
 	r.GET("/admin/getUsrPerm", ADMIN_GET_USERPERM)              // <api><auth> Admin: Retrive User Permissions
-	r.POST("/admin/forceUsrLogout", ADMIN_POST_ForceUserLogout) // <api><auth> Admin: Force a user to log out.
 	r.POST("/admin/deleteUsr", ADMIN_POST_DELETEUSER)           // <api><auth> Admin: Delete a user. Will require said user to re-register.
 	r.POST("/admin/getUsrEmails", ADMIN_POST_RetriveUserEmails) //
+	r.POST("/admin/createInviteUUID", ADMIN_POST_INVITEUUID)    //
 
 	// Public file handling.
 	http.Handle("/public/", http.StripPrefix("/public", http.FileServer(http.Dir("public/"))))

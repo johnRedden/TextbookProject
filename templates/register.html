@@ -38,8 +38,11 @@
     <form method="POST">
         <input fill type="email" placeholder="Email" name="Email" value="{{.Email}}" readonly />
         <input fill type="text" placeholder="Name" name="Name" value="{{.Name}}" />
-        <select name="Level">
-            <option value="reader" selected>Reader</option>
+        <select name="Level" {{if (ne .Permission 0) }}disabled{{end}}>
+            <option value="na" selected>
+                {{if (ne .Permission 0) }}Preset by Invite{{else}}SELECT ONE{{end}}
+            </option>
+            <option value="reader">Reader</option>
             <option value="writer">Creator</option>
         </select>
         <input type="submit" value="Register" />

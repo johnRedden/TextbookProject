@@ -72,22 +72,23 @@
             });
 
             $("#JQ-Form4_Button").click(function(){
-                // Force Logout
-                f4e = $("#JQ-Form4_Input").val()
-                $("#JQ-Form4_Input").val("")
-                if (f4e==""){
-                    $.addMessage("Force Logout: Email Required!")
-                    return
-                }
-                $.postEmailTo(f4e,"/admin/forceUsrLogout",function(j){
-                    console.log("F4 Data Return")
+                // Invite URL
+                f4e = $("#JQ-Form4_Input")
+                f4s = $("#JQ-Form4_Select")
+
+                $.post("/admin/createInviteUUID",{UName:f4e.val(),Perm:f4s.val()},function(data){ 
+                    j = $.parseJSON(data);
                     console.log(j)
                     if (j.Status == "Success") {
-                        $.addMessage(f4e + " : " + j.Response)
+                      $.addMessage("   /register/"+j.Results)
+                      $.addMessage("Invite URL:")
                     } else {
                         $.addMessage(j.Status +"   "+j.Reason)
                     }
                 });
+
+                f4s.val("NONE")
+                f4e.val("")
             });
 
             $("#JQ-Form5_Button").click(function(){
@@ -102,7 +103,7 @@
                     console.log("F5 Data Return")
                     console.log(j)
                     if (j.Status == "Success") {
-                        $.addMessage(f5e + " : " + j.Response)
+                        $.addMessage(f5e + " : Deleted")
                     } else {
                         $.addMessage(j.Status +"   "+j.Reason)
                     }
@@ -310,6 +311,19 @@
       <button id="JQ-Form1_Button">Submit</button>
     </div>
 
+    <div id="JQ-Form4" important formbox>
+      <div label>Invite URL</div>
+      <input id="JQ-Form4_Input" placeholder="Username" type="text" />
+      <select id="JQ-Form4_Select">
+        <option value="Admin">Administrator</option>
+        <option value="Write">Writer</option>
+        <option value="Edit">Editor</option>
+        <option value="Read">Reader</option>
+        <option value="NONE" selected>SELECT ONE</option>
+      </select>
+      <button id="JQ-Form4_Button">Submit</button>
+    </div>
+
     <div id="JQ-Form2" formbox>
       <div label>Check User's Permission</div>
       <input id="JQ-Form2_Input" placeholder="Email Address" type="text" />
@@ -320,12 +334,6 @@
       <div label>Email Lookup</div>
       <input id="JQ-Form3_Input" placeholder="Username" type="text" />
       <button id="JQ-Form3_Button">Submit</button>
-    </div>
-
-    <div id="JQ-Form4" formbox>
-      <div label>Force Logout</div>
-      <input id="JQ-Form4_Input" placeholder="Email Address" type="text" />
-      <button id="JQ-Form4_Button">Submit</button>
     </div>
 
     <div id="JQ-Form5" formbox>

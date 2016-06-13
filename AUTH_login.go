@@ -35,3 +35,17 @@ func GetUIDFromLogin(ctx context.Context, email string) (int64, error) {
 	getErr := retrievable.GetFromDatastore(ctx, email, ul)
 	return ul.UID, getErr
 }
+
+func DeleteUserAndLogin(ctx context.Context, email string) error {
+	ul := &UserLogin{}
+	getErr := retrievable.GetFromDatastore(ctx, email, ul)
+	if getErr != nil {
+		return getErr
+	}
+
+	toDelete := make([]*datastore.Key, 0)
+	toDelete = append(toDelete, ul.Key(ctx, email))
+	toDelete = append(toDelete, (&User{}).Key(ctx, ul.UID))
+
+	return datastore.DeleteMulti(ctx, toDelete)
+}

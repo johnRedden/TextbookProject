@@ -20,6 +20,10 @@ import (
 // Has a true name.
 ////
 
+var (
+	UsersTable = "Users"
+)
+
 // Type: User
 // Our users with Name and Permission
 type User struct {
@@ -32,7 +36,7 @@ type User struct {
 // Method: Key
 // Implements Retrivable interface
 func (u *User) Key(ctx context.Context, id interface{}) *datastore.Key {
-	return datastore.NewKey(ctx, "Users", "", id.(int64), nil)
+	return datastore.NewKey(ctx, UsersTable, "", id.(int64), nil)
 }
 
 func (u *User) StoreKey(k *datastore.Key) {
