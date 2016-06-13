@@ -1,13 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-{{template "Head" "Preview"}}
+{{template "Head" "Objective Preview"}}
 
     <script type="text/javascript" src="/public/js/printThis.js"></script>
-<!--
-    <link rel="stylesheet" href="/public/css/ens-contentSystem.css">
 
--->
     <style type="text/css">
 
     body{
@@ -94,17 +91,40 @@
             color:white;
         }
 
+        #objectiveTitle{
+            font-size: 1.5em;
+        }
+        #objectivePath, .info{
+            font-size:0.8em;
+            color:oldlace;
+
+        }
+
     </style>
-
-
 
 </head>
 <body>
-<!--preview page needs server stuff-->
-    {{template "Nav" .}}
-    <div class="container bookPage" id="ENScontent">
-    <input id="JQ-ObjectiveID" type="hidden" value="{{.ID}}" readonly>
+{{template "Nav" .}}
 
+     <div id="objectiveHeader" class="container well">
+    {{if eq .Permission 3}}
+        <div class="btn-group btn-group-sm pull-right" role="group">
+            <button id="editObjectiveBtn" class="btn btn-success" type="button"><span class="glyphicon glyphicon-pencil"></span></button>
+        </div>
+    {{end}}
+        <span id="objectivePath">Loading...</span> <br>
+        <div id="objectiveTitle" class=""><i class="fa fa-file-text-o"></i> <span id="objective-title">{{.Title}}</span></div>
+        <p class="info">
+            <span id="objectiveAuthor" class="">Author: {{.Author}}</span><br/>
+            <span id="objectiveVersion" class="">Ver.: {{.Version}}</span> <br/>
+            <span id="objective-id" class="hidden">{{.ID}}</span>  
+
+        </p>
+        <div id="objectiveDescription"></div>
+    </div>       
+ 
+
+    <div class="container bookPage" id="ENScontent">
         <div class="pull-right">
             <div class="btn-group btn-group-xs" role="group">
               <button id="font-size-small-btn" class="btn"><span class="font-size-small glyphicon glyphicon-font"></span></button>
@@ -144,7 +164,6 @@
         </div>
         <div id="printableDiv" class="hidden"> </div>
         
-
 
         <!-- Reader Share Modal *******************-->
           <div class="modal fade" id="objectiveReaderModal" role="dialog">
@@ -204,10 +223,27 @@
 
     <script type="text/javascript">
         $(document).on('ready',function(){
-            objectiveID = $("#JQ-ObjectiveID").val();
+            objectiveID=$('#objective-id').html();
             defaultBackgroundColor = $('body').css('background-color');
-            console.log(defaultBackgroundColor)
             //console.log(location.origin);
+
+            var pageInfo; //breadcrumb work
+            var breadCrumbPromise = ensBreadcrumb("Objective",objectiveID);
+            breadCrumbPromise.done(function(data){
+                pageInfo = $.parseJSON(data).Results;
+
+                var pathHTML = '<i class="fa fa-book" aria-hidden="true"></i> '  + pageInfo.BookTitle +' <i class="fa fa-angle-double-right" aria-hidden="true"></i> '+pageInfo.ChapterOrder+'. '+pageInfo.ChapterTitle
+                                        +' <i class="fa fa-angle-double-right" aria-hidden="true"></i> '+pageInfo.ChapterOrder+'.'+pageInfo.SectionOrder+' '+pageInfo.SectionTitle;
+
+                var objNumberHTML = pageInfo.ChapterOrder+'.'+pageInfo.SectionOrder+'-'+pageInfo.ObjectiveOrder+' ';
+                $('#objectivePath').html( pathHTML );
+                $('#objective-title').prepend(objNumberHTML);
+
+            })
+
+            $('#editObjectiveBtn').click(function(){
+                window.location = '/edit/Objective/'+objectiveID;
+            })
 
             $('#font-size-small-btn').click(function() {
                 $('body').removeClass("font-size-large");

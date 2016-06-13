@@ -1,5 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
+<head>
+
+
 {{template "Head" "Book TOC"}}
 
 <style type="text/css">
@@ -7,6 +10,7 @@
         font-size: 1.5em;
     }
 </style>
+</head>
 
 <body>
 {{template "Nav" .}}
@@ -283,17 +287,25 @@
                 nextObjectiveNum = parseInt(val.Order)+1;
                 //populate the root with the list group items
         {{if eq .Permission 3}}
-                var HTMLblock = '<div class="list-group-item"> \
-                                            <a href="/preview?ID='+val.ID+'"  id="'+val.ID+'" target="_blank"><i class="fa fa-file-text-o" aria-hidden="true"></i> '+n+' '+val.Title+'</a>\
-                                            <a href="/edit/objective/'+val.ID+'"  class="btn btn-xs btn-info" role="button" target="_blank">Edit</a> \
-                                        </div>';
+        // href="/edit/Objective/'+val.ID+'" 
+                var HTMLblock = '<a class="list-group-item" id="l1-'+val.ID+'">\
+                                 <span class="btn btn-primary btn-sm pull-right edit">edit</span> \
+                                 <i class="fa fa-file-text-o" aria-hidden="true"></i> '+n+' '+val.Title+'</a>';
         {{else}}
-                var HTMLblock = '<div class="list-group-item"> \
-                                            \
-                                            <a href="/preview?ID='+val.ID+'"  id="'+val.ID+'" target="_blank"><i class="fa fa-file-text-o" aria-hidden="true"></i> '+n+' '+val.Title+'</a>\
-                                        </div>';
+        //Maybe Send to READ at some point
+                var HTMLblock = '<a href="/preview?ID='+val.ID+'" class="list-group-item" id="'+val.ID+'" target="_blank"><i class="fa fa-file-text-o" aria-hidden="true"></i> '+n+' '+val.Title+'</a>';
         {{end}}
                 $('#cat-'+sectionID).append( HTMLblock );
+                $('#l1-'+val.ID).on('click','.edit',function(e){
+                    e.stopPropagation();
+                    var url = "/edit/Objective/"+val.ID;
+                    window.open(url,'_blank');
+                })
+                $('#l1-'+val.ID).on('click',function(e){
+                    var url = "/preview?ID="+val.ID;
+                    window.open(url,'_blank');
+                })
+  
             });
                 
             //append Book button at end of level 2 list  *********************

@@ -43,3 +43,12 @@ CKEDITOR.plugins.registered['save'] = {
 
 CKEDITOR.config.contentsCss = '/public/css/myeditor.css';
 
+function ensBreadcrumb(entity,id){
+  //URL is /api/parent/:Kind/:ID
+  var promise = $.get('/api/parent/'+entity+'/'+id,function(data, status){
+      var x = $.parseJSON(data).Results;
+     console.log(x);
+  });
+  return promise;
+
+}
