@@ -96,6 +96,7 @@ func init() {
 	r.GET("/api/objectives.json", API_GetObjectives) // <api> read datastore, objectives
 	r.GET("/api/exercises.json", API_GetExercises)   // <api> read datatore, exercises
 	r.GET("/api/toc.xml", API_getTOC)                // <api> xml toc for a book
+	r.GET("/api/parent/:KIND/:ID", API_GetParent)    //
 
 	// Module: API-Readers, Singular
 	// Files: API_Readers.go

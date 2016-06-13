@@ -16,6 +16,7 @@ API_Readers.go by Allen J. Mills
 */
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/julienschmidt/httprouter"
 	"google.golang.org/appengine"
@@ -331,6 +332,140 @@ func API_getTOC(res http.ResponseWriter, req *http.Request, params httprouter.Pa
 	//////
 
 	fmt.Fprint(res, `</book>`)
+}
+
+type JsonOptions struct {
+	Status, Reason string
+	Code           int
+	Results        interface{}
+}
+
+func ServeJsonOfStruct(res http.ResponseWriter, opt JsonOptions, param interface{}) error {
+	opt.Results = param
+	output, merr := json.Marshal(opt)
+	fmt.Fprint(res, string(output))
+	return merr
+}
+
+// Call: /api/parent/:KIND/:ID
+// Description:
+//
+// Method: GET
+// Results: JSON
+// Mandatory Options: ID
+// Optional Options:
+// Codes:
+func API_GetParent(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	screen := struct {
+		BookTitle, ChapterTitle                    string // titles
+		SectionTitle, ObjectiveTitle               string //
+		BookID, ChapterID                          int64  //
+		SectionID, ObjectiveID                     int64  // ids
+		ChapterOrder, SectionOrder, ObjectiveOrder int    // orders
+	}{}
+
+	id, parseErr := strconv.ParseInt(params.ByName("ID"), 10, 64)
+	if parseErr != nil {
+		ServeJsonOfStruct(res, JsonOptions{
+			Code:   http.StatusNotAcceptable,
+			Status: "Failure",
+			Reason: parseErr.Error(),
+		}, nil)
+		return
+	} else if id == 0 {
+		ServeJsonOfStruct(res, JsonOptions{
+			Code:   http.StatusNotAcceptable,
+			Status: "Failure",
+			Reason: "ID cannot be zero.",
+		}, nil)
+		return
+	}
+
+	switch params.ByName("KIND") {
+	default:
+		ServeJsonOfStruct(res, JsonOptions{
+			Code:   http.StatusNotAcceptable,
+			Status: "Failure",
+			Reason: "Invalid Kind given",
+		}, nil)
+		return
+	case "Objective":
+		screen.ObjectiveID = id
+	case "Section":
+		screen.SectionID = id
+	case "Chapter":
+		screen.ChapterID = id
+	case "Book":
+		screen.BookID = id
+	}
+
+	ctx := appengine.NewContext(req)
+
+	// DO OBJECTIVE
+	if screen.ObjectiveID != 0 {
+		ob, err := GetObjectiveFromDatastore(ctx, screen.ObjectiveID)
+		if err != nil {
+			ServeJsonOfStruct(res, JsonOptions{
+				Code:   500,
+				Status: "Failure",
+				Reason: err.Error(),
+			}, nil)
+			return
+		}
+		screen.ObjectiveTitle = ob.Title
+		screen.ObjectiveOrder = ob.Order
+		screen.SectionID = ob.Parent
+	}
+
+	if screen.SectionID != 0 {
+		sc, err := GetSectionFromDatastore(ctx, screen.SectionID)
+		if err != nil {
+			ServeJsonOfStruct(res, JsonOptions{
+				Code:   500,
+				Status: "Failure",
+				Reason: err.Error(),
+			}, nil)
+			return
+		}
+		screen.SectionTitle = sc.Title
+		screen.SectionOrder = sc.Order
+		screen.ChapterID = sc.Parent
+	}
+
+	if screen.ChapterID != 0 {
+		ch, err := GetChapterFromDatastore(ctx, screen.ChapterID)
+		if err != nil {
+			ServeJsonOfStruct(res, JsonOptions{
+				Code:   500,
+				Status: "Failure",
+				Reason: err.Error(),
+			}, nil)
+			return
+		}
+		screen.ChapterTitle = ch.Title
+		screen.ChapterOrder = ch.Order
+		screen.BookID = ch.Parent
+	}
+
+	if screen.BookID != 0 {
+		bk, err := GetBookFromDatastore(ctx, screen.BookID)
+		if err != nil {
+			ServeJsonOfStruct(res, JsonOptions{
+				Code:   500,
+				Status: "Failure",
+				Reason: err.Error(),
+			}, nil)
+			return
+		}
+		screen.BookTitle = bk.Title
+	}
+
+	ServeJsonOfStruct(res, JsonOptions{
+		Code:   0,
+		Status: "Success",
+		Reason: "",
+	}, screen)
+	res.Header().Set("Content-Type", "text/json")
 }
 
 // -------------------------------------------------------------------
