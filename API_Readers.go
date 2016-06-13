@@ -663,6 +663,7 @@ func API_GetExercise(res http.ResponseWriter, req *http.Request, params httprout
 	fmt.Fprintf(res, `<instruction>%s</instruction>`, Exercise_to_Output.Instruction)
 	fmt.Fprint(res, `<question>`+Exercise_to_Output.Question+`</question>`)
 	fmt.Fprint(res, `<solution>`+Exercise_to_Output.Solution+`</solution>`)
+	fmt.Fprint(res, `<answer>`, Exercise_to_Output.Answer, "</answer>")
 	fmt.Fprintf(res, `<parent>%d</parent>`, Exercise_to_Output.Parent)
 	fmt.Fprintf(res, `<id>%d</id>`, Exercise_to_Output.ID)
 	fmt.Fprintf(res, `<order>%d</order>`, Exercise_to_Output.Order)

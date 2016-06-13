@@ -383,6 +383,9 @@ func API_MakeExercise(res http.ResponseWriter, req *http.Request, params httprou
 	if req.FormValue("Solution") != "" {
 		exerciseForDatastore.Solution = template.HTML(req.FormValue("Solution"))
 	}
+	if req.FormValue("Answer") != "" {
+		exerciseForDatastore.Answer = template.HTML(req.FormValue("Answer"))
+	}
 
 	if orderI, convErr := strconv.Atoi(req.FormValue("Order")); convErr == nil {
 		exerciseForDatastore.Order = orderI

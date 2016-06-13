@@ -90,6 +90,7 @@ type Exercise struct {
 	Instruction string
 	Question    template.HTML `datastore:",noindex"`
 	Solution    template.HTML `datastore:",noindex"`
+	Answer      template.HTML `datastore:",noindex"`
 	Order       int
 
 	Parent int64
