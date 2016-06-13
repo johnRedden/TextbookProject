@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-{{template "Head"}}
+{{template "Head" "Catalogs"}}
 </head>
 
   <body>
@@ -9,16 +9,16 @@
 
     <div class="container">
 
-        <h2>ENS Content Stystem α</h2>
+        <h2>Catalogs</h2>
         <p>
-            <em>This is a pre-alpha version of our web based educational content system.</em>
+            <em>This is an alpha version of our web based educational content system.</em>
             <strong>User PL: {{.Permission}}</strong>
         </p>
 
         <div class="list-group well">
             <div class="list-group-item-heading">
-                <button id="refreshCat" class="btn btn-xs btn-default pull-right" type="button"><span class="glyphicon glyphicon-refresh"></span></button>
-                <div class="text-center" id="catHeading">Catalogs</div>
+                <!-- <button id="refreshCat" class="btn btn-xs btn-default pull-right" type="button"><span class="glyphicon glyphicon-refresh"></span></button> -->
+                <div class="text-center">Catalogs</div>
             </div>
             <div class="list-group-root"></div>
         </div>
@@ -59,10 +59,14 @@
 
     <script type="text/JavaScript">
 
+        var loadingHTML = '<div class="text-center"><br/><p><i class="fa fa-spinner fa-pulse fa-2x fa-fw"></i></p><br></div>';
+
         $(document).ready(function(){
+            
             localStorage.clear();
             $('#catalogsNavBtn').addClass('active');
-            //getCatalogs();
+            $('.list-group-root').html(loadingHTML);
+            getCatalogs();
 
             //modal work
             $('#catEditBtn').on('click',function(){ 
@@ -77,23 +81,13 @@
                     deleteCatalog(catID);
                 $('#verify').val('');
             });
-            $('#refreshCat').on('click',function(){ 
-                $('.list-group-root').html('<p> </p>');
-                getCatalogs();
-            });
-
-            //init page
-            $('#refreshCat').trigger('click');
-
         });
 
         function getCatalogs(){
             // hit the API and store the catalog in JSON
             $.get("/api/catalogs.json",function(data, status){ 
                 localStorage.catalogs = JSON.stringify( ($.parseJSON(data)).results );   
-                //gotta JSON.parse the strigified json object in local storage.  
-                console.log('API hit Catalogs');
-                //console.log(data);
+                //gotta JSON.parse the strigified json object in local storage.
                 populateCatalog();
             });
         }
@@ -102,15 +96,14 @@
                 //dynamic variables in javscript!
                 localStorage.setItem('booksFor'+catID, JSON.stringify( ($.parseJSON(data)).results) );
                 //gotta JSON.parse the strigified json object in local storage.  
-                console.log('API hit Books');
                 populateBooks(catID);
             });            
         }
 
-        // methods
         function populateCatalog(){
             //grab catalogs from local storage rather than api call
             j = JSON.parse(localStorage.catalogs);
+            $('.list-group-root').html('<p> </p>');
 
             $.each( j, function( key, val ){
                 var catalogID = val.ID;
@@ -123,10 +116,8 @@
                 getBooks(catalogID);
             });
 
-            $('#catHeading').html('Catalogs');
-
             //add Catalog button at end of level 1 list  *********************
-            {{if eq .Permission 3}}
+        {{if eq .Permission 3}}
             var addCatBlock = '\
                                 <div class="list-group-item">\
                                     <div class="input-group">\
@@ -138,52 +129,39 @@
                                 </div>\
                                 <p class="text-center"></p>\
                                 ';
-            
-            {{else}}
+        {{else}}
             var addCatBlock = '<p class="text-center"> </p>';
-            {{end}}
+        {{end}}
 
             $('.list-group-root').append(addCatBlock);
             
-            //Adding a new catalog here ********************************************
+            //Adding a new catalog here ***
             $('#catalogInput').on('keyup',function(e){
-                if(e.keyCode==13){
-                    $('#catalogBtn').trigger('click');
-                }
+                if(e.keyCode==13){$('#catalogBtn').trigger('click')}
             });
-            //Adding a new catalog here
             $('#catalogBtn').on('click',function(){
                 var newCat =  $('#catalogInput').val();
+                $('.list-group-root').html(loadingHTML);
 
                 $.post("/api/create/catalog",{CatalogName:newCat},function(data){
                     g = $.parseJSON(data);
                     console.log(g.result +":"+ g.reason+":"+ g.object.Title);
-                    $('.list-group-root').html('<p> </p>');
-                    //best solution so far is to delay and wait for datastore
-                    setTimeout(function(){
-                        $('#refreshCat').trigger('click');
-                    },1500);
+                    //best solution so far is to delay and wait for datastore 
+                    $.wait(function(){getCatalogs()},2);
                 });
-                
             });
-            //End add catalog button*********************************************
-
+            //End add catalog functionality *********************************************
         };
 
         function populateBooks(catalogID){
-            // cat- is book root
-            $('#cat-'+catalogID).html('<a href="#" class="list-group-item" ><i class="glyphicon glyphicon-download"></i>Loading...</a>');
-
+            // cat-ID is book list root
+            $('#cat-'+catalogID).html('');
             var k = JSON.parse(localStorage.getItem('booksFor'+catalogID));
 
-            $('#cat-'+catalogID).html('');
             $.each( k, function( key, arg ){
-               
-                var htmlBlock2 = '<a href="/toc/'+arg.ID+'" class="list-group-item" >\
-                                <i class="glyphicon glyphicon-new-window"></i>Book: '+arg.Title+'</a>';
-
+                // each book is a link to it's TOC
+                var htmlBlock2 = '<a href="/toc/'+arg.ID+'" class="list-group-item" ><i class="fa fa-book" aria-hidden="true"></i> '+arg.Title+'</a>';
                 $('#cat-'+catalogID).append(htmlBlock2);
-
             });
                 
             //append Book button at end of level 2 list  *********************
@@ -203,24 +181,19 @@
             var addBookBlock ='<p class="text-center"> </p>';
         {{end}}
             $('#cat-'+catalogID).append(addBookBlock);
-            //now listeners
+            //now listeners for add book blocks
             $("#bookInput-"+catalogID).on('keyup',function(e){
-                if(e.keyCode==13)
-                        $("#addBookBtn-"+catalogID).trigger('click');
+                if(e.keyCode==13) $("#addBookBtn-"+catalogID).trigger('click');
             });
 
             $("#addBookBtn-"+catalogID).on('click',function(){
                 var newBook =  $("#bookInput-"+catalogID).val(); 
+                $('#cat-'+catalogID).html(loadingHTML);
 
                 $.post("/api/create/book",{CatalogID:catalogID,BookName:newBook},function(data){
                    g = $.parseJSON(data);
                    console.log(g.result +":"+ g.reason);
-                   $('#cat-'+catalogID).html('<a href="#" class="list-group-item" ><i class="glyphicon glyphicon-download"></i>Loading...</a>');
-
-                    setTimeout(function (){
-                        getBooks(catalogID);
-                    }, 1500);
-                   
+                   $.wait(function(){getBooks(catalogID)},2);                   
                 });
          
             });

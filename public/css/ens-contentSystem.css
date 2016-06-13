@@ -24,6 +24,9 @@
             background-color: #233B3B;
             color:snow;
         }
+        .jumboStyle h1{
+            color:oldlace;
+        }
         blockquote{
             border-left:5px solid #233B3B;
         }
@@ -70,7 +73,7 @@
         }
         .navbar-default .navbar-nav>.active>a, .navbar-default .navbar-nav>.active>a:focus, .navbar-default .navbar-nav>.active>a:hover {
             color: snow;
-            background-color: darkgreen;
+            background-color: darkslategray;
         }
 
         footer {
@@ -83,6 +86,9 @@
         }
         footer > .well{
             background-color: #233B3B;
+        }
+        footer .well a{
+            color:snow;
         }
         .well {
             background: darkslategray;

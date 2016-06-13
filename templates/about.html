@@ -2,7 +2,7 @@
 
 <html lang="en">
 <head>
-{{template "Head"}}
+{{template "Head" "About"}}
 
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
 
@@ -10,7 +10,6 @@
   <body>
     {{template "Nav" .}}
  
-
     <div class="container">
         
         <div class="text-info well">
@@ -27,7 +26,10 @@
             <p>
                 With this alpha release, we know there will be many issues to address. Please report them on gitHub using the button above. Currently this OER project is completely funded and supported by eduNetSystems. Any inquiries into this project should be directed toward John Redden (jtredden@gmail.com). 
             </p>
-
+            <div class="text-center">
+            <a class="btn btn-primary" href="/login"><span class="fa fa-google btn-google"></span> Sign in with Google</a> 
+            <a class="btn btn-primary" href="/logout"><span class="fa fa-google btn-google"></span> Sign Out</a>
+            </div>
         </div>
         <hr/>
         <blockquote>

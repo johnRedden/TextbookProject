@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-{{template "Head"}}
+{{template "Head" "Preview"}}
 
     <script type="text/javascript" src="/public/js/printThis.js"></script>
 <!--
@@ -101,7 +101,7 @@
 </head>
 <body>
 <!--preview page needs server stuff-->
-    {{template "Nav" }}
+    {{template "Nav" .}}
     <div class="container bookPage" id="ENScontent">
     <input id="JQ-ObjectiveID" type="hidden" value="{{.ID}}" readonly>
 

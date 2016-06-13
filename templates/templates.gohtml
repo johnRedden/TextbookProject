@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=yes">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
 
-    <title>ENS Content System</title>
+    <title>ENS - {{.}}</title>
 
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
@@ -33,16 +33,14 @@
          &nbsp eduNetSystems Content System</a>
     </div>
     <ul class="nav navbar-nav">
-      <li id="catalogsNavBtn"><a href="/catalogs">Catalogs</a></li>
-      <li id="aboutNavBtn"><a href="/about">About</a></li>
+      <li id="catalogsNavBtn"><a href="/catalogs"><i class="fa fa-book" aria-hidden="true"></i> Catalogs</a></li>
+      <li id="aboutNavBtn"><a href="/about"><i class="fa fa-info-circle" aria-hidden="true"></i> About</a></li>
     </ul>
     <ul class="nav navbar-nav navbar-right">
     {{if .Email}}
-        <li><a>{{.Email}} </a></li>
-        <li><a href="/logout"><span class="fa fa-google btn-google"></span> Sign Out</a></li>
+        <li><a href="/about">{{.Email}} <span class="fa fa-pencil-square-o"></span></a></li>
     {{else}}
-        
-        <li><a href="/login"><span class="fa fa-google btn-google"></span> Sign in with Google</a></li>
+        <li><a href="/about"><span class="fa fa-pencil-square-o"></span></a></li>
     {{end}}
     </ul>
   </div>
