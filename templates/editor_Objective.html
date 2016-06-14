@@ -58,8 +58,9 @@
                 <textarea name="Message2" id="JQ-KeyTakeaways" wrap="hard" placeholder="KeyTakeaways">{{.KeyTakeaways}}</textarea>
             </form>
         </div>
-                
+        <a name="exercises"></a>        
         <div class="well">
+            
             <p>Objective Exercises:</p>
         
             <div class="form-group">
@@ -197,9 +198,7 @@
     // Exercises Work  ***********************************
     // using localStorage to help with
             $('#exerciseInput').on('keyup',function(e){
-                if(e.keyCode==13){
-                    $('#addExerciseBtn').trigger('click');
-                }
+                if(e.keyCode==13){$('#addExerciseBtn').trigger('click');}
             });
             $('#addExerciseBtn').on('click',function(){
                 var newInstruction =  $('#exerciseInput').val();
@@ -255,14 +254,15 @@
                         $.each( promises, function( key, val ){
                             //console.log(val);
                             var xml = val.responseText;
+                            console.log(xml)
                             var instr = $(xml).find("instruction").html();
                             var question = $(xml).find("question").html();
-                            var ans = $(xml).find("solution").html();
+                            var ans = $(xml).find("answer").html();
+                            var sol = $(xml).find("solution").html();
                             var exID = $(xml).find("id").html();
                             var exNumber = $(xml).find("order").html();
                             $("#exerciseRoot").append(getExerciseHTML(exID,instr,question,ans,exNumber));
                             localStorage.nextExerciseNumber = parseInt(exNumber)+1;
-
                            
                         });
                         //not to put this here... 
