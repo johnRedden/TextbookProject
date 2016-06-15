@@ -410,7 +410,7 @@
                             var xml = val.responseText;
                             var instr = $(xml).find("instruction").html();
                             var question = $(xml).find("question").html();
-                            var ans = $(xml).find("solution").html();
+                            var ans = $(xml).find("answer").html();
                             var exID = $(xml).find("id").html();
                             var exNumber = $(xml).find("order").html();
                             $("#exerciseRoot").append(getExerciseHTML(exID,instr,question,ans,exNumber));

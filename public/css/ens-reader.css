@@ -12,12 +12,17 @@ img {
     width: auto\9; /* IE8 */
 }
 .bookPage{
+    font-size:18px; 
+    line-height: 1.5;
+    font-family: 'Merriweather', Georgia, 'Times New Roman', Times, serif;
+    text-align: justify;  /*todo toggle this*/
+    
     border-radius: 5px;
     background: white;
     border-color: darkgrey;
     border-style: solid;
     border-width: 1px;
-    margin-top:10px;
+    margin-top:20px;
     margin-bottom:10px;
 }
 .ENS-Title, #keys, #objectiveInfo{

@@ -11,6 +11,7 @@
 
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
     <!-- JQuery -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
     <!-- Mathjax -->
@@ -22,20 +23,60 @@
     <link rel="stylesheet" href="/public/css/ens-reader.css">
     <style>
     #menu{
-        margin-top:13px;
-        margin-right:5px;
+        margin-top:10px;
+        margin-right:10px;
+        position:fixed;
+        right:0;
     }
+    @media print
+    {    
+        .no-print, .no-print *
+        {
+            display: none !important;
+        }
+    }
+    .table-borderless tbody tr td, .table-borderless tbody tr th, .table-borderless thead tr th {
+        border: none;
+        padding:0px;
+    }
+    #submenu2{
+        margin-left:32px;
+    }
+
     </style>
 
 
 </head>
 <body>
-    <div class="container bookPage">
-        <div id="menu" class="btn-group btn-group-sm pull-right" role="group" aria-label="Font Size">
-          <button id="increaseFont" type="button" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button>
-          <button id="decreaseFont" type="button" class="btn btn-default"><span class="glyphicon glyphicon-minus"></span></button>
-          <button id="print" type="button" class="btn btn-default"><span class="glyphicon glyphicon-print"></span></button>
+    <div id="menu" class="no-print" >
+    <table class="table table-borderless">
+    <tr><td>
+        <div class="btn-group btn-group-sm" role="group">
+            <button id="fontChange" type="button" class="btn btn-default" title="Font size." data-toggle="tooltip" data-placement="top" ><i class="fa fa-font" aria-hidden="true"></i>±</button>
+            <button id="imageChange" type="button" class="btn btn-default" title="Image size." data-toggle="tooltip" data-placement="top" ><i class="fa fa-image" aria-hidden="true"></i></button>
+            <button id="print" type="button" class="btn btn-default" title="Print." data-toggle="tooltip" data-placement="top" ><i class="fa fa-print" aria-hidden="true"></i></button>
         </div>
+        <br/>
+    </td></tr>
+    <tr><td>
+        <div class="btn-group btn-group-sm" role="group">
+            <div id="submenu1" class="btn-group btn-group-sm hidden" role="group">
+                <button id="increaseFont" type="button" class="btn btn-default" title="Increase" data-toggle="tooltip" data-placement="bottom" ><i class="fa fa-plus" aria-hidden="true"></i></button>
+                <button id="decreaseFont" type="button" class="btn btn-default" title="Decrease" data-toggle="tooltip" data-placement="bottom" ><i class="fa fa-minus" aria-hidden="true"></i></button>         
+            </div>
+            
+            <div id="submenu2" class="btn-group btn-group-sm hidden" role="group">
+                <button id="increaseImages" type="button" class="btn btn-default" title="Increase" data-toggle="tooltip" data-placement="bottom" ><i class="fa fa-plus" aria-hidden="true"></i></button>
+                <button id="decreaseImages" type="button" class="btn btn-default" title="Decrease" data-toggle="tooltip" data-placement="bottom" ><i class="fa fa-minus" aria-hidden="true"></i></button>         
+            </div>            
+    
+        </div>
+    </td></tr>
+    </table>
+    </div>
+
+     
+    <div class="container bookPage">
 
         <div id="objectiveContent" >Loading...</div>
         <div id="objectiveInfo">
@@ -47,6 +88,8 @@
 
     <script type="text/javascript">
         $(document).on('ready',function(){
+
+            //$('[data-toggle="tooltip"]').tooltip();
 
             var objectiveID = getUrlParameter('ID');
             //do something if no id
@@ -65,27 +108,57 @@
                     $('#objectiveContent').html(data);
                     $('.ENS-Title').prepend('<strong>Objective: </strong>');
                     $('.ENS-KeyTakeaways').prepend('<p id="keys"><strong>Key Takeaways: </strong><p>');
+                    var t = $('#objectiveContent').find('.ENS-Title');
                     var v = $('#objectiveContent').find('.ENS-Version');
                     var a = $('#objectiveContent').find('.ENS-Author');
                     $('#author').html('Author: '+a.html());
                     $('#version').html('Version: '+v.html());
+                    t.css('font-size','1.2em');
                     v.html('');
                     a.html('');
  
                     MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
             });
-//menuBar
+//menuBar   
+            $('#fontChange').click(function(){
+                $('#submenu1').toggleClass('hidden');
+                $('#submenu2').addClass('hidden');
+            })
             $('#increaseFont').click(function(){
-                var x = parseInt($('body').css('font-size'));
+                var x = parseInt($('.bookPage').css('font-size'));
                 if(x<48){
-                    $('body').css('font-size', x+2+'px');
+                    $('.bookPage').css('font-size', x+2+'px');
                 }
                 $(this).blur();
             });
             $('#decreaseFont').click(function(){
-                var x = parseInt($('body').css('font-size'));
+                var x = parseInt($('.bookPage').css('font-size'));
                 if(x>8)
-                    $('body').css('font-size', x-2+'px');
+                    $('.bookPage').css('font-size', x-2+'px');
+                $(this).blur();
+            });
+            $('#imageChange').click(function(){
+                $('#submenu2').toggleClass('hidden');
+                $('#submenu1').addClass('hidden');
+            })            
+            $('#increaseImages').click(function(){
+                var imgs = $('img');
+                $.each(imgs,function(index, arg){
+                    var w = $(arg).width();
+                    w+=20;
+                    $(arg).width(w+'px');
+                })
+                console.log(imgs);
+                $(this).blur();
+            });
+
+            $('#decreaseImages').click(function(){
+                var imgs = $('img');
+                $.each(imgs,function(index, arg){
+                    var w = $(arg).width();
+                    w-=20;
+                    $(arg).width(w+'px');
+                })
                 $(this).blur();
             });
             $('#print').click(function(){
