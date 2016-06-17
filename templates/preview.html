@@ -10,15 +10,7 @@
 
     <style type="text/css">
 
-        .panel-heading a:not(.btn):after {
-            font-family:'Glyphicons Halflings';
-            content:"\e114";
-            float: right;
-            color: grey;
-        }
-        .panel-heading a.collapsed:after {
-            content:"\e080";
-        }
+
         .well > .form-group > .panel-group > .panel {
             color: black;
         }
@@ -124,7 +116,7 @@
 
         <div class="objective ens-boxed"><span class="pageLabel">Objective: </span><span id="objective-title">{{.Title}}</span>
             <div class="btn-group btn-group-sm pull-right" role="group">
-            <button id="share-objective" class="btn btn-default btn-sm "><span class="glyphicon glyphicon-share" data-toggle="modal" data-target="#objectiveReaderModal"></span></button>
+            <button id="share-objective" class="btn btn-default btn-sm share" name="obj"><span class="glyphicon glyphicon-share" data-toggle="modal" data-target="#objectiveReaderModal"></span></button>
             <!-- <button id="print-objective" class="btn btn-default btn-sm "><span class="glyphicon glyphicon-print"></span></button> -->
             </div>
         </div>
@@ -132,16 +124,18 @@
         <div id="objective-content" class="text-justify">{{.Content}}</div>
 
         <div class="keytakeaways ens-boxed"><span class="pageLabel">Key Takeaways:</span>
-            <!-- <button id="print-keytakeaways" class="btn btn-default btn-sm pull-right"><span class="glyphicon glyphicon-print"></span></button> -->
+            <div class="btn-group btn-group-sm pull-right" role="group">
+            <button id="share-objective" class="btn btn-default btn-sm share" name="key"><span class="glyphicon glyphicon-share" data-toggle="modal" data-target="#objectiveReaderModal"></span></button>
+            </div>
         </div>
 
         <div id="keytakeaways">{{.KeyTakeaways}}</div>
 
         <div class="exercises ens-boxed"><span class="pageLabel">Exercises:</span>
-            <button id="toggle-all" class="btn btn-default btn-sm">Select All</button>
+            <!-- <button id="toggle-all" class="btn btn-default btn-sm">Select All</button> -->
             <div class="btn-group btn-group-sm pull-right" role="group">
-                <button id="share-exercises" class="btn btn-default btn-sm "><span class="glyphicon glyphicon-share" data-toggle="modal" data-target="#exercisesReaderModal"></span></button>
-                <button id="print-selected" class="btn btn-default btn-sm pull-right"><span class="glyphicon glyphicon-print"></span></button>
+                <button id="share-exercises" class="btn btn-default btn-sm share" name="ex"><span class="glyphicon glyphicon-share" data-toggle="modal" data-target="#objectiveReaderModal"></span></button>
+                <!-- <button id="print-selected" class="btn btn-default btn-sm pull-right"><span class="glyphicon glyphicon-print"></span></button> -->
             </div>
             
         </div>
@@ -267,13 +261,21 @@
                 });
                 
             });
-            $('#share-exercises').click(function(){
-                window.location = '/read/exercises?ObjectiveID='+objectiveID;
+            // $('#share-exercises').click(function(){
+            //     window.location = '/read/exercises?ObjectiveID='+objectiveID;
 
-            });
+            // });
 
-            $('#share-objective').click(function(){
-                var link = location.origin+ "/read/objective?ID="+objectiveID;
+            $('.share').click(function(){
+                var choice = $(this).attr('name');
+                var link = location.origin
+                if(choice==="obj")
+                    link = location.origin+ "/read/objective?ID="+objectiveID;
+                if(choice==="ex")
+                    link = location.origin+ "/read/exercises?ObjectiveID="+objectiveID;
+                if(choice==="key")
+                    link = location.origin+ "/read/keytakeaways?ObjectiveID="+objectiveID;
+
                 var embed = '<iframe src="'+link+'" width="100%" height="600" allowfullscreen="allowfullscreen"></iframe>';
                 $('#objective-id').html(objectiveID);
                 $('#objective-link').html(link);

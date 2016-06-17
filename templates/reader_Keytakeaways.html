@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <!-- Required meta tags always come first -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+
+    <title>ENS Key Takeaways Reader</title>
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+    <!-- JQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <!-- Mathjax -->
+    <script type="text/javascript" async src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="/public/css/ens-reader.css">
+    <script type="text/javascript" src="/public/js/ens-reader.js"></script>
+
+    <style>
+        #menu{
+            margin-top:2px;
+            position:fixed;
+            font-size: 14px !important;
+            z-index:100;
+        }
+        .ENS-KeyTakeaways{
+        margin-top:35px;
+}
+    </style>
+
+</head>
+<body>
+   <div class="container bookPage">
+   <!-- Menu Work TODO generalize -->
+    <div id="menu" class="no-print" >
+    <table class="table table-borderless">
+    <tr><td>
+        <div class="btn-group btn-group-sm" role="group">
+            <button id="fontChange" type="button" class="btn btn-default" title="Font size." data-toggle="tooltip" data-placement="top" ><i class="fa fa-font" aria-hidden="true"></i>±</button>
+            <button id="imageChange" type="button" class="btn btn-default" title="Image size." data-toggle="tooltip" data-placement="top" ><i class="fa fa-image" aria-hidden="true"></i></button>
+            <button id="print" type="button" class="btn btn-default" title="Print." data-toggle="tooltip" data-placement="top" ><i class="fa fa-print" aria-hidden="true"></i></button>
+        </div>
+        <br/>
+    </td></tr>
+    <tr><td>
+        <div class="btn-group btn-group-sm" role="group">
+            <div id="submenu1" class="btn-group btn-group-sm hidden" role="group">
+                <button id="increaseFont" type="button" class="btn btn-default" title="Increase" data-toggle="tooltip" data-placement="bottom" ><i class="fa fa-plus" aria-hidden="true"></i></button>
+                <button id="decreaseFont" type="button" class="btn btn-default" title="Decrease" data-toggle="tooltip" data-placement="bottom" ><i class="fa fa-minus" aria-hidden="true"></i></button>         
+            </div>
+            
+            <div id="submenu2" class="btn-group btn-group-sm hidden" role="group">
+                <button id="increaseImages" type="button" class="btn btn-default" title="Increase" data-toggle="tooltip" data-placement="bottom" ><i class="fa fa-plus" aria-hidden="true"></i></button>
+                <button id="decreaseImages" type="button" class="btn btn-default" title="Decrease" data-toggle="tooltip" data-placement="bottom" ><i class="fa fa-minus" aria-hidden="true"></i></button>         
+            </div>            
+    
+        </div>
+    </td></tr>
+    </table>
+    </div>
+    <!-- End menu work -->
+
+        <div id="objectiveContent" >Loading...</div>
+        <div id="objectiveInfo">
+            <span>© content.eduNetSystems.com</span>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        $(document).on('ready',function(){
+
+            //$('[data-toggle="tooltip"]').tooltip();
+
+            var objectiveID = getUrlParameter('ObjectiveID');
+            //do something if no id
+
+            var backgroundColor = getUrlParameter('Background');
+            if(backgroundColor){
+                $('body').css('background-color', backgroundColor);
+            }else{
+                $('body').css('background-color', 'oldLace');
+
+            }
+
+            
+            $.get("/api/objective.html?ID="+objectiveID,function(data, status){
+
+                    $('#objectiveContent').html($(data)[4]);
+                    console.log($(data)[4])
+                    //$('.ENS-Title').prepend('<span class="pageLabel">Objective: </span>').addClass('ens-boxed');
+
+                    $('.ENS-KeyTakeaways').prepend('<div class="ens-boxed"><span class="pageLabel">Key Takeaways: </span></div>');
+                    var t = $('#objectiveContent').find('.ENS-Title');
+                    var v = $('#objectiveContent').find('.ENS-Version');
+                    var a = $('#objectiveContent').find('.ENS-Author');
+                    //$('#author').html('Author: '+a.html());
+                    //$('#version').html('Version: '+v.html());
+                    //t.css('font-size','1.2em');
+                    //v.html('');
+                    //a.html('');
+ 
+                    MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+            });
+
+
+
+        });
+
+        //Utility methods
+        var getUrlParameter = function getUrlParameter(sParam) {
+            var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+                sURLVariables = sPageURL.split('&'),
+                sParameterName,
+                i;
+
+            for (i = 0; i < sURLVariables.length; i++) {
+                sParameterName = sURLVariables[i].split('=');
+
+                if (sParameterName[0] === sParam) {
+                    return sParameterName[1] === undefined ? true : sParameterName[1];
+                }
+            }
+        };
+    </script>
+
+</body>
+</html>

@@ -22,6 +22,7 @@
 
     <link rel="stylesheet" href="/public/css/ens-reader.css">
     <script type="text/javascript" src="/public/js/ens-reader.js"></script>
+    <script type="text/javascript" src="/public/js/printThis.js"></script>
 
     <style>
         #menu{
@@ -68,29 +69,31 @@
     <!-- End menu work -->
 
         <div class="exercises ens-boxed"><span class="pageLabel">Exercises:</span>
-            <button id="toggle-all" class="btn btn-default btn-sm">Select All</button>
-            <div class="btn-group btn-group-sm pull-right" role="group">
-                <button id="share-exercises" class="btn btn-default btn-sm "><span class="glyphicon glyphicon-share" data-toggle="modal" data-target="#exercisesReaderModal"></span></button>
-                <button id="print-selected" class="btn btn-default btn-sm pull-right"><span class="glyphicon glyphicon-print"></span></button>
+            
+            <div class="btn-group btn-group-sm pull-right no-print" role="group">
+                <button id="toggle-all" class="btn btn-default btn-sm">Select All</button>
+                <!-- <button id="share-exercises" class="btn btn-default btn-sm "><span class="glyphicon glyphicon-share" data-toggle="modal" data-target="#exercisesReaderModal"></span></button> -->
+                <button id="print-selected" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-print"></span></button>
             </div>
             
         </div>
  
-
         <p class="text-center"> </p> 
         <div id="exerciseRoot" class="panel-group" >Exercises go here.</div>
         <p class="text-center"> </p> 
 
-
-
-
+        <div id="ExercisesInfo">
+            <div>© eduNetSystems.com</div>
+        </div>
 
     </div>
 
-    <script type="text/javascript">
-        $(document).on('ready',function(){
+    <div id="printableDiv" class="hidden"> </div>
 
-            //$('[data-toggle="tooltip"]').tooltip();
+    <script type="text/javascript">
+        var loadingHTML = '<div class="text-center"><br/><p><i class="fa fa-spinner fa-pulse fa-2x fa-fw"></i></p><br></div>';
+
+        $(document).on('ready',function(){
 
             var objectiveID = getUrlParameter('ObjectiveID');
             //do something if no id
@@ -102,6 +105,45 @@
                 $('body').css('background-color', 'oldLace');
 
             }
+
+
+            //todo streamline this button
+            $('#toggle-all').click(function() {
+                console.log("hi")
+                if($(this).html()==="Select All"){
+                    $('#exerciseRoot input[type="checkbox"]').prop('checked', true);
+                    $(this).html('Deselect All');
+                }else{
+                    $('#exerciseRoot input[type="checkbox"]').prop('checked', false);
+                    $(this).html('Select All');
+                }
+            });
+
+            $('#print-selected').click(function(){
+                $('#printableDiv').html('<strong>Objective:</strong> '+$('#objective-title').html()+'<br/>Exercises:<br/><br/>');
+                var c = $('#exerciseRoot input[type="checkbox"]:checked');
+                $.each( c, function( key, val ){
+                    var id = $(val).attr('value');
+                    var n = $('#'+id).find('.num').html();
+                    var q = $('#'+id).find('.question').html();
+                    var i = $('#'+id).find('.instr').html();
+                    $('#printableDiv').append('#'+n+' '+i +'<br/>'+q+'<br/><br/>');
+
+                    //console.log($(val).attr('value'));
+                });
+                $('#printableDiv').printThis({
+                        importCSS: false,      
+                        importStyle: true,    
+                        printContainer: true,     
+                        pageTitle: "ENS Content System",             
+                        removeInline: false,    
+                        printDelay: 2000,    
+                        header: null,        
+                        formValues: true,
+                        loadCSS: "/public/css/ens-print.css",     
+                });
+
+            });
 
             
 //exercise Work
@@ -127,7 +169,7 @@
             }
             // this almost works
             function getObjectiveExercises(objectiveID){
-                $("#exerciseRoot").html('');
+                $("#exerciseRoot").html(loadingHTML);
 
                 $.get("/api/exercises.json?ObjectiveID="+objectiveID,function(data, status){
                     var g = ($.parseJSON(data)).results;
@@ -140,6 +182,7 @@
                     //console.log(promises); //This is good
                     //when they are ALL done... iterate through and populate the html in order (render mathjax after)
                     $.when.apply(null, promises).always(function() {
+                        $("#exerciseRoot").html('');
                       // Afterwards, do this.
                         //console.log('all done');
                         $.each( promises, function( key, val ){
@@ -161,8 +204,6 @@
             }
 
             getObjectiveExercises(objectiveID);
-
-
 
         });
 

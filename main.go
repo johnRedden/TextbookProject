@@ -41,6 +41,7 @@ func init() {
 	r.GET("/favicon.ico", favIcon)             // <user> favicon
 	r.GET("/read/objective", getObjectivePage) // <user> Objective Page Reader (uses api)
 	r.GET("/read/exercises", getExercisesPage) // <user> Objective Page Reader (uses api)
+	r.GET("/read/keytakeaways", getKeytakeawaysPage) // <user> Objective Page Reader (uses api)
 
 	// Module: Authentication/Session
 	// Files: AUTH_authentication.go
@@ -183,6 +184,10 @@ func getObjectivePage(res http.ResponseWriter, req *http.Request, params httprou
 func getExercisesPage(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	pu, _ := GetUserFromSession(res, req)
 	ServeTemplateWithParams(res, "reader_Exercises.html", pu)
+}
+func getKeytakeawaysPage(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	pu, _ := GetUserFromSession(res, req)
+	ServeTemplateWithParams(res, "reader_Keytakeaways.html", pu)
 }
 
 // Call: /toc.html/:ID
