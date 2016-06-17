@@ -22,6 +22,7 @@
 
     <link rel="stylesheet" href="/public/css/ens-reader.css">
     <script type="text/javascript" src="/public/js/ens-reader.js"></script>
+    <script type="text/javascript" src="/public/js/printThis.js"></script>
 
     <style>
         #menu{
@@ -65,36 +66,67 @@
     <!-- End menu work -->
 
         <div id="objectiveContent" >Loading...</div>
-        <div id="objectiveInfo">
+<!--         <div id="objectiveInfo">
             <span id="author"> </span><br/>
             <span id="version"> </span><br/>
             <span>© content.eduNetSystems.com</span>
+        </div> -->
+        <div id="exerciseBlock">
+            <div class="exercises ens-boxed"><span class="pageLabel">Exercises:</span>
+                
+                <div class="btn-group btn-group-sm pull-right no-print" role="group">
+                    <button id="toggle-all" class="btn btn-default btn-sm">Select All</button>
+                    <!-- <button id="share-exercises" class="btn btn-default btn-sm "><span class="glyphicon glyphicon-share" data-toggle="modal" data-target="#exercisesReaderModal"></span></button> -->
+                    <button id="print-selected" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-print"></span></button>
+                </div>
+                
+            </div>
+     
+            <p class="text-center"> </p> 
+            <div id="exerciseRoot" class="panel-group" >Exercises go here.</div>
+            <p class="text-center"> </p> 
+
+            <div id="ExercisesInfo">
+                <div>© eduNetSystems.com</div>
+            </div>
         </div>
     </div>
 
+    <div id="printableDiv" class="hidden"> </div>
+
     <script type="text/javascript">
+        var loadingHTML = '<div class="text-center"><br/><p><i class="fa fa-spinner fa-pulse fa-2x fa-fw"></i></p><br></div>';
         $(document).on('ready',function(){
 
             //$('[data-toggle="tooltip"]').tooltip();
 
             var objectiveID = getUrlParameter('ID');
             //do something if no id
-
+            var content = getUrlParameter('Content');
+            var keytakes = getUrlParameter('Keytakeaways');
+            var exs = getUrlParameter('Exercises');
             var backgroundColor = getUrlParameter('Background');
             if(backgroundColor){
                 $('body').css('background-color', backgroundColor);
             }else{
                 $('body').css('background-color', 'oldLace');
-
             }
-
-            
+          
             $.get("/api/objective.html?ID="+objectiveID,function(data, status){
 
                     $('#objectiveContent').html(data);
                     $('.ENS-Title').prepend('<span class="pageLabel">Objective: </span>').addClass('ens-boxed');
 
-                    $('.ENS-KeyTakeaways').prepend('<div class="ens-boxed"><span class="pageLabel">Key Takeaways: </span></div>');
+                    if(content!=="true"){
+                        $('.ENS-Content').hide();
+                    }
+
+                    if(keytakes==="true"){
+                        $('.ENS-KeyTakeaways').prepend('<div class="ens-boxed"><span class="pageLabel">Key Takeaways: </span></div>');
+                    }else{
+                        $('.ENS-KeyTakeaways').hide();
+                    }
+                    
                     var t = $('#objectiveContent').find('.ENS-Title');
                     var v = $('#objectiveContent').find('.ENS-Version');
                     var a = $('#objectiveContent').find('.ENS-Author');
@@ -106,6 +138,108 @@
  
                     MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
             });
+
+           //todo streamline this button
+            $('#toggle-all').click(function() {
+                console.log("hi")
+                if($(this).html()==="Select All"){
+                    $('#exerciseRoot input[type="checkbox"]').prop('checked', true);
+                    $(this).html('Deselect All');
+                }else{
+                    $('#exerciseRoot input[type="checkbox"]').prop('checked', false);
+                    $(this).html('Select All');
+                }
+            });
+
+            $('#print-selected').click(function(){
+                $('#printableDiv').html('<strong>Objective:</strong> '+$('#objective-title').html()+'<br/>Exercises:<br/><br/>');
+                var c = $('#exerciseRoot input[type="checkbox"]:checked');
+                $.each( c, function( key, val ){
+                    var id = $(val).attr('value');
+                    var n = $('#'+id).find('.num').html();
+                    var q = $('#'+id).find('.question').html();
+                    var i = $('#'+id).find('.instr').html();
+                    $('#printableDiv').append('#'+n+' '+i +'<br/>'+q+'<br/><br/>');
+
+                    //console.log($(val).attr('value'));
+                });
+                $('#printableDiv').printThis({
+                        importCSS: false,      
+                        importStyle: true,    
+                        printContainer: true,     
+                        pageTitle: "ENS Content System",             
+                        removeInline: false,    
+                        printDelay: 2000,    
+                        header: null,        
+                        formValues: true,
+                        loadCSS: "/public/css/ens-print.css",     
+                });
+
+            });
+
+            
+//exercise Work
+            function getExerciseHTML(exerciseID,instruction,question,answer,number){
+                var exerciseHTML ='\
+                    <div class="panel panel-default" id="'+exerciseID+'">\
+                        <div class="panel-heading">\
+                            <a class="collapsed" data-toggle="collapse" data-target="#ex-'+exerciseID+'" ></a>\
+                            <span class="pull-right ans">Answer &nbsp</span>\
+                            <strong><span class="num">'+number+'.</span> <span class="instr">'+instruction+'</span></strong><br/> \
+                            <span class="checkbox">\
+                                <label> <input type="checkbox" value="'+exerciseID+'"/><span class="question"'+question+'</span></label>\
+                            </span>\
+                        </div>\
+                        <div id="ex-'+exerciseID+'" class="panel-collapse collapse">\
+                            <div class="panel-body"><strong>Answer: </strong>\
+                                '+answer+'\
+                            </div>\
+                        </div>\
+                    </div>';
+                
+                return exerciseHTML;
+            }
+            // this almost works
+            function getObjectiveExercises(objectiveID){
+                $("#exerciseRoot").html(loadingHTML);
+
+                $.get("/api/exercises.json?ObjectiveID="+objectiveID,function(data, status){
+                    var g = ($.parseJSON(data)).results;
+                    var promises = [];
+
+                    $.each( g, function( key, val ){
+                        promises.push( $.get("/api/exercise.xml?ID="+val.ID) );
+                    });
+                    // now we have an array of promises.
+                    //console.log(promises); //This is good
+                    //when they are ALL done... iterate through and populate the html in order (render mathjax after)
+                    $.when.apply(null, promises).always(function() {
+                        $("#exerciseRoot").html('');
+                      // Afterwards, do this.
+                        //console.log('all done');
+                        $.each( promises, function( key, val ){
+                            //console.log(val.responseText);
+                            var xml = val.responseText;
+                            var instr = $(xml).find("instruction").html();
+                            var question = $(xml).find("question").html();
+                            var ans = $(xml).find("answer").html();
+                            var exID = $(xml).find("id").html();
+                            var exNumber = $(xml).find("order").html();
+                            $("#exerciseRoot").append(getExerciseHTML(exID,instr,question,ans,exNumber));
+                            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"'+exID+'"]);
+                           
+                        });
+                    });
+                   // MathJax.Hub.Queue(["Typeset",MathJax.Hub,"exerciseRoot"]);
+                    
+                });
+
+            }
+
+            if(exs==="true")
+                getObjectiveExercises(objectiveID);
+            else
+                $('#exerciseBlock').hide();
 
 
 

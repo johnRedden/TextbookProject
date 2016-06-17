@@ -194,10 +194,11 @@
                             var exID = $(xml).find("id").html();
                             var exNumber = $(xml).find("order").html();
                             $("#exerciseRoot").append(getExerciseHTML(exID,instr,question,ans,exNumber));
+                            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"'+exID+'"]);
                            
                         });
                     });
-                    MathJax.Hub.Queue(["Typeset",MathJax.Hub,"exerciseRoot"]);
+                   // MathJax.Hub.Queue(["Typeset",MathJax.Hub,"exerciseRoot"]);
                     
                 });
 

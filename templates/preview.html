@@ -175,11 +175,21 @@
                             <li><div class="text-center">Any Named Color</div></li>
                         </ul>
                     </div>
-
+                <div class="container">
+                    <label class="checkbox-inline">
+                      <input type="checkbox" id="contentCB" value="option1" name="Content" checked> Content
+                    </label>
+                    <label class="checkbox-inline">
+                      <input type="checkbox" id="inlineCheckbox2" value="option2" name="Keytakeaways" checked> Key Takeaways
+                    </label>
+                    <label class="checkbox-inline">
+                      <input type="checkbox" id="inlineCheckbox3" value="option3" name="Exercises" checked> Exercises
+                    </label>
+                </div>
 
                     <div class="shareBox">
                         <div><strong>Link to objective:</strong></div>
-                        <textarea id="objective-link" class="mono" rows="3">http link here</textarea>
+                        <textarea id="objective-link" class="mono" rows="3" readonly>http link here</textarea>
                         <a id="linkBtn" class="btn btn-info"><span class="glyphicon glyphicon-copy"></span> Select Code.</a>
                     </div>
                    
@@ -207,6 +217,8 @@
         {{template "Footer"}}
 
     <script type="text/javascript">
+        var loadingHTML = '<div class="text-center"><br/><p><i class="fa fa-spinner fa-pulse fa-2x fa-fw"></i></p><br></div>';
+
         $(document).on('ready',function(){
             objectiveID=$('#objective-id').html();
             defaultBackgroundColor = $('body').css('background-color');
@@ -270,13 +282,34 @@
                 var choice = $(this).attr('name');
                 var link = location.origin
                 if(choice==="obj")
-                    link = location.origin+ "/read/objective?ID="+objectiveID;
+                    link = location.origin+ "/read/objective?ID="+objectiveID+"&Content=true&Keytakeaways=true&Exercises=true";
                 if(choice==="ex")
                     link = location.origin+ "/read/exercises?ObjectiveID="+objectiveID;
                 if(choice==="key")
                     link = location.origin+ "/read/keytakeaways?ObjectiveID="+objectiveID;
+                $('input').prop('checked',true)
+
+                $('input').on('change',function(){
+                    var item = $(this).attr('name');
+                    var qryOff = '&'+item+'=false';
+                    var qryOn = '&'+item+'=true';
+                        if ($(this).is(':checked')) {
+                            var lk = $('#objective-link').val();
+                            lk = lk.replace(qryOff,qryOn)
+                            $('#objective-link').html(lk);
+                            $('#objective-embed').html(embedCode(lk));
+                        } else {
+                            var lk = $('#objective-link').val();
+                            lk = lk.replace(qryOn,qryOff)
+                            $('#objective-link').html(lk);
+                            $('#objective-embed').html(embedCode(lk));
+                        }
+                })
 
                 var embed = '<iframe src="'+link+'" width="100%" height="600" allowfullscreen="allowfullscreen"></iframe>';
+                function embedCode(link){
+                    return '<iframe src="'+link+'" width="100%" height="600" allowfullscreen="allowfullscreen"></iframe>';
+                }
                 $('#objective-id').html(objectiveID);
                 $('#objective-link').html(link);
                 $('#objective-embed').html(embed);
