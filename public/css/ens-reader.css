@@ -22,15 +22,22 @@ img {
     border-color: darkgrey;
     border-style: solid;
     border-width: 1px;
-    margin-top:20px;
+    margin-top:10px;
     margin-bottom:10px;
 }
-.ENS-Title, #keys, #objectiveInfo{
+.ENS-Title{
+        margin-top:35px;
+}
+.pageLabel{
+    color: firebrick;
+    font-weight: bold;
+}
+.ens-boxed{
     border-radius: 5px;
     background: whitesmoke;
     padding: 5px;
-    margin-top:10px;
     margin-bottom:5px;
+    width: 100%;
 }
 .ens-example {
     border-radius: 5px;
@@ -42,3 +49,23 @@ img {
     margin-bottom:10px;
     margin-top:10px;
 }
+
+/*menu system*/
+
+    .table-borderless tbody tr td, .table-borderless tbody tr th, .table-borderless thead tr th {
+        border: none;
+        padding:0px;
+    }
+    #submenu2{
+        margin-left:32px;
+    }
+    @media print
+    {    
+        .no-print, .no-print *
+        {
+            display: none !important;
+        }
+        .ENS-Title{
+            margin-top: 2px;
+        }
+    }

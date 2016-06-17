@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
 
-    <title>ENS Objective Reader</title>
+    <title>ENS Exercises Reader</title>
 
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
@@ -29,6 +29,9 @@
             position:fixed;
             font-size: 14px !important;
             z-index:100;
+        }
+        .exercises{
+            margin-top:35px;
         }
     </style>
 
@@ -64,12 +67,24 @@
     </div>
     <!-- End menu work -->
 
-        <div id="objectiveContent" >Loading...</div>
-        <div id="objectiveInfo">
-            <span id="author"> </span><br/>
-            <span id="version"> </span><br/>
-            <span>© content.eduNetSystems.com</span>
+        <div class="exercises ens-boxed"><span class="pageLabel">Exercises:</span>
+            <button id="toggle-all" class="btn btn-default btn-sm">Select All</button>
+            <div class="btn-group btn-group-sm pull-right" role="group">
+                <button id="share-exercises" class="btn btn-default btn-sm "><span class="glyphicon glyphicon-share" data-toggle="modal" data-target="#exercisesReaderModal"></span></button>
+                <button id="print-selected" class="btn btn-default btn-sm pull-right"><span class="glyphicon glyphicon-print"></span></button>
+            </div>
+            
         </div>
+ 
+
+        <p class="text-center"> </p> 
+        <div id="exerciseRoot" class="panel-group" >Exercises go here.</div>
+        <p class="text-center"> </p> 
+
+
+
+
+
     </div>
 
     <script type="text/javascript">
@@ -77,7 +92,7 @@
 
             //$('[data-toggle="tooltip"]').tooltip();
 
-            var objectiveID = getUrlParameter('ID');
+            var objectiveID = getUrlParameter('ObjectiveID');
             //do something if no id
 
             var backgroundColor = getUrlParameter('Background');
@@ -89,23 +104,63 @@
             }
 
             
-            $.get("/api/objective.html?ID="+objectiveID,function(data, status){
+//exercise Work
+            function getExerciseHTML(exerciseID,instruction,question,answer,number){
+                var exerciseHTML ='\
+                    <div class="panel panel-default" id="'+exerciseID+'">\
+                        <div class="panel-heading">\
+                            <a class="collapsed" data-toggle="collapse" data-target="#ex-'+exerciseID+'" ></a>\
+                            <span class="pull-right ans">Answer &nbsp</span>\
+                            <strong><span class="num">'+number+'.</span> <span class="instr">'+instruction+'</span></strong><br/> \
+                            <span class="checkbox">\
+                                <label> <input type="checkbox" value="'+exerciseID+'"/><span class="question"'+question+'</span></label>\
+                            </span>\
+                        </div>\
+                        <div id="ex-'+exerciseID+'" class="panel-collapse collapse">\
+                            <div class="panel-body"><strong>Answer: </strong>\
+                                '+answer+'\
+                            </div>\
+                        </div>\
+                    </div>';
+                
+                return exerciseHTML;
+            }
+            // this almost works
+            function getObjectiveExercises(objectiveID){
+                $("#exerciseRoot").html('');
 
-                    $('#objectiveContent').html(data);
-                    $('.ENS-Title').prepend('<span class="pageLabel">Objective: </span>').addClass('ens-boxed');
+                $.get("/api/exercises.json?ObjectiveID="+objectiveID,function(data, status){
+                    var g = ($.parseJSON(data)).results;
+                    var promises = [];
 
-                    $('.ENS-KeyTakeaways').prepend('<div class="ens-boxed"><span class="pageLabel">Key Takeaways: </span></div>');
-                    var t = $('#objectiveContent').find('.ENS-Title');
-                    var v = $('#objectiveContent').find('.ENS-Version');
-                    var a = $('#objectiveContent').find('.ENS-Author');
-                    $('#author').html('Author: '+a.html());
-                    $('#version').html('Version: '+v.html());
-                    t.css('font-size','1.2em');
-                    v.html('');
-                    a.html('');
- 
-                    MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
-            });
+                    $.each( g, function( key, val ){
+                        promises.push( $.get("/api/exercise.xml?ID="+val.ID) );
+                    });
+                    // now we have an array of promises.
+                    //console.log(promises); //This is good
+                    //when they are ALL done... iterate through and populate the html in order (render mathjax after)
+                    $.when.apply(null, promises).always(function() {
+                      // Afterwards, do this.
+                        //console.log('all done');
+                        $.each( promises, function( key, val ){
+                            //console.log(val.responseText);
+                            var xml = val.responseText;
+                            var instr = $(xml).find("instruction").html();
+                            var question = $(xml).find("question").html();
+                            var ans = $(xml).find("answer").html();
+                            var exID = $(xml).find("id").html();
+                            var exNumber = $(xml).find("order").html();
+                            $("#exerciseRoot").append(getExerciseHTML(exID,instr,question,ans,exNumber));
+                           
+                        });
+                    });
+                    MathJax.Hub.Queue(["Typeset",MathJax.Hub,"exerciseRoot"]);
+                    
+                });
+
+            }
+
+            getObjectiveExercises(objectiveID);
 
 
 
