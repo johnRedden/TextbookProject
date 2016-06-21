@@ -5,7 +5,7 @@
 // no images ckeditor config
 var noImagesConfig = {
   	extraPlugins: 'mathjax',
-  	mathJaxLib: 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML',
+  	mathJaxLib: 'https://cdn.mathjax.org/mathjax/2.6-latest/MathJax.js?config=TeX-AMS_HTML',
    	removePlugins: 'forms'
  };
 
@@ -13,6 +13,7 @@ var noImagesConfig = {
  function stdImageConfig(argID){
     var stdConfig = {
             extraPlugins: 'mathjax',
+            mathJaxLib: 'https://cdn.mathjax.org/mathjax/2.6-latest/MathJax.js?config=TeX-AMS_HTML',
             filebrowserImageBrowseUrl: '/image/browser?action=browseImageURL&oid='+argID,
             filebrowserImageUploadUrl: '/api/ckeditor/create?action=uploadImageURL&oid='+argID,
             filebrowserBrowseUrl: '/image/browser?action=browseURL&oid='+argID,
