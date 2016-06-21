@@ -13,7 +13,6 @@ var noImagesConfig = {
  function stdImageConfig(argID){
     var stdConfig = {
             extraPlugins: 'mathjax',
-            mathJaxLib: 'https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML',
             filebrowserImageBrowseUrl: '/image/browser?action=browseImageURL&oid='+argID,
             filebrowserImageUploadUrl: '/api/ckeditor/create?action=uploadImageURL&oid='+argID,
             filebrowserBrowseUrl: '/image/browser?action=browseURL&oid='+argID,
