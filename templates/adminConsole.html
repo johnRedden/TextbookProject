@@ -80,7 +80,7 @@
                     j = $.parseJSON(data);
                     console.log(j)
                     if (j.Status == "Success") {
-                      $.addMessage("   /register/"+j.Results)
+                      $.addMessage("   "+location.origin+"/register/"+j.Results)
                       $.addMessage("Invite URL:")
                     } else {
                         $.addMessage(j.Status +"   "+j.Reason)
@@ -202,7 +202,8 @@
       color: black;
     }
     textarea[inverse="yes"],div[controls][inverse="yes"] a i{
-      background-color: #233B3B;
+      /*background-color: #233B3B;*/
+      background-color: transparent;
       color:white;
     }
 
@@ -231,6 +232,7 @@
       }
       div[foot]{
         border-top: 3px solid #233B3B;
+        background-color: #233B3B;
       }
       div[formbox][important] {
         width: 100%;
