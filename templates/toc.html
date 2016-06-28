@@ -1,6 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
-{{template "Head"}}
+<head>
+
+
+{{template "Head" "Book TOC"}}
+
+<style type="text/css">
+    #bookTitle{
+        font-size: 1.5em;
+    }
+</style>
+</head>
 
 <body>
 {{template "Nav" .}}
@@ -14,19 +24,17 @@
                 <button id="deleteBookBtn" class="btn btn-danger " data-toggle="modal" data-target="#bookDeleteModal" type="button"><span class="glyphicon glyphicon-remove"></span> </button>
             </div>
         {{end}}
-            <div id="bookTitle" class="">Loading...</div>
+            <div id="bookTitle" class=""></div>
             <p>
                 <span id="bookAuthor" class=""></span>
                 <span id="bookVersion" class=""></span>        
             </p>
             <div id="bookDescription"></div>
-            <!--<div id="bookID" class=""></div>-->
         </div>
 
         <div id="bookChapters" class="list-group well">
             <div class="list-group-item-heading">
-                <button id="refreshChapters" class="btn btn-xs btn-default pull-right" type="button"><span class="glyphicon glyphicon-refresh"></span></button>
-                <div class="text-center" id="chapterHeading">Chapters Loading... <i class="glyphicon glyphicon-download"> </i> </div>
+                <div class="text-center" id="chapterHeading">Chapters</div>
             </div>
             <div class="list-group-root"></div>
         </div>
@@ -35,33 +43,6 @@
 
     {{template "Footer"}}
 
-    <!-- Edit Book Modal *******************-->
-      <div class="modal fade" id="bookEditModal" role="dialog">
-        <div class="modal-dialog">
-        
-          <!-- Modal content-->
-          <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h2 class="modal-title"><span class="glyphicon glyphicon-alert"></span> Edit Item</h2>
-            </div>
-            <div class="modal-body">
-                <h4 class="modal-title">You can edit the book information here.</h4>
-                <br/>
-                <p><span id="editGenType"></span></p>
-                <input id="editGenName" class="form-control" placeholder="Title"/>
-                <input id="editGenAuthor" class="form-control" placeholder="Author"/>
-                <p><span>ID: </span><span id="editGenID"></span></p>           
-            </div>
-            <div class="modal-footer">
-              <button id="genInfoSave" type="button" class="btn btn-danger" data-dismiss="modal">Save</button>
-              <button type="button" class="btn btn-success" data-dismiss="modal">Cancel</button>
-            </div>
-          </div>
-          
-        </div>
-      </div>
-    <!-- END Edit Book Modal ******************-->
     <!-- Delete Book Modal *******************-->
       <div class="modal fade" id="bookDeleteModal" role="dialog">
         <div class="modal-dialog">
@@ -94,12 +75,15 @@
 
 <script type="text/javascript">
     var incomingID = "{{.ID}}";
-    //console.log({{.}})
+    var loadingHTML = '<div class="text-center"><br/><p><i class="fa fa-spinner fa-pulse fa-2x fa-fw"></i></p><br></div>';
     
     $(document).ready(function(){
         if (incomingID == "") {return ;}
         localStorage.clear();
+        localStorage.nextChapterNumber = 1;
         getBookInfo(incomingID);
+        getBookChapters(incomingID);
+
 
         // buttons not available to unauthorized users
         $('#editBookBtn').on('click',function(){ 
@@ -111,46 +95,6 @@
             $('#genDeleteType').html('Book: ');
             //gen listeners takes care of this case from here in modal.
         });
-        $('#refreshChapters').on('click',function(){ 
-            $('.list-group-root').html('<p> </p>');
-            //Pause Solution here :(  Need to bind an on done or something.
-            getBookChapters(incomingID);
-        });
-        //init page
-        $('#refreshChapters').trigger('click');
-        //edit modal save button
-        $('#genInfoSave').on('click',function(){
-                var genName = $('#editGenName').val();
-                var genAuths = $('#editGenAuthor').val();
-                var choice = $('#editGenType').html();
-                var tempID = $('#editGenID').html();
-                switch(choice[0]){
-                    case 'B':  //book info edit button
-                        $.post("/api/create/book",{ID:tempID,BookName:genName, Author:genAuths},function(data){
-                            g = $.parseJSON(data);
-                            console.log(g.result +":"+ g.reason);
-                            getBookInfo(localStorage.bookID);
-                        });
-                        break
-                    case 'C':
-                        $.post("/api/create/chapter",{ID:tempID,ChapterName:genName},function(data){
-                            g = $.parseJSON(data);
-                            console.log(g.result +":"+ g.reason);
-                            $('#refreshChapters').trigger('click');
-                            
-                        });
-                        break;
-                    case 'S':
-                        $('#cat-'+tempID).html('loading...');
-                        $.post("/api/create/section",{ID:tempID,SectionName:genName},function(data){
-                            g = $.parseJSON(data);
-                            console.log(g.result +":"+ g.reason);
-                            $('#refreshChapters').trigger('click');
-                        });
-                        break;
-                    default:
-                }
-        });
         $('#genModalDeleteBtn').on('click',function(){
             var choice = $('#genDeleteType').html();
             var tempID = $('#genDeleteID').html();
@@ -161,29 +105,26 @@
                         $.post("/api/delete/book",{ID:tempID},function(data){
                             g = $.parseJSON(data);
                             console.log(g.result +":"+ g.reason);
-                            //$('#cats')[0].click(); //redirect to catalogs
-                            window.location = '/catalogs/';
+                            //gotta wait a bit for the delete to propagate
+                            $.wait(function(){window.location = '/catalogs/'},1);
+                            
                         });
                     case 'C': //deleteing chapters
                         $.post("/api/delete/chapter",{ID:tempID},function(data){
                             g = $.parseJSON(data);
                             console.log(g.result +":"+ g.reason);
-                            $('.list-group-root').html('<a href="#" class="list-group-item" ><i class="glyphicon glyphicon-download"></i>Loading...</a>');
+                            $('.list-group-root').html(loadingHTML);
                             //gotta wait for the datastore here
-                            setTimeout(function(){
-                                $('#refreshChapters').click();
-                            },1500);
+                            $.wait(function(){location.reload()},1);
                         });
                         break;
                     case 'S': //deleting sections
                         $.post("/api/delete/section",{ID:tempID},function(data){
                             g = $.parseJSON(data);
                             console.log(g.result +":"+ g.reason);
-                            $('#cat-'+tempID).html('<a href="#" class="list-group-item" ><i class="glyphicon glyphicon-download"></i>Loading...</a>');
+                            $('#cat-'+tempID).html(loadingHTML);
                             //gotta wait for the datastore here
-                            setTimeout(function(){
-                                $('#refreshChapters').click();
-                            },1500);
+                            $.wait(function(){location.reload()},1);
                         });
                         break;
                     default:
@@ -204,7 +145,7 @@
             localStorage.bookVer = $(xml).find("version").text();
             localStorage.bookID = bookID;
 
-            $('#bookTitle').html('Book: '+localStorage.bookTitle);
+            $('#bookTitle').html('<i class="fa fa-book"></i> '+localStorage.bookTitle);
             $('#bookAuthor').html('Author: '+localStorage.bookAuthor);
             $('#bookDescription').html(localStorage.bookDescription);
             $('#bookVersion').html(' Ver: '+localStorage.bookVer);
@@ -216,21 +157,21 @@
             populateChapters();
         });
     }
-    function getBookSections(chapterID){
+    function getBookSections(chapterID, chapNum){
         $.get("/api/sections.json?ChapterID="+chapterID,function(data, status){
             localStorage.setItem('sectionsFor'+chapterID, JSON.stringify( ($.parseJSON(data)).results ));  
-            populateSections(chapterID);
+            populateSections(chapterID,chapNum);
         });
     }
-    function getBookObjectives(sectionID){
+    function getBookObjectives(sectionID, sectNum){
         $.get("/api/objectives.json?SectionID="+sectionID,function(data, status){
             localStorage.setItem('objectivesFor'+sectionID, JSON.stringify( ($.parseJSON(data)).results ));  
-            populateObjectives(sectionID);
+            populateObjectives(sectionID,sectNum);
         });
     }
 
     function populateChapters(){
-            //grab catalogs from local storage rather than api call
+            //grab chapters from local storage rather than api call
             j = JSON.parse(localStorage.chapters);
             $('.list-group-root').html('');
 
@@ -239,14 +180,13 @@
                 var HTMLblock = generalListGroupItem(val.ID, val.Title, val.Order);
                 $('.list-group-root').append( HTMLblock );
                 setGeneralListGroupItemListeners(val.ID,val.Title,'Chapter: ');
+                localStorage.nextChapterNumber = parseInt(val.Order)+1;
                 //be one step ahead
-                getBookSections(val.ID);
+                getBookSections(val.ID, val.Order);
             });
 
-            $('#chapterHeading').html('Chapters');
-
             //add Catalog button at end of level 1 list  *********************
-            {{if eq .Permission 3}}
+        {{if eq .Permission 3}}
             var addChapterBlock = '\
                                 <div class="list-group-item">\
                                     <div class="input-group">\
@@ -259,46 +199,44 @@
                                 <p class="text-center"></p>\
                                 ';
             
-            {{else}}
+        {{else}}
             var addChapterBlock = '<p class="text-center"> </p>';
-            {{end}}
+        {{end}}
 
             $('.list-group-root').append(addChapterBlock);
             
             //Adding a new catalog here
             $('#chapterInput').on('keyup',function(e){
-                if(e.keyCode==13){
-                    $('#chapterBtn').trigger('click');
-                }
+                if(e.keyCode==13){$('#chapterBtn').trigger('click');}
             });
             //Adding a new catalog here
             $('#chapterBtn').on('click',function(){
                 var newChap =  $('#chapterInput').val();
                 newChap = newChap.replace(/^\s+|\s+$/g, "").replace(/\s+/g, " "); // regex to replace space in middle
-                $.post("/api/create/chapter",{BookID:localStorage.bookID,ChapterName:newChap,Order:0},function(data){
+                $.post("/api/create/chapter",{BookID:localStorage.bookID,ChapterName:newChap,Order:localStorage.nextChapterNumber},function(data){
                     g = $.parseJSON(data);
                     console.log(g.result +":"+ g.reason+":"+ g.object.Title);
-                    $('.list-group-root').html('<a href="#" class="list-group-item" ><i class="glyphicon glyphicon-download"></i>Loading...</a>');
+                    $('.list-group-root').html(loadingHTML);
                     // first wait for datastore
-                    setTimeout(function (){
-                        getBookChapters(localStorage.bookID);
-                    }, 1500);
+                    $.wait(function(){getBookChapters(localStorage.bookID)},2);
                 });
-                
             });
     }
-     function populateSections(chapterID){
-            //grab catalogs from local storage rather than api call
+    function populateSections(chapterID, chapNum){
+            var nextSectNum = 1;
+            //grab sections from local storage rather than api call
             j = JSON.parse(localStorage.getItem('sectionsFor'+chapterID));
             $('#cat-'+chapterID).html('');
-            
+
             $.each( j, function( key, val ){
+                var n = chapNum +'.'+val.Order;
                 //populate the root with the list group items
-                var HTMLblock = generalListGroupItem(val.ID,val.Title,val.Order);
+                var HTMLblock = generalListGroupItem(val.ID,val.Title,n);
                 $('#cat-'+chapterID).append( HTMLblock );
                 setGeneralListGroupItemListeners(val.ID,val.Title,'Section: ');
+                nextSectNum = parseInt(val.Order)+1;
                 //be one step ahead
-                getBookObjectives(val.ID);
+                getBookObjectives(val.ID,n);
             });
 
             //add Catalog button at end of level 1 list  *********************
@@ -321,49 +259,53 @@
 
             $('#cat-'+chapterID).append(addSectionBlock);
             
-            //Adding a new catalog here
+            //Adding a new section here
             $('#sectionInput-'+chapterID).on('keyup',function(e){
-                if(e.keyCode==13){
-                    $('#sectionBtn-'+chapterID).trigger('click');
-                }
+                if(e.keyCode==13){$('#sectionBtn-'+chapterID).trigger('click');}
             });
-            //Adding a new catalog here
             $('#sectionBtn-'+chapterID).on('click',function(){
                 var newSectionName =  $('#sectionInput-'+chapterID).val();
-                //console.log('new sect')
                 newSectionName = newSectionName.replace(/^\s+|\s+$/g, "").replace(/\s+/g, " "); // regex to replace space in middle
 
-                $('#cat-'+chapterID).html('<a href="#" class="list-group-item" ><i class="glyphicon glyphicon-download"></i>Loading...</a>');
-                $.post("/api/create/section",{ChapterID:chapterID,SectionName:newSectionName,Order:0},function(data){
+                $('#cat-'+chapterID).html(loadingHTML);
+                $.post("/api/create/section",{ChapterID:chapterID,SectionName:newSectionName,Order:nextSectNum},function(data){
                     g = $.parseJSON(data);
                     console.log(g.result +":"+ g.reason);
+                    
                     //second place to wait for datastore
-                    setTimeout(function (){
-                        getBookSections(chapterID);
-                    }, 1500);
+                    $.wait(function(){getBookSections(chapterID,chapNum)},2);
                 });
             });
     } 
-    function populateObjectives(sectionID){
+    function populateObjectives(sectionID,sectNum){
+            var nextObjectiveNum = 1;
             j = JSON.parse(localStorage.getItem('objectivesFor'+sectionID));
             $('#cat-'+sectionID).html('');
             
             $.each( j, function( key, val ){
+                var n = sectNum+'-'+val.Order;
+                nextObjectiveNum = parseInt(val.Order)+1;
                 //populate the root with the list group items
         {{if eq .Permission 3}}
-                var HTMLblock = '<div class="list-group-item"> \
-                                            <a href="/preview?ID='+val.ID+'"  id="'+val.ID+'" target="_blank"><i class="glyphicon glyphicon-new-window"></i>'+val.Order+'. '+val.Title+'</a>\
-                                            <a href="/edit/objective/'+val.ID+'"  class="btn btn-xs btn-info" role="button" target="">Edit</a> \
-                                        </div>';
+        // href="/edit/Objective/'+val.ID+'" 
+                var HTMLblock = '<a class="list-group-item" id="l1-'+val.ID+'">\
+                                 <span class="btn btn-primary btn-sm pull-right edit">edit</span> \
+                                 <i class="fa fa-file-text-o" aria-hidden="true"></i> '+n+' '+val.Title+'</a>';
         {{else}}
-                var HTMLblock = '<div class="list-group-item"> \
-                                            \
-                                            <a href="/preview?ID='+val.ID+'"  id="'+val.ID+'" target="_blank"><i class="glyphicon glyphicon-new-window"></i>'+val.Order+'. '+val.Title+'</a>\
-                                        </div>';
-
+        //Maybe Send to READ at some point
+                var HTMLblock = '<a href="/preview?ID='+val.ID+'" class="list-group-item" id="'+val.ID+'" target="_blank"><i class="fa fa-file-text-o" aria-hidden="true"></i> '+n+' '+val.Title+'</a>';
         {{end}}
                 $('#cat-'+sectionID).append( HTMLblock );
-                //setGeneralListGroupItemListeners(objectiveID,objectiveName,'Objective: ');
+                $('#l1-'+val.ID).on('click','.edit',function(e){
+                    e.stopPropagation();
+                    var url = "/edit/Objective/"+val.ID;
+                    window.open(url,'_blank');
+                })
+                $('#l1-'+val.ID).on('click',function(e){
+                    var url = "/preview?ID="+val.ID;
+                    window.open(url,'_blank');
+                })
+  
             });
                 
             //append Book button at end of level 2 list  *********************
@@ -384,24 +326,20 @@
         {{end}}
             $('#cat-'+sectionID).append(addObjectiveBlock);
             
-            //Adding a new catalog here
+            //Adding a new objective here
             $('#objectiveInput-'+sectionID).on('keyup',function(e){
-                if(e.keyCode==13){
-                    $('#objectiveBtn-'+sectionID).trigger('click');
-                }
+                if(e.keyCode==13){$('#objectiveBtn-'+sectionID).trigger('click');}
             });
-            //Adding a new catalog here
+
             $('#objectiveBtn-'+sectionID).on('click',function(){
                 var newObjectiveName =  $('#objectiveInput-'+sectionID).val();
                 newObjectiveName = newObjectiveName.replace(/^\s+|\s+$/g, "").replace(/\s+/g, " "); // regex to replace space in middle
-                $('#cat-'+sectionID).html('<a href="#" class="list-group-item" ><i class="glyphicon glyphicon-download"></i>Loading...</a>');
-                $.post("/api/create/objective",{SectionID:sectionID,ObjectiveName:newObjectiveName,Order:0},function(data){
+                $('#cat-'+sectionID).html(loadingHTML);
+                $.post("/api/create/objective",{SectionID:sectionID,ObjectiveName:newObjectiveName,Order:nextObjectiveNum},function(data){
                     g = $.parseJSON(data);
                     console.log(g.result +":"+ g.reason);
                     //third place to wait
-                    setTimeout(function (){
-                        getBookObjectives(sectionID);
-                    }, 1500);
+                    $.wait(function(){getBookObjectives(sectionID,sectNum)},2);
                 });
             });
         };  
@@ -412,7 +350,7 @@
         {{if eq .Permission 3}}
             var htmlBlock = '\
                 <div id="'+genID+'" name="'+genName+'">\
-                    <a href="#cat-'+genID+'" class="list-group-item" data-toggle="collapse"><span class="glyphicon glyphicon-chevron-right chevy"></span>'+order+'. '+genName +' \
+                    <a href="#cat-'+genID+'" class="list-group-item" data-toggle="collapse"><span class="glyphicon glyphicon-chevron-right chevy"></span>'+order+' '+genName +' \
                         <div class="btn-group btn-group-sm pull-right" role="group">\
                             <button id="edit-'+genID+'" class="btn btn-success" data-toggle="modal" data-target="#catEditModal" type="button"><span class="glyphicon glyphicon-pencil"></span></button>\
                             <button id="delete-'+genID+'" class="btn btn-danger " data-toggle="modal" data-target="#catDeleteModal" type="button"><span class="glyphicon glyphicon-remove"></span> </button>\
@@ -426,7 +364,7 @@
         {{else}}
             var htmlBlock = '\
                 <div id="'+genID+'" name="'+genName+'">\
-                    <a href="#cat-'+genID+'" class="list-group-item" data-toggle="collapse"><span class="glyphicon glyphicon-chevron-right chevy"></span>'+order+'. '+genName +' \
+                    <a href="#cat-'+genID+'" class="list-group-item" data-toggle="collapse"><span class="glyphicon glyphicon-chevron-right chevy"></span>'+order+' '+genName +' \
                     </a>\
                     <div class="collapse books" id="cat-'+genID+'">\
                         <a href="#" class="list-group-item" ><i class="glyphicon glyphicon-download"></i>Loading...</a>\
@@ -437,23 +375,6 @@
             return htmlBlock;
     }
     function setGeneralListGroupItemListeners(genID, genName, genType){
-        $('#'+genID).one('click','a',function(){
-            //only sections chapter is clicked.
-            if(genType[0]==='C'){ //chapter clicked
-                if(!localStorage.getItem('sectionsFor'+genID)) {
-                    getBookSections(genID);
-                }else{
-                   populateSections(genID);
-                }
-            }
-            if(genType[0]==='S'){ //seciton clicked
-                if(!localStorage.getItem('objectivesFor'+genID)) {
-                    getBookObjectives(genID);
-                }else{
-                   populateObjectives(genID);
-                }
-            }
-        });
         $('#edit-'+genID).on('click',function(e){
             e.stopPropagation();
             var tempID = $(this).closest('a').parent().attr('id');
@@ -475,15 +396,13 @@
             $('#genDeleteName').html(tempName);
             $('#genDeleteID').html(tempID);
         });
+
         $('#'+genID).on('click','a:first', function() {
                 $(this).find('span:first').toggleClass('glyphicon-chevron-right')
                                         .toggleClass('glyphicon-chevron-down');
         });
 
     }
-
-
-
 </script>
 
 

@@ -1,22 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-{{template "Head"}}
+{{template "Head" "Objective Editor"}}
 <head>
 <body>
     {{template "Nav" .}}
-            <input id="JQ-ObjectiveID" type="hidden" value="{{.ID}}" readonly>
     
     <div class="container">
     
         <div class="well" id="objectiveInfo">
-            <p> Objective Editor Alpha 
+            <p> Objective Editor
                 <span class="btn-group btn-group-sm pull-right">
                     <button type="button" class="btn btn-primary saveBtn" id="JQ-SubmitButton"><span id="saveGlyph" class="glyphicon glyphicon-ok"> </span> Saved</button>
                     <button type="button" class="btn btn-success" id="JQ-BackBtn">Back</button>
                     <button type="button" class="btn btn-danger" id="deleteObjectiveBtn">Delete</button>
                 </span>
             </p>
+            <p class="hidden">ID:<span id="objID">{{.ID}}</span></p>
             <div class="input-group">
                 <label class="input-group-addon">Objective:</label>
                 <input type="text" class="form-control" id="JQ-ObjectiveTitle" placeholder="Objective" value="{{.Title}}">
@@ -58,8 +58,9 @@
                 <textarea name="Message2" id="JQ-KeyTakeaways" wrap="hard" placeholder="KeyTakeaways">{{.KeyTakeaways}}</textarea>
             </form>
         </div>
-                
+        <a name="exercises"></a>        
         <div class="well">
+            
             <p>Objective Exercises:</p>
         
             <div class="form-group">
@@ -109,11 +110,10 @@
       </div>
     <!-- END Delete Modal ******************-->
 
-
     <script type="text/javascript">
         $(document).ready(function(){
-            var referrer =  document.referrer;
-            objectiveID = $("#JQ-ObjectiveID").val();
+     
+            objectiveID = $('#objID').html();
 
             $(".saveBtn").click(function(){
                 //get stuff from form
@@ -141,7 +141,7 @@
                 window.open(url,'_blank');
             });
             $("#JQ-BackBtn").click(function(){
-                window.location = referrer;
+                window.location = document.referrer;
             });
 
 //CKeditor Stuff ***************************************
@@ -176,7 +176,7 @@
                              g = $.parseJSON(data);
                             console.log(g.result +":"+ g.reason); 
                             //go back to where you came from you dirty dog!
-                            window.location = referrer; 
+                            window.location = document.referrer; 
                         });                         
                     }
                 });
@@ -198,9 +198,7 @@
     // Exercises Work  ***********************************
     // using localStorage to help with
             $('#exerciseInput').on('keyup',function(e){
-                if(e.keyCode==13){
-                    $('#addExerciseBtn').trigger('click');
-                }
+                if(e.keyCode==13){$('#addExerciseBtn').trigger('click');}
             });
             $('#addExerciseBtn').on('click',function(){
                 var newInstruction =  $('#exerciseInput').val();
@@ -256,18 +254,22 @@
                         $.each( promises, function( key, val ){
                             //console.log(val);
                             var xml = val.responseText;
+                            console.log(xml)
                             var instr = $(xml).find("instruction").html();
                             var question = $(xml).find("question").html();
-                            var ans = $(xml).find("solution").html();
+                            var ans = $(xml).find("answer").html();
+                            var sol = $(xml).find("solution").html();
                             var exID = $(xml).find("id").html();
                             var exNumber = $(xml).find("order").html();
                             $("#exerciseRoot").append(getExerciseHTML(exID,instr,question,ans,exNumber));
                             localStorage.nextExerciseNumber = parseInt(exNumber)+1;
                            
                         });
+                        //not to put this here... 
+                        MathJax.Hub.Queue(["Typeset",MathJax.Hub,"exerciseRoot"]);
                         
                     });
-                    MathJax.Hub.Queue(["Typeset",MathJax.Hub,"exerciseRoot"]);
+                    
                     
                 });
 

@@ -160,7 +160,7 @@
 
             $.each( k, function( key, arg ){
                 // each book is a link to it's TOC
-                var htmlBlock2 = '<a href="/toc/'+arg.ID+'" class="list-group-item" ><i class="fa fa-book" aria-hidden="true"></i> '+arg.Title+'</a>';
+                var htmlBlock2 = '<a href="/toc/'+arg.ID+'" class="list-group-item" target="_blank" ><i class="fa fa-book" aria-hidden="true"></i> '+arg.Title+'</a>';
                 $('#cat-'+catalogID).append(htmlBlock2);
             });
                 

@@ -1,92 +1,35 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-{{template "Head" "Preview"}}
+{{template "Head" "Objective Preview"}}
 
     <script type="text/javascript" src="/public/js/printThis.js"></script>
-<!--
-    <link rel="stylesheet" href="/public/css/ens-contentSystem.css">
 
--->
+    <link rel="stylesheet" href="/public/css/ens-reader.css">
+    <script type="text/javascript" src="/public/js/ens-reader.js"></script>
+
     <style type="text/css">
 
-    body{
-        font-size:large;
-        line-height: 1.5;
-        font-family: 'Merriweather', Georgia, 'Times New Roman', Times, serif;
-        background-color: oldlace;
-        width:100%;
-    }
-    img {
-        max-width: 100%;
-        height: auto !important;
-        width: auto\9;  
-    }
-    .bookPage{
-        border-radius: 5px;
-        background: white;
-        border-color: darkgrey;
-        border-style: solid;
-        border-width: 1px;
-        margin-top:10px;
-        margin-bottom:10px;
-    }
-    .font-size-small {
-        font-size: small;
-    }
-    .font-size-medium {
-        font-size: large;
-    }
-    .font-size-large {
-        font-size: x-large;
-    }
-    .ens-example {
-        border-radius: 5px;
-        background: whitesmoke;
-        padding: 10px; 
-        border-color: darkgrey;
-        border-style: solid;
-        border-width: 1px;
-        margin-bottom:10px;
-        margin-top:10px;
-    }
-    .objective, .keytakeaways, .exercises {
-        border-radius: 5px;
-        background: whitesmoke;
-        padding: 10px; 
 
-    }
-    .objective > strong, .keytakeaways > strong, .exercises > strong {
-        color: firebrick;
-    }
-        .panel-heading a:not(.btn):after {
-            font-family:'Glyphicons Halflings';
-            content:"\e114";
-            float: right;
-            color: grey;
-        }
-        .panel-heading a.collapsed:after {
-            content:"\e080";
-        }
         .well > .form-group > .panel-group > .panel {
             color: black;
         }
 
 
         .mono { font-family: Consolas, Lucida Console, monospace;
-        font-size:small; 
-        width:100%;
-        color:black;
+            font-size:small; 
+            width:100%;
+            color:black;
         }
         .shareBox{
-                    border-radius: 5px;
-        background: whitesmoke;
-        padding: 10px; 
-        border-color: darkgrey;
-        border-style: solid;
-        border-width: 1px;
-        margin-bottom:10px;
-        margin-top:10px;
+            border-radius: 5px;
+            background: whitesmoke;
+            padding: 10px; 
+            border-color: darkgrey;
+            border-style: solid;
+            border-width: 1px;
+            margin-bottom:10px;
+            margin-top:10px;
 
         }
         .modal-footer, .modal-header, .close{
@@ -94,44 +37,107 @@
             color:white;
         }
 
+        #objectiveTitle{
+            font-size: 1.2em;
+        }
+        #objectivePath, .info{
+            font-size:0.8em;
+            color:oldlace;
+
+        }
+
+    #menu{
+        margin-top:2px;
+        /*margin-right:5px;*/
+
+        /*position:fixed;*/
+        /*right:0;*/
+        font-size: 14px !important;
+        z-index:100;
+    }
+    .objective{
+        font-size: 1.2em;
+    }
+
+
     </style>
-
-
 
 </head>
 <body>
-<!--preview page needs server stuff-->
-    {{template "Nav" .}}
-    <div class="container bookPage" id="ENScontent">
-    <input id="JQ-ObjectiveID" type="hidden" value="{{.ID}}" readonly>
+{{template "Nav" .}}
 
-        <div class="pull-right">
-            <div class="btn-group btn-group-xs" role="group">
-              <button id="font-size-small-btn" class="btn"><span class="font-size-small glyphicon glyphicon-font"></span></button>
-              <button id="font-size-medium-btn" class="btn"><span class="font-size-medium glyphicon glyphicon-font"></span></button>
-              <button id="font-size-large-btn" class="btn"><span class="font-size-large glyphicon glyphicon-font"></span></button>
-            </div>
+     <div id="objectiveHeader" class="container well">
+    {{if eq .Permission 3}}
+        <div class="btn-group btn-group-sm pull-right" role="group">
+            <button id="editObjectiveBtn" class="btn btn-success" type="button"><span class="glyphicon glyphicon-pencil"></span></button>
         </div>
-        <hr/>
-        <div class="objective"><strong>Objective: </strong><span id="objective-title">{{.Title}}</span>
-            <div class="btn-group btn-group-sm pull-right" role="group">
-            <button id="share-objective" class="btn btn-default btn-sm "><span class="glyphicon glyphicon-share" data-toggle="modal" data-target="#objectiveReaderModal"></span></button>
-            <button id="print-objective" class="btn btn-default btn-sm "><span class="glyphicon glyphicon-print"></span></button>
-            </div>
+    {{end}}
+        <span id="objectivePath">Loading...</span> <br>
+        <div id="objectiveTitle" class=""><i class="fa fa-file-text-o"></i> <span id="objective-title">{{.Title}}</span></div>
+        <p class="info">
+            <span id="objectiveAuthor" class="">Author: {{.Author}}</span><br/>
+            <span id="objectiveVersion" class="">Ver.: {{.Version}}</span> <br/>
+            <span id="objective-id" class="hidden">{{.ID}}</span>  
+        </p>
+        <div id="objectiveDescription"></div>
+    </div>       
+ 
+
+    <div class="container bookPage" id="ENScontent">
+    
+    <!-- Menu Work TODO generalize -->
+    <div id="menu" class="no-print" >
+    <table class="table table-borderless">
+    <tr><td>
+        <div class="btn-group btn-group-sm" role="group">
+            <button id="fontChange" type="button" class="btn btn-default" title="Font size." data-toggle="tooltip" data-placement="top" ><i class="fa fa-font" aria-hidden="true"></i>±</button>
+            <button id="imageChange" type="button" class="btn btn-default" title="Image size." data-toggle="tooltip" data-placement="top" ><i class="fa fa-image" aria-hidden="true"></i></button>
+            <button id="print" type="button" class="btn btn-default" title="Print." data-toggle="tooltip" data-placement="top" ><i class="fa fa-print" aria-hidden="true"></i></button>
         </div>
         <br/>
+    </td></tr>
+    <tr><td>
+        <div class="btn-group btn-group-sm" role="group">
+            <div id="submenu1" class="btn-group btn-group-sm hidden" role="group">
+                <button id="increaseFont" type="button" class="btn btn-default" title="Increase" data-toggle="tooltip" data-placement="bottom" ><i class="fa fa-plus" aria-hidden="true"></i></button>
+                <button id="decreaseFont" type="button" class="btn btn-default" title="Decrease" data-toggle="tooltip" data-placement="bottom" ><i class="fa fa-minus" aria-hidden="true"></i></button>         
+            </div>
+            
+            <div id="submenu2" class="btn-group btn-group-sm hidden" role="group">
+                <button id="increaseImages" type="button" class="btn btn-default" title="Increase" data-toggle="tooltip" data-placement="bottom" ><i class="fa fa-plus" aria-hidden="true"></i></button>
+                <button id="decreaseImages" type="button" class="btn btn-default" title="Decrease" data-toggle="tooltip" data-placement="bottom" ><i class="fa fa-minus" aria-hidden="true"></i></button>         
+            </div>            
+    
+        </div>
+    </td></tr>
+    </table>
+    </div>
+    <!-- End menu work -->
+
+        <div class="objective ens-boxed"><span class="pageLabel">Objective: </span><span id="objective-title">{{.Title}}</span>
+            <div class="btn-group btn-group-sm pull-right" role="group">
+            <button id="share-objective" class="btn btn-default btn-sm share" name="obj"><span class="glyphicon glyphicon-share" data-toggle="modal" data-target="#objectiveReaderModal"></span></button>
+            <!-- <button id="print-objective" class="btn btn-default btn-sm "><span class="glyphicon glyphicon-print"></span></button> -->
+            </div>
+        </div>
+        
         <div id="objective-content" class="text-justify">{{.Content}}</div>
 
-        <hr/>
-        <div class="keytakeaways"><strong>Key Takeaways:</strong>
-            <button id="print-keytakeaways" class="btn btn-default btn-sm pull-right"><span class="glyphicon glyphicon-print"></span></button>
+        <div class="keytakeaways ens-boxed"><span class="pageLabel">Key Takeaways:</span>
+            <div class="btn-group btn-group-sm pull-right" role="group">
+            <button id="share-objective" class="btn btn-default btn-sm share" name="key"><span class="glyphicon glyphicon-share" data-toggle="modal" data-target="#objectiveReaderModal"></span></button>
+            </div>
         </div>
-        <div id="keytakeaways">{{.KeyTakeaways}}</div>
-        <hr/>
 
-        <div class="exercises"><strong>Exercises:</strong>
-            <button id="toggle-all" class="btn btn-default btn-sm">Select All</button>
-            <button id="print-selected" class="btn btn-default btn-sm pull-right"><span class="glyphicon glyphicon-print"></span></button>
+        <div id="keytakeaways">{{.KeyTakeaways}}</div>
+
+        <div class="exercises ens-boxed"><span class="pageLabel">Exercises:</span>
+            <!-- <button id="toggle-all" class="btn btn-default btn-sm">Select All</button> -->
+            <div class="btn-group btn-group-sm pull-right" role="group">
+                <button id="share-exercises" class="btn btn-default btn-sm share" name="ex"><span class="glyphicon glyphicon-share" data-toggle="modal" data-target="#objectiveReaderModal"></span></button>
+                <!-- <button id="print-selected" class="btn btn-default btn-sm pull-right"><span class="glyphicon glyphicon-print"></span></button> -->
+            </div>
+            
         </div>
         <p class="text-center"> </p> 
         <div id="exerciseRoot" class="panel-group" >Exercises go here.</div>
@@ -145,7 +151,6 @@
         <div id="printableDiv" class="hidden"> </div>
         
 
-
         <!-- Reader Share Modal *******************-->
           <div class="modal fade" id="objectiveReaderModal" role="dialog">
             <div class="modal-dialog">
@@ -156,10 +161,9 @@
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
                     <h2 class="modal-title"><span class="glyphicon glyphicon-share"></span> Share Objective</h2>
                 </div>
-                <div id="shareWell" class="modal-body">
-
+                <div id="shareWell" class="modal-body">                 
                     <div id="backColor" class="dropdown">
-                        <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">Background Color
+                        <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">Background Color
                         <span class="caret"></span></button>
                         <ul class="dropdown-menu">
                             <li><a>oldlace</a></li>
@@ -171,17 +175,27 @@
                             <li><div class="text-center">Any Named Color</div></li>
                         </ul>
                     </div>
-                  
+                <div class="container">
+                    <label class="checkbox-inline">
+                      <input type="checkbox" id="contentCB" value="option1" name="Content" checked> Content
+                    </label>
+                    <label class="checkbox-inline">
+                      <input type="checkbox" id="inlineCheckbox2" value="option2" name="Keytakeaways" checked> Key Takeaways
+                    </label>
+                    <label class="checkbox-inline">
+                      <input type="checkbox" id="inlineCheckbox3" value="option3" name="Exercises" checked> Exercises
+                    </label>
+                </div>
 
                     <div class="shareBox">
                         <div><strong>Link to objective:</strong></div>
-                        <textarea id="objective-link" class="mono">http link here</textarea>
+                        <textarea id="objective-link" class="mono" rows="3" readonly>http link here</textarea>
                         <a id="linkBtn" class="btn btn-info"><span class="glyphicon glyphicon-copy"></span> Select Code.</a>
                     </div>
                    
                     <div class="shareBox">
                         <div><strong>Iframe embed code:</strong></div>
-                        <textarea id="objective-embed" class="mono">Embed code here</textarea> 
+                        <textarea id="objective-embed" class="mono" rows="6">Embed code here</textarea> 
                         <a id="embedBtn" class="btn btn-info"><span class="glyphicon glyphicon-copy"></span> Select Code.</a>
                     </div>
                  
@@ -203,29 +217,33 @@
         {{template "Footer"}}
 
     <script type="text/javascript">
+        var loadingHTML = '<div class="text-center"><br/><p><i class="fa fa-spinner fa-pulse fa-2x fa-fw"></i></p><br></div>';
+
         $(document).on('ready',function(){
-            objectiveID = $("#JQ-ObjectiveID").val();
+            objectiveID=$('#objective-id').html();
             defaultBackgroundColor = $('body').css('background-color');
-            console.log(defaultBackgroundColor)
             //console.log(location.origin);
 
-            $('#font-size-small-btn').click(function() {
-                $('body').removeClass("font-size-large");
-                $('body').removeClass("font-size-medium");
-                $('body').addClass("font-size-small");
-            });
+            var pageInfo; //breadcrumb work
+            var breadCrumbPromise = ensBreadcrumb("Objective",objectiveID);
+            breadCrumbPromise.done(function(data){
+                pageInfo = $.parseJSON(data).Results;
 
-            $('#font-size-medium-btn').click(function() {
-                $('body').removeClass("font-size-large");
-                $('body').removeClass("font-size-small");
-                $('body').addClass("font-size-medium");
-            });
+                var pathHTML = '<i class="fa fa-book" aria-hidden="true"></i> '  + pageInfo.BookTitle +' <i class="fa fa-angle-double-right" aria-hidden="true"></i> '+pageInfo.ChapterOrder+'. '+pageInfo.ChapterTitle
+                                        +' <i class="fa fa-angle-double-right" aria-hidden="true"></i> '+pageInfo.ChapterOrder+'.'+pageInfo.SectionOrder+' '+pageInfo.SectionTitle;
 
-            $('#font-size-large-btn').click(function() {
-                $('body').removeClass("font-size-small");
-                $('body').removeClass("font-size-medium");
-                $('body').addClass("font-size-large");
-            });
+                var objNumberHTML = pageInfo.ChapterOrder+'.'+pageInfo.SectionOrder+'-'+pageInfo.ObjectiveOrder+' ';
+                $('#objectivePath').html( pathHTML );
+                $('#objective-title').prepend(objNumberHTML);
+                var section = pageInfo.ChapterOrder+'.'+pageInfo.SectionOrder+' '+pageInfo.SectionTitle;
+
+
+            })
+
+            $('#editObjectiveBtn').click(function(){
+                window.location = '/edit/Objective/'+objectiveID;
+            })
+
             //todo streamline this button
             $('#toggle-all').click(function() {
                 if($(this).html()==="Select All"){
@@ -255,9 +273,43 @@
                 });
                 
             });
-            $('#share-objective').click(function(){
-                var link = location.origin+ "/read/objective?ID="+objectiveID;
+            // $('#share-exercises').click(function(){
+            //     window.location = '/read/exercises?ObjectiveID='+objectiveID;
+
+            // });
+
+            $('.share').click(function(){
+                var choice = $(this).attr('name');
+                var link = location.origin
+                if(choice==="obj")
+                    link = location.origin+ "/read/objective?ID="+objectiveID+"&Content=true&Keytakeaways=true&Exercises=true";
+                if(choice==="ex")
+                    link = location.origin+ "/read/exercises?ObjectiveID="+objectiveID;
+                if(choice==="key")
+                    link = location.origin+ "/read/keytakeaways?ObjectiveID="+objectiveID;
+                $('input').prop('checked',true)
+
+                $('input').on('change',function(){
+                    var item = $(this).attr('name');
+                    var qryOff = '&'+item+'=false';
+                    var qryOn = '&'+item+'=true';
+                        if ($(this).is(':checked')) {
+                            var lk = $('#objective-link').val();
+                            lk = lk.replace(qryOff,qryOn)
+                            $('#objective-link').html(lk);
+                            $('#objective-embed').html(embedCode(lk));
+                        } else {
+                            var lk = $('#objective-link').val();
+                            lk = lk.replace(qryOn,qryOff)
+                            $('#objective-link').html(lk);
+                            $('#objective-embed').html(embedCode(lk));
+                        }
+                })
+
                 var embed = '<iframe src="'+link+'" width="100%" height="600" allowfullscreen="allowfullscreen"></iframe>';
+                function embedCode(link){
+                    return '<iframe src="'+link+'" width="100%" height="600" allowfullscreen="allowfullscreen"></iframe>';
+                }
                 $('#objective-id').html(objectiveID);
                 $('#objective-link').html(link);
                 $('#objective-embed').html(embed);
@@ -374,7 +426,7 @@
                             var xml = val.responseText;
                             var instr = $(xml).find("instruction").html();
                             var question = $(xml).find("question").html();
-                            var ans = $(xml).find("solution").html();
+                            var ans = $(xml).find("answer").html();
                             var exID = $(xml).find("id").html();
                             var exNumber = $(xml).find("order").html();
                             $("#exerciseRoot").append(getExerciseHTML(exID,instr,question,ans,exNumber));

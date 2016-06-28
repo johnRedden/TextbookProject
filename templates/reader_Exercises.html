@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
 
-    <title>ENS Objective Reader</title>
+    <title>ENS Exercises Reader</title>
 
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
@@ -30,6 +30,9 @@
             position:fixed;
             font-size: 14px !important;
             z-index:100;
+        }
+        .exercises{
+            margin-top:35px;
         }
     </style>
 
@@ -65,81 +68,46 @@
     </div>
     <!-- End menu work -->
 
-        <div id="objectiveContent" >Loading...</div>
-<!--         <div id="objectiveInfo">
-            <span id="author"> </span><br/>
-            <span id="version"> </span><br/>
-            <span>© content.eduNetSystems.com</span>
-        </div> -->
-        <div id="exerciseBlock">
-            <div class="exercises ens-boxed"><span class="pageLabel">Exercises:</span>
-                
-                <div class="btn-group btn-group-sm pull-right no-print" role="group">
-                    <button id="toggle-all" class="btn btn-default btn-sm">Select All</button>
-                    <!-- <button id="share-exercises" class="btn btn-default btn-sm "><span class="glyphicon glyphicon-share" data-toggle="modal" data-target="#exercisesReaderModal"></span></button> -->
-                    <button id="print-selected" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-print"></span></button>
-                </div>
-                
+        <div class="exercises ens-boxed"><span class="pageLabel">Exercises:</span>
+            
+            <div class="btn-group btn-group-sm pull-right no-print" role="group">
+                <button id="toggle-all" class="btn btn-default btn-sm">Select All</button>
+                <!-- <button id="share-exercises" class="btn btn-default btn-sm "><span class="glyphicon glyphicon-share" data-toggle="modal" data-target="#exercisesReaderModal"></span></button> -->
+                <button id="print-selected" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-print"></span></button>
             </div>
-     
-            <p class="text-center"> </p> 
-            <div id="exerciseRoot" class="panel-group" >Exercises go here.</div>
-            <p class="text-center"> </p> 
-
-            <div id="ExercisesInfo">
-                <div>© eduNetSystems.com</div>
-            </div>
+            
         </div>
+ 
+        <p class="text-center"> </p> 
+        <div id="exerciseRoot" class="panel-group" >Exercises go here.</div>
+        <p class="text-center"> </p> 
+
+        <div id="ExercisesInfo">
+            <div>© eduNetSystems.com</div>
+        </div>
+
     </div>
 
     <div id="printableDiv" class="hidden"> </div>
 
     <script type="text/javascript">
         var loadingHTML = '<div class="text-center"><br/><p><i class="fa fa-spinner fa-pulse fa-2x fa-fw"></i></p><br></div>';
+
         $(document).on('ready',function(){
 
-            //$('[data-toggle="tooltip"]').tooltip();
-
-            var objectiveID = getUrlParameter('ID');
+            var objectiveID = getUrlParameter('ObjectiveID');
             //do something if no id
-            var content = getUrlParameter('Content');
-            var keytakes = getUrlParameter('Keytakeaways');
-            var exs = getUrlParameter('Exercises');
+
             var backgroundColor = getUrlParameter('Background');
             if(backgroundColor){
                 $('body').css('background-color', backgroundColor);
             }else{
                 $('body').css('background-color', 'oldLace');
+
             }
-          
-            $.get("/api/objective.html?ID="+objectiveID,function(data, status){
 
-                    $('#objectiveContent').html(data);
-                    $('.ENS-Title').prepend('<span class="pageLabel">Objective: </span>').addClass('ens-boxed');
 
-                    if(content!=="true"){
-                        $('.ENS-Content').hide();
-                    }
-
-                    if(keytakes==="true"){
-                        $('.ENS-KeyTakeaways').prepend('<div class="ens-boxed"><span class="pageLabel">Key Takeaways: </span></div>');
-                    }else{
-                        $('.ENS-KeyTakeaways').hide();
-                    }
-                    
-                    var t = $('#objectiveContent').find('.ENS-Title');
-                    var v = $('#objectiveContent').find('.ENS-Version');
-                    var a = $('#objectiveContent').find('.ENS-Author');
-                    $('#author').html('Author: '+a.html());
-                    $('#version').html('Version: '+v.html());
-                    t.css('font-size','1.2em');
-                    v.html('');
-                    a.html('');
- 
-                    MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
-            });
-
-           //todo streamline this button
+            //todo streamline this button
             $('#toggle-all').click(function() {
                 console.log("hi")
                 if($(this).html()==="Select All"){
@@ -236,12 +204,7 @@
 
             }
 
-            if(exs==="true")
-                getObjectiveExercises(objectiveID);
-            else
-                $('#exerciseBlock').hide();
-
-
+            getObjectiveExercises(objectiveID);
 
         });
 
