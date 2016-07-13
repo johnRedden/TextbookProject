@@ -63,7 +63,7 @@ func GetUserFromSession(res http.ResponseWriter, req *http.Request) (*User, erro
 	}
 
 	u := &User{}
-	rerr := retrievable.GetEntity(ctx, u, uid)
+	rerr := retrievable.GetEntity(ctx, uid, u)
 	if rerr != nil {
 		return &User{}, rerr
 	}

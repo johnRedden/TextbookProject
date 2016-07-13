@@ -230,7 +230,7 @@ func AUTH_Login_GET(res http.ResponseWriter, req *http.Request, params httproute
 	DeleteCookie(res, "AUTHED") // We've gone past the point of needing the auth cookie. go fourth.
 
 	u := &User{}
-	getuErr := retrievable.GetEntity(ctx, u, uid)
+	getuErr := retrievable.GetEntity(ctx, uid, u)
 	if ErrorPage(res, "No Such User", getuErr) {
 		return
 	}

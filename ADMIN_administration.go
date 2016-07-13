@@ -82,7 +82,7 @@ func ADMIN_POST_ELEVATEUSER(res http.ResponseWriter, req *http.Request, params h
 	}
 
 	u := &User{}
-	getErr := retrievable.GetEntity(ctx, u, uid)
+	getErr := retrievable.GetEntity(ctx, uid, u)
 	if getErr != nil {
 		fmt.Fprint(res, `{"Status":"Failure","Reason":"User cannot be retrived: `+getErr.Error()+`","Code":500}`)
 		return
@@ -128,7 +128,7 @@ func ADMIN_GET_USERPERM(res http.ResponseWriter, req *http.Request, params httpr
 	}
 
 	u := &User{}
-	getErr := retrievable.GetEntity(ctx, u, uid)
+	getErr := retrievable.GetEntity(ctx, uid, u)
 	if getErr != nil {
 		fmt.Fprint(res, `{"Status":"Failure","Reason":"User cannot be retrived: `+getErr.Error()+`","Code":500}`)
 		return
