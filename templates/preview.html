@@ -116,7 +116,7 @@
 
         <div class="objective ens-boxed"><span class="pageLabel">Objective: </span><span id="objective-title">{{.Title}}</span>
             <div class="btn-group btn-group-sm pull-right" role="group">
-            <button id="share-objective" class="btn btn-default btn-sm share" name="obj"><span class="glyphicon glyphicon-share" data-toggle="modal" data-target="#objectiveReaderModal"></span></button>
+            <button id="share-objective" class="btn btn-default share" name="obj"><span class="glyphicon glyphicon-share" data-toggle="modal" data-target="#objectiveReaderModal"></span></button>
             <!-- <button id="print-objective" class="btn btn-default btn-sm "><span class="glyphicon glyphicon-print"></span></button> -->
             </div>
         </div>
@@ -125,7 +125,7 @@
 
         <div class="keytakeaways ens-boxed"><span class="pageLabel">Key Takeaways:</span>
             <div class="btn-group btn-group-sm pull-right" role="group">
-            <button id="share-objective" class="btn btn-default btn-sm share" name="key"><span class="glyphicon glyphicon-share" data-toggle="modal" data-target="#objectiveReaderModal"></span></button>
+            <!--<button id="share-objective" class="btn btn-default btn-sm share" name="key"><span class="glyphicon glyphicon-share" data-toggle="modal" data-target="#objectiveReaderModal"></span></button>-->
             </div>
         </div>
 
@@ -134,13 +134,13 @@
         <div class="exercises ens-boxed"><span class="pageLabel">Exercises:</span>
             <!-- <button id="toggle-all" class="btn btn-default btn-sm">Select All</button> -->
             <div class="btn-group btn-group-sm pull-right" role="group">
-                <button id="share-exercises" class="btn btn-default btn-sm share" name="ex"><span class="glyphicon glyphicon-share" data-toggle="modal" data-target="#objectiveReaderModal"></span></button>
+                <!--<button id="share-exercises" class="btn btn-default btn-sm share" name="ex"><span class="glyphicon glyphicon-share" data-toggle="modal" data-target="#objectiveReaderModal"></span></button>-->
                 <!-- <button id="print-selected" class="btn btn-default btn-sm pull-right"><span class="glyphicon glyphicon-print"></span></button> -->
             </div>
             
         </div>
         <p class="text-center"> </p> 
-        <div id="exerciseRoot" class="panel-group" >Exercises go here.</div>
+        <div id="exerciseRoot" class="panel-group" ><div class="text-center"><br/><p><i class="fa fa-spinner fa-pulse fa-2x fa-fw"></i></p><br></div></div>
         <p class="text-center"> </p> 
 
         <div id="ObjectiveInfo">
@@ -388,8 +388,8 @@
                 var exerciseHTML ='\
                     <div class="panel panel-default" id="'+exerciseID+'">\
                         <div class="panel-heading">\
-                            <a class="collapsed" data-toggle="collapse" data-target="#ex-'+exerciseID+'" ></a>\
-                            <span class="pull-right ans">Answer &nbsp</span>\
+                            <a class="collapsed pull-right btn btn-default" data-toggle="collapse" data-target="#ex-'+exerciseID+'" >\
+                                <i class="fa fa-lightbulb-o" aria-hidden="true"></i></a>\
                             <strong><span class="num">'+number+'.</span> <span class="instr">'+instruction+'</span></strong><br/> \
                             <span class="checkbox">\
                                 <label> <input type="checkbox" value="'+exerciseID+'"/><span class="question"'+question+'</span></label>\
@@ -433,6 +433,7 @@
                             MathJax.Hub.Queue(["Typeset",MathJax.Hub,"'+exID+'"]);
                            
                         });
+
                     });
                     //MathJax.Hub.Queue(["Typeset",MathJax.Hub,"exerciseRoot"]);
                     

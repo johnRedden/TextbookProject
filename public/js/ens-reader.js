@@ -31,7 +31,7 @@ $(document).on('ready',function(){
             w+=20;
             $(arg).width(w+'px');
         })
-        console.log(imgs);
+        //console.log(imgs);
         $(this).blur();
     });
 

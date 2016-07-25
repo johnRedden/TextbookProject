@@ -152,7 +152,7 @@
         /* Exercises CSS */
         .panel-heading a{cursor: pointer;}
 
-        .panel-heading a:not(.btn):after {
+        /*.panel-heading a:not(.btn):after {
             font-family:'Glyphicons Halflings';
             content:"\e114";
             float: right;
@@ -161,7 +161,7 @@
         }
         .panel-heading a.collapsed:after {
             content:"\e080";
-        }
+        }*/
         .well > .form-group > .panel-group > .panel {
             color: black;
         }

@@ -83,7 +83,7 @@
             </div>
      
             <p class="text-center"> </p> 
-            <div id="exerciseRoot" class="panel-group" >Exercises go here.</div>
+            <div id="exerciseRoot" class="panel-group" ><div class="text-center"><br/><p><i class="fa fa-spinner fa-pulse fa-2x fa-fw"></i></p><br></div></div>
             <p class="text-center"> </p> 
 
             <div id="ExercisesInfo">
@@ -183,8 +183,8 @@
                 var exerciseHTML ='\
                     <div class="panel panel-default" id="'+exerciseID+'">\
                         <div class="panel-heading">\
-                            <a class="collapsed" data-toggle="collapse" data-target="#ex-'+exerciseID+'" ></a>\
-                            <span class="pull-right ans">Answer &nbsp</span>\
+                            <a class="collapsed pull-right btn btn-default" data-toggle="collapse" data-target="#ex-'+exerciseID+'" >\
+                                <i class="fa fa-lightbulb-o" aria-hidden="true"></i></a>\
                             <strong><span class="num">'+number+'.</span> <span class="instr">'+instruction+'</span></strong><br/> \
                             <span class="checkbox">\
                                 <label> <input type="checkbox" value="'+exerciseID+'"/><span class="question"'+question+'</span></label>\
